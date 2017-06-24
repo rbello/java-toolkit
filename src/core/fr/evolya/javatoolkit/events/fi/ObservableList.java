@@ -3,9 +3,7 @@ package fr.evolya.javatoolkit.events.fi;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.evolya.javatoolkit.app.event.Model;
-import fr.evolya.javatoolkit.app.event.ModelEvent;
-import fr.evolya.javatoolkit.app.event.ModelEvent.ModelItemAdded;
+import fr.evolya.javatoolkit.events.fi.ModelEvent.ModelItemAdded;
 
 public class ObservableList<T> implements Model {
 

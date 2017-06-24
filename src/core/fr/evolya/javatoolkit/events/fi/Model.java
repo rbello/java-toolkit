@@ -1,6 +1,4 @@
-package fr.evolya.javatoolkit.app.event;
-
-import fr.evolya.javatoolkit.events.fi.Listener;
+package fr.evolya.javatoolkit.events.fi;
 
 public interface Model {
 

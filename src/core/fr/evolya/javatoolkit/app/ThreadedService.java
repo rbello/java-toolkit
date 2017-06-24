@@ -31,7 +31,7 @@ public abstract class ThreadedService implements AppActivity {
 	protected App _app;
 	
 	public ThreadedService() {
-		_worker = new Worker(this);
+		_worker = new Worker(this.getClass().getSimpleName());
 	}
 
 	public final synchronized boolean isStarted() {

@@ -32,11 +32,11 @@ import javax.swing.border.LineBorder;
 
 import fr.evolya.javatoolkit.app.App;
 import fr.evolya.javatoolkit.app.event.ApplicationStarting;
-import fr.evolya.javatoolkit.app.event.ModelCreated;
-import fr.evolya.javatoolkit.app.event.ModelEvent.ModelItemAdded;
 import fr.evolya.javatoolkit.events.fi.BindOnEvent;
+import fr.evolya.javatoolkit.events.fi.ModelCreated;
 import fr.evolya.javatoolkit.events.fi.Observable;
 import fr.evolya.javatoolkit.events.fi.ObservableList;
+import fr.evolya.javatoolkit.events.fi.ModelEvent.ModelItemAdded;
 import fr.evolya.javatoolkit.gui.swing.ComponentDragger;
 import fr.evolya.javatoolkit.gui.swing.ComponentResizer;
 

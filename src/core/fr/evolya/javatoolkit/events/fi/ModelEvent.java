@@ -1,4 +1,4 @@
-package fr.evolya.javatoolkit.app.event;
+package fr.evolya.javatoolkit.events.fi;
 
 public abstract interface ModelEvent {
 	

@@ -92,7 +92,7 @@ public abstract class AbstractThreadedService extends AbstractPlugin
 		_autoStart = autoStart;
 		_isPublished = isServicePublished;
 		_eventsService = new EventSource<L>(classe, this);
-		_worker = new Worker(this);
+		_worker = new Worker(this.getClass().getSimpleName());
 	}
 
 	@Override

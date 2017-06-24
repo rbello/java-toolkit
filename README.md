@@ -22,4 +22,10 @@
 
 ___
 
+### Dependencies
+
+![UML CorePackageDiagram](https://raw.githubusercontent.com/rbello/java-toolkit/master/doc/UML_CorePackageDiagram.png)
+
+___
+
 Created in 2008

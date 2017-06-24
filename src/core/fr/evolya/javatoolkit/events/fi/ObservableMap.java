@@ -3,10 +3,8 @@ package fr.evolya.javatoolkit.events.fi;
 import java.util.HashMap;
 import java.util.Map;
 
-import fr.evolya.javatoolkit.app.event.Model;
-import fr.evolya.javatoolkit.app.event.ModelEvent;
-import fr.evolya.javatoolkit.app.event.ModelEvent.ModelItemAdded;
-import fr.evolya.javatoolkit.app.event.ModelEvent.ModelItemModified;
+import fr.evolya.javatoolkit.events.fi.ModelEvent.ModelItemAdded;
+import fr.evolya.javatoolkit.events.fi.ModelEvent.ModelItemModified;
 
 public class ObservableMap<K, V> implements Model {
 

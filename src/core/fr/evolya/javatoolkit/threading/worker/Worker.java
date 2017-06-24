@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 
-import fr.evolya.javatoolkit.app.AppActivity;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.events.attr.EventSourceAsynch;
 import fr.evolya.javatoolkit.exceptions.NotImplementedException;
@@ -25,25 +24,25 @@ public class Worker implements IWorker {
 	
 	private List<WorkerThread> _threads = new ArrayList<WorkerThread>();
 
-	private String id;
+	private String _id;
 
 	public Worker() {
-		this(null, 1);
+		this(1);
 	}
 	
 	public Worker(int maxRunningJobs) {
-		this(null, maxRunningJobs);
+		this("", maxRunningJobs);
 	}
 	
-	public Worker(AppActivity parent) {
-		this(parent, 1);
+	public Worker(String id) {
+		this(id, 1);
 	}
 	
-	public Worker(AppActivity parent, int maxRunningJobs) {
-		id = parent == null ? "" + hashCode() : parent.getClass().getSimpleName();
+	public Worker(String id, int maxRunningJobs) {
+		_id = id;
 		_maxRunningJobs = maxRunningJobs;
 	}
-
+	
 	IOperation getNextJob() {
 		return _jobs.size() > 0 ? _jobs.remove(0) : null;
 	}
@@ -235,11 +234,11 @@ public class Worker implements IWorker {
 	
 	@Override
 	public String toString() {
-		return "Worker " + id;
+		return "Worker " + _id;
 	}
 	
 	public String getID() {
-		return id;
+		return _id;
 	}
 
 	public void invokeAndLoop(int milliseconds, Runnable job) {
