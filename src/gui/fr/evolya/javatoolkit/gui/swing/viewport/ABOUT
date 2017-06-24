@@ -1,0 +1,12 @@
+Package fr.evolya.javatoolkit.gui.swing.viewport
+
+	Ce package offre offre principalement le ViewportPanel, un panel
+	multi-calque et zoomable qui permet de représenter des calques.
+
+	Les calques supportés sont :
+		Imagery2DLayer : un calque pour afficher une image en 2D
+		PointBatchLayer : un calque pour afficher une série de point
+
+	Il existe aussi un panel un peu plus complexe, le CartographicPanel,
+	qui s'utilise avec le CartographicPanelController, et qui ajoute
+	une couche de positionnement des éléments pour la carto.
