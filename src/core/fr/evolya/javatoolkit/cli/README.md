@@ -8,7 +8,7 @@ This package contains a toolkit to implements a Command Line Interface (CLI)
 
 This API is mostly Stable.
 
-## Usage of FI implementation
+## Usage
 
 Using annotations :
 
