@@ -7,7 +7,7 @@
 
 ### Releases
 
-- [Lastest 4.0](https://github.com/rbello/java-toolkit/raw/master/dist/java-toolkit-4.0.0.jar) 
+- [Latest 4.0](https://github.com/rbello/java-toolkit/raw/master/dist/java-toolkit-4.0.0.jar) 
 - [Legacy 3.0](https://github.com/rbello/java-toolkit/raw/master/dist/java-toolkit-3.1.6.jar)
 
 ### Packages
