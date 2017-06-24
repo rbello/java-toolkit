@@ -1,0 +1,7 @@
+Package fr.evolya.javatoolkit.geodesy
+
+	Ce package contient du code de Mike Gavaghan.
+	
+	Librairie pour le calcule georéférencé.
+
+	http://www.gavaghan.org/blog/free-source-code/geodesy-library-vincentys-formula-java/
