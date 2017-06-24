@@ -60,7 +60,7 @@ public class ModuleConsole {
 ```
 
 Annotation used:
-- Annoation `@BindOnEvent(Class<Event>)` is used to define witch event to listener.
+- Annotation `@BindOnEvent(Class<Event>)` is used to define witch event to listener.
 - Annotation `@EventArgClassFilter(Class<Event>)` will filter only events triggered by the given source.
 - Annotation `@GuiTask` will force execution on Event Dispatch Thread (EDT).
 
