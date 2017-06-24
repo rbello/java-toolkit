@@ -1,0 +1,18 @@
+Package fr.evolya.javatoolkit.code.transactional
+
+	Ce package contient un système permettant de faire des requêtes
+	transactionnelles sur des attributs d'objets.
+	
+	Directement inspiré des AGI Components :
+	http://www.agi.com/resources/help/online/agicomponents/Programmer's%20Guide/Overview/Tracking/Transactions.html
+	
+	" In many applications that use Tracking Library, a large number of
+	disparate tasks happen simultaneously. Incoming data arrives from
+	multiple sources, entities are filtered into groups depending on
+	different criteria, entities are visualized, and reports, charts,
+	and graphs are generated continually. To take advantage of modern
+	multi-core hardware, we would like for many of these tasks to happen
+	in separate threads. This presents a challenge, though: how do we
+	manage access to the entity data from multiple threads, each doing
+	potentially unrelated work, in a way that is fast and resistant to
+	data races and deadlocks? "
