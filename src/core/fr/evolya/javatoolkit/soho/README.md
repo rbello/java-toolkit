@@ -6,7 +6,7 @@ An API to connect to a Soho web server and trigger operations.
 
 ## State
 
-This API is currently in Stable.
+This API is currently Stable.
 
 ## Usage
 
