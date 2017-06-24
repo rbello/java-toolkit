@@ -65,3 +65,9 @@ The XML file must respect the following format:
 		
 	</root>
 ```
+
+## Credits
+
+Antti S. Brax
+Jeon Jiwon
+R. Bello
