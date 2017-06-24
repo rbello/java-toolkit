@@ -19,4 +19,5 @@ This API is currently Stable.
 
 ## Credits
 
-R. Bello
+- R. Bello
+- The Apache Software Foundation (ASF licence)
