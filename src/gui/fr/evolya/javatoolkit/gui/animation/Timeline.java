@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.logging.Logger;
 
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.gui.animation.TimelineEngine.FullObjectID;
 import fr.evolya.javatoolkit.gui.animation.TimelineEngine.TimelineOperationKind;
 import fr.evolya.javatoolkit.gui.animation.TimelinePropertyBuilder.AbstractFieldInfo;
@@ -48,7 +48,7 @@ import fr.evolya.javatoolkit.gui.animation.interpolator.KeyFrames;
 @SuppressWarnings("unchecked")
 public class Timeline implements TimelineScenario.TimelineScenarioActor {
 	
-	public static final Logger LOGGER = IncaLogger.getLogger("Animation");
+	public static final Logger LOGGER = Logs.getLogger("Animation");
 	
 	Object mainObject;
 

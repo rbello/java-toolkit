@@ -3,13 +3,13 @@ package fr.evolya.javatoolkit.appstandard;
 import java.io.File;
 import java.util.logging.Logger;
 
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.xmlconfig.XmlConfig;
 
 @Deprecated
 public class AppLauncher {
 
-	protected static final Logger LOGGER = IncaLogger.getLogger("inca.code.app.Launcher");
+	protected static final Logger LOGGER = Logs.getLogger("inca.code.app.Launcher");
 
 	/**
 	 * Point d'entr�e du programme en mode CLI.
@@ -32,14 +32,14 @@ public class AppLauncher {
 			executeConfig(args[0]);
 		}
 		catch (RuntimeException ex) {
-			if (LOGGER.isLoggable(IncaLogger.ERROR)) {
-				LOGGER.log(IncaLogger.ERROR, "Exception: " + ex.getClass().getCanonicalName() + " : " + ex.getMessage());
+			if (LOGGER.isLoggable(Logs.ERROR)) {
+				LOGGER.log(Logs.ERROR, "Exception: " + ex.getClass().getCanonicalName() + " : " + ex.getMessage());
 				ex.printStackTrace();
 			}
 		}
 		catch (Exception ex) {
-			if (LOGGER.isLoggable(IncaLogger.ERROR)) {
-				LOGGER.log(IncaLogger.ERROR, "Exception: " + ex.getClass().getCanonicalName() + " : " + ex.getMessage());
+			if (LOGGER.isLoggable(Logs.ERROR)) {
+				LOGGER.log(Logs.ERROR, "Exception: " + ex.getClass().getCanonicalName() + " : " + ex.getMessage());
 				ex.printStackTrace();
 			}
 		}

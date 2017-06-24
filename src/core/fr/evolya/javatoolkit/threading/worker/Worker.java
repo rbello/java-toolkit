@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import fr.evolya.javatoolkit.app.AppActivity;
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.events.attr.EventSourceAsynch;
 import fr.evolya.javatoolkit.exceptions.NotImplementedException;
 
 public class Worker implements IWorker {
 	
-	public static final Logger LOGGER = IncaLogger.getLogger("Worker");
+	public static final Logger LOGGER = Logs.getLogger("Worker");
 
 	private EventSourceAsynch<WorkerListener> _eventsWorker =
 			new EventSourceAsynch<>(WorkerListener.class, this);
@@ -226,8 +226,8 @@ public class Worker implements IWorker {
 	void setState(WorkerState state) {
 		if (_state != state && state != null) {
 			_state = state;
-			if (LOGGER.isLoggable(IncaLogger.DEBUG)) {
-				LOGGER.log(IncaLogger.DEBUG, toString() + " : changed state to " + state);
+			if (LOGGER.isLoggable(Logs.DEBUG)) {
+				LOGGER.log(Logs.DEBUG, toString() + " : changed state to " + state);
 			}
 			_eventsWorker.triggerAsynch("onWorkerStateChanged", state, _state, this);
 		}

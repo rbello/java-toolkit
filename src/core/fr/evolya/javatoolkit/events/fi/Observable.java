@@ -10,13 +10,13 @@ import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.Instance;
 import fr.evolya.javatoolkit.code.Instance.FuturInstance;
 
 public abstract class Observable {
 
-	public static final Logger LOGGER = IncaLogger.getLogger("Events (v2)");
+	public static final Logger LOGGER = Logs.getLogger("Events (v2)");
 	
 	/**
 	 * Liste des listeners.
@@ -57,11 +57,11 @@ public abstract class Observable {
 			Object[] args = repeatedEvents.get(listener.getEventType());
 			if (args != null) {
 				// Log
-				if (LOGGER.isLoggable(IncaLogger.DEBUG_FINE)) {
+				if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
 					String argsm = "";
 					for (int i = 0; i < args.length; ++i)
 						argsm += (i > 0 ? ", " : "") + (args[i] == null ? "null" : args[i].toString());
-					LOGGER.log(IncaLogger.DEBUG_FINE, "  Repeat event " + listener.getEventType().getSimpleName() + " [" + argsm + "]"
+					LOGGER.log(Logs.DEBUG_FINE, "  Repeat event " + listener.getEventType().getSimpleName() + " [" + argsm + "]"
 							+ " to " + listener.toString());
 				}
 				// Notify listener
@@ -74,12 +74,12 @@ public abstract class Observable {
 	public final void notify(Class<?> eventType, Object... args) {
 		
 		// Debug
-		final boolean debug = LOGGER.isLoggable(IncaLogger.DEBUG_FINE);
+		final boolean debug = LOGGER.isLoggable(Logs.DEBUG_FINE);
 		if (debug) {
 			String argsm = "";
 			for (int i = 0; i < args.length; ++i)
 				argsm += (i > 0 ? ", " : "") + (args[i] == null ? "null" : args[i].toString());
-			LOGGER.log(IncaLogger.DEBUG_FINE, "  Notify event " + eventType.getSimpleName() + " [" + argsm + "]");
+			LOGGER.log(Logs.DEBUG_FINE, "  Notify event " + eventType.getSimpleName() + " [" + argsm + "]");
 		}
 		
 		// Mark as repeated
@@ -97,7 +97,7 @@ public abstract class Observable {
 			.forEach((item) -> {
 				// Debug
 				if (debug) {
-					LOGGER.log(IncaLogger.DEBUG_FINE, "    `-> To handler " + item);
+					LOGGER.log(Logs.DEBUG_FINE, "    `-> To handler " + item);
 				}
 				// On execute le listener
 				item.notify(args);
@@ -123,16 +123,16 @@ public abstract class Observable {
 		}
 		catch (IllegalArgumentException e) {
 			//Method m2 = clazz.getMethods()[0];
-			LOGGER.log(IncaLogger.ERROR, "Dispatch error");
-			LOGGER.log(IncaLogger.INFO, "  Listener: " + item);
-			LOGGER.log(IncaLogger.INFO, "  Event " + clazz.getSimpleName() + " : " + e.getMessage());
+			LOGGER.log(Logs.ERROR, "Dispatch error");
+			LOGGER.log(Logs.INFO, "  Listener: " + item);
+			LOGGER.log(Logs.INFO, "  Event " + clazz.getSimpleName() + " : " + e.getMessage());
 			if (e.getMessage().equals("object is not an instance of declaring class")) {
-				LOGGER.log(IncaLogger.INFO, "  Object class: " + item.getTarget().getClass().getName());
-				LOGGER.log(IncaLogger.INFO, "  Declaring class: " + m.getDeclaringClass().getName());
+				LOGGER.log(Logs.INFO, "  Object class: " + item.getTarget().getClass().getName());
+				LOGGER.log(Logs.INFO, "  Declaring class: " + m.getDeclaringClass().getName());
 			}
-			LOGGER.log(IncaLogger.INFO, "  Target method is " + item.getTarget().getClass() + "::" + m.getName() + "(" + Arrays.stream(m.getParameterTypes()).map(Class::getName).collect(Collectors.joining(", ")) + ")");
+			LOGGER.log(Logs.INFO, "  Target method is " + item.getTarget().getClass() + "::" + m.getName() + "(" + Arrays.stream(m.getParameterTypes()).map(Class::getName).collect(Collectors.joining(", ")) + ")");
 //			LOGGER.log(IncaLogger.INFO, "  Expected arguments are: (" + Arrays.stream(m2.getParameterTypes()).map(Class::getName).collect(Collectors.joining(", ")) + ")");
-			LOGGER.log(IncaLogger.INFO, "  Event arguments are: (" + Arrays.stream(args).map((o) -> o.getClass().getName()).collect(Collectors.joining(", ")) + ")");
+			LOGGER.log(Logs.INFO, "  Event arguments are: (" + Arrays.stream(args).map((o) -> o.getClass().getName()).collect(Collectors.joining(", ")) + ")");
 			e.printStackTrace();
 		}
 		catch (Exception e) {
@@ -160,8 +160,8 @@ public abstract class Observable {
 				String eventName = tmp[tmp.length - 1];
 				
 				// Debug
-				if (LOGGER.isLoggable(IncaLogger.DEBUG)) {
-					LOGGER.log(IncaLogger.DEBUG, String.format(
+				if (LOGGER.isLoggable(Logs.DEBUG)) {
+					LOGGER.log(Logs.DEBUG, String.format(
 							"  `-> Bind event %s on method %s::%s",
 							eventName,
 							instance.getInstanceClass().getSimpleName(),

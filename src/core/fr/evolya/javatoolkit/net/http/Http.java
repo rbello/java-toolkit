@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 
 public class Http {
 	
@@ -26,27 +26,27 @@ public class Http {
 	/**
 	 * Logger
 	 */
-	public static final Logger LOGGER = IncaLogger.getLogger("HTTP");
+	public static final Logger LOGGER = Logs.getLogger("HTTP");
 	
 	/**
-	 * Executer une requête HTTP à partir d'un contexte en synchrone.
+	 * Executer une requï¿½te HTTP ï¿½ partir d'un contexte en synchrone.
 	 * 
-	 * C'est la méthode de base, qui sert à toutes les autres méthodes.
+	 * C'est la mï¿½thode de base, qui sert ï¿½ toutes les autres mï¿½thodes.
 	 * 
 	 * @param request
 	 * @param context
-	 * @return La requête contenant la réponse.
+	 * @return La requï¿½te contenant la rï¿½ponse.
 	 */
 	public static HttpRequest execute(final HttpRequest request, final HttpContext context) {
 		
-		// Vérification arguments
+		// Vï¿½rification arguments
 		if (request == null) {
 			throw new NullPointerException();
 		}
 		
 		// Debug
-		if (LOGGER.isLoggable(IncaLogger.DEBUG)) {
-			LOGGER.log(IncaLogger.DEBUG, "HTTP " + request.getRequestMethod()
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, "HTTP " + request.getRequestMethod()
 					+ " -> " + request.getRequestURL() + " (asynch=off"
 					+ (context != null ? "; context=yes": "") + ")");
 		}
@@ -54,13 +54,13 @@ public class Http {
 		// La connexion
 		HttpURLConnection c = null;
 		
-		// On tente de créer la connexion
+		// On tente de crï¿½er la connexion
 		try {
 			// HTTPS
 			if (request.getRequestURL().getProtocol().equals("https")) {
 				c = (HttpsURLConnection) request.getRequestURL().openConnection();
 				// Avant d'utiliser de la connexion HTTPS, on regarde si un HostnameVerifier
-				// est associé au contexte
+				// est associï¿½ au contexte
 				if (context != null && context.getHostnameVerifier() != null) {
 					((HttpsURLConnection) c).setHostnameVerifier(context.getHostnameVerifier());
 				}
@@ -79,7 +79,7 @@ public class Http {
 			return request;
 		}
 		
-		// On sauvegarde la connexion si c'est demandé
+		// On sauvegarde la connexion si c'est demandï¿½
 		if (request.isKeepAlive()) {
 			request.setConnection(c);
 		}
@@ -90,7 +90,7 @@ public class Http {
 		c.setDoOutput(true);
 		c.setAllowUserInteraction(false);
 		
-		// On indique la méthode requête
+		// On indique la mï¿½thode requï¿½te
 		try {
 			
 			c.setRequestMethod(request.getRequestMethod());
@@ -111,10 +111,10 @@ public class Http {
 			}
 		}
 		
-		// On récupére les données de la requête
+		// On rï¿½cupï¿½re les donnï¿½es de la requï¿½te
 		String body = request.getRequestDataRaw();
 		
-		// Longueur de la requête
+		// Longueur de la requï¿½te
 		c.setRequestProperty("Content-Length", "" + Integer.toString(body.getBytes().length));
 		
 		// Pour le mode POST
@@ -136,14 +136,14 @@ public class Http {
 			return request;
 		}
 		
-		// Envoie des données
+		// Envoie des donnï¿½es
 		DataOutputStream out = null;
 		try {
 			
-			// Ouverture du flux d'écriture
+			// Ouverture du flux d'ï¿½criture
 			out = new DataOutputStream(c.getOutputStream());
 			
-			// Ecriture des données
+			// Ecriture des donnï¿½es
 			out.writeBytes(body);
 			body = null;
 		    out.flush();
@@ -156,7 +156,7 @@ public class Http {
 			return request;
 		}
 		finally {
-			// Fermeture du flux de d'écriture
+			// Fermeture du flux de d'ï¿½criture
 		    try {
 				if (out != null) {
 					out.close();
@@ -184,19 +184,19 @@ public class Http {
 			return request;
 		}
 		
-		// On met à jour le contexte
+		// On met ï¿½ jour le contexte
 		if (context != null) {
 			context.update(request, c);
 		}
 		
-		// Réception des données
+		// Rï¿½ception des donnï¿½es
 		BufferedReader rd = null;
 		try {
 			
 			// Ouverture du flux de lecture
 			rd = new BufferedReader(new InputStreamReader(c.getInputStream()));
 			
-			// Lecture du corps de la réponse
+			// Lecture du corps de la rï¿½ponse
 			String line;
 			StringBuffer rs = new StringBuffer(); 
 			while((line = rd.readLine()) != null) {
@@ -223,8 +223,8 @@ public class Http {
 		}
 		
 		// Debug
-		if (LOGGER.isLoggable(IncaLogger.DEBUG)) {
-			LOGGER.log(IncaLogger.DEBUG, "HTTP " + request.getRequestMethod()
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, "HTTP " + request.getRequestMethod()
 					+ " <- " + request.getRequestURL() + " : " + request.getReturnCode()
 					+ " " + request.getReturnMessage());
 		}
@@ -234,12 +234,12 @@ public class Http {
 			c.disconnect();
 		}
 		
-		// Et on renvoie la requête
+		// Et on renvoie la requï¿½te
 		return request;
 	}
 	
 	/**
-	 * Executer une requête HTTP à partir d'un contexte en asynchrone.
+	 * Executer une requï¿½te HTTP ï¿½ partir d'un contexte en asynchrone.
 	 * 
 	 * @param request
 	 * @param context
@@ -247,14 +247,14 @@ public class Http {
 	 */
 	public static HttpRequest execute(HttpRequest request, HttpContext context, HttpCallback callback) {
 		
-		// Vérification arguments
+		// Vï¿½rification arguments
 		if (request == null || callback == null) {
 			throw new NullPointerException();
 		}
 		
 		// Debug
-		if (LOGGER.isLoggable(IncaLogger.DEBUG)) {
-			LOGGER.log(IncaLogger.DEBUG, "HTTP " + request.getRequestMethod()
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, "HTTP " + request.getRequestMethod()
 					+ " -> " + request.getRequestURL() + " (asynch=on"
 					+ (context != null ? "; context=yes": "") + ")");
 		}
@@ -262,30 +262,30 @@ public class Http {
 		// On fabrique un thread d'appel asynchrone
 		HttpAsynchThread t = new HttpAsynchThread(request, context, callback);
 		
-		// On passe le thread à la requete pour permettre l'abort()
+		// On passe le thread ï¿½ la requete pour permettre l'abort()
 		request.setAsynchThread(t);
 		
 		// On lance le thread
 		t.start();
 		
-		// Et on retourne la requête
+		// Et on retourne la requï¿½te
 		return request;
 		
 		
 	}
 	
 	/**
-	 * Executer une requête HTTP en synchrone.
+	 * Executer une requï¿½te HTTP en synchrone.
 	 * 
 	 * @param request
-	 * @return La requête, contenant la réponse.
+	 * @return La requï¿½te, contenant la rï¿½ponse.
 	 */
 	public static HttpRequest execute(HttpRequest request) {
 		return execute(request, (HttpContext) null);
 	}
 	
 	/**
-	 * Executer une requête HTTP en asynchrone.
+	 * Executer une requï¿½te HTTP en asynchrone.
 	 * 
 	 * @param request
 	 * @param callback
@@ -295,10 +295,10 @@ public class Http {
 	}
 	
 	/**
-	 * Executer une requête HTTP GET en synchrone.
+	 * Executer une requï¿½te HTTP GET en synchrone.
 	 * 
 	 * @param url
-	 * @return La requête, contenant la réponse.
+	 * @return La requï¿½te, contenant la rï¿½ponse.
 	 * @throws MalformedURLException 
 	 */
 	public static HttpRequest get(String url) throws MalformedURLException {
@@ -309,7 +309,7 @@ public class Http {
 	}
 	
 	/**
-	 * Executer une requête HTTP GET en asynchrone.
+	 * Executer une requï¿½te HTTP GET en asynchrone.
 	 * 
 	 * @param url
 	 * @param callback 
@@ -323,11 +323,11 @@ public class Http {
 	}
 	
 	/**
-	 * Executer une requête HTTP GET à partir d'un contexte en synchrone.
+	 * Executer une requï¿½te HTTP GET ï¿½ partir d'un contexte en synchrone.
 	 * 
 	 * @param url
 	 * @param context
-	 * @return La requête, contenant la réponse.
+	 * @return La requï¿½te, contenant la rï¿½ponse.
 	 * @throws MalformedURLException 
 	 */
 	public static HttpRequest get(String url, HttpContext context) throws MalformedURLException {
@@ -338,7 +338,7 @@ public class Http {
 	}
 	
 	/**
-	 * Executer une requête HTTP GET à partir d'un contexte en asynchrone.
+	 * Executer une requï¿½te HTTP GET ï¿½ partir d'un contexte en asynchrone.
 	 * 
 	 * @param url
 	 * @param context
@@ -353,10 +353,10 @@ public class Http {
 	}
 	
 	/**
-	 * Executer une requête HTTP GET en synchrone.
+	 * Executer une requï¿½te HTTP GET en synchrone.
 	 * 
 	 * @param url
-	 * @return La requête, contenant la réponse.
+	 * @return La requï¿½te, contenant la rï¿½ponse.
 	 * @throws MalformedURLException 
 	 */
 	public static HttpRequest get(String url, Map<String, String> params) throws MalformedURLException {
@@ -367,7 +367,7 @@ public class Http {
 	}
 	
 	/**
-	 * Executer une requête HTTP GET en asynchrone.
+	 * Executer une requï¿½te HTTP GET en asynchrone.
 	 * 
 	 * @param url
 	 * @param callback
@@ -381,11 +381,11 @@ public class Http {
 	}
 	
 	/**
-	 * Executer une requête HTTP GET à partir d'un contexte en synchrone.
+	 * Executer une requï¿½te HTTP GET ï¿½ partir d'un contexte en synchrone.
 	 * 
 	 * @param url
 	 * @param context
-	 * @return La requête, contenant la réponse.
+	 * @return La requï¿½te, contenant la rï¿½ponse.
 	 * @throws MalformedURLException 
 	 */
 	public static HttpRequest get(String url, Map<String, String> params, HttpContext context) throws MalformedURLException {
@@ -396,7 +396,7 @@ public class Http {
 	}
 	
 	/**
-	 * Executer une requête HTTP GET à partir d'un contexte en asynchrone.
+	 * Executer une requï¿½te HTTP GET ï¿½ partir d'un contexte en asynchrone.
 	 * @param url
 	 * @param context
 	 * @param callback
@@ -410,11 +410,11 @@ public class Http {
 	}
 
 	/**
-	 * Executer une requête HTTP POST en sychrone.
+	 * Executer une requï¿½te HTTP POST en sychrone.
 	 * 
 	 * @param url
 	 * @param data
-	 * @return La requête, contenant la réponse.
+	 * @return La requï¿½te, contenant la rï¿½ponse.
 	 * @throws MalformedURLException 
 	 */
 	public static HttpRequest post(String url, Map<String, Object> data) throws MalformedURLException {
@@ -426,7 +426,7 @@ public class Http {
 	}
 
 	/**
-	 * Executer une requête HTTP POST en asynchrone.
+	 * Executer une requï¿½te HTTP POST en asynchrone.
 	 * 
 	 * @param url
 	 * @param callback
@@ -441,12 +441,12 @@ public class Http {
 	}
 	
 	/**
-	 * Executer une requête HTTP POST à partir d'un contexte en synchrone.
+	 * Executer une requï¿½te HTTP POST ï¿½ partir d'un contexte en synchrone.
 	 * 
 	 * @param url
 	 * @param data
 	 * @param context
-	 * @return La requête, contenant la réponse.
+	 * @return La requï¿½te, contenant la rï¿½ponse.
 	 * @throws MalformedURLException 
 
 	 */
@@ -459,7 +459,7 @@ public class Http {
 	}
 	
 	/**
-	 * Executer une requête HTTP POST à partir d'un contexte en asynchrone.
+	 * Executer une requï¿½te HTTP POST ï¿½ partir d'un contexte en asynchrone.
 	 * @param url
 	 * @param data
 	 * @param context
@@ -478,7 +478,7 @@ public class Http {
 	 * Encoder une string pour passer en variable d'URL.
 	 * 
 	 * @param url
-	 * @return La string encodée
+	 * @return La string encodï¿½e
 	 */
 	@SuppressWarnings("deprecation")
 	public static String encodeURL(String url) {
@@ -550,7 +550,7 @@ public class Http {
 		case 415:	return 	"Unsupported Media Type";
 		case 416:	return 	"Requested Range Unsatisfiable";
 		case 417:	return 	"Expectation Failed";
-		case 418:	return 	"I’m a Teapot";
+		case 418:	return 	"Iï¿½m a Teapot";
 		case 422:	return 	"Unprocessable Entity";
 		case 423:	return 	"Locked";
 		case 424:	return 	"Method Failure";

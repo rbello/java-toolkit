@@ -12,7 +12,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import fr.evolya.javatoolkit.app.App;
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 
 public class PropertiesFileConfiguration implements AppConfiguration {
 
@@ -39,8 +39,8 @@ public class PropertiesFileConfiguration implements AppConfiguration {
 		}
 		catch (Exception ex) {
 			// Log
-			if (App.LOGGER.isLoggable(IncaLogger.INFO)) {
-				App.LOGGER.log(IncaLogger.INFO, "Unable to load: " + file
+			if (App.LOGGER.isLoggable(Logs.INFO)) {
+				App.LOGGER.log(Logs.INFO, "Unable to load: " + file
 						+ " (" + ex.getClass().getSimpleName() + " : " + ex.getMessage() + ")");
 			}
 			return false;

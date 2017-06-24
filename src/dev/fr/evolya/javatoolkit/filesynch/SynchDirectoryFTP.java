@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import fr.evolya.javatoolkit.code.Cache;
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.Util;
 import fr.evolya.javatoolkit.net.ftp.FTPDataTransferListener;
 import fr.evolya.javatoolkit.net.ftp.FTPFile;
@@ -215,8 +215,8 @@ public class SynchDirectoryFTP implements SynchDirectory {
 	private void handleException(Exception ex) {
 		if (ex instanceof SocketException) {
 			_ready = false;
-			if (FileSynchService.LOGGER.isLoggable(IncaLogger.INFO)) {
-				FileSynchService.LOGGER.log(IncaLogger.INFO, "SynchDirectoryFTP disconnected: " + this);
+			if (FileSynchService.LOGGER.isLoggable(Logs.INFO)) {
+				FileSynchService.LOGGER.log(Logs.INFO, "SynchDirectoryFTP disconnected: " + this);
 			}
 			cache.invalidate();
 			_server.interrupt();

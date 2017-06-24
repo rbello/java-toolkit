@@ -2,7 +2,7 @@ package fr.evolya.javatoolkit.events.attr;
 
 import java.lang.reflect.Method;
 
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 
 public final class CallbackSingleEventMethod<L extends EventListener> implements EventCallback<L> {
 
@@ -35,10 +35,10 @@ public final class CallbackSingleEventMethod<L extends EventListener> implements
 				}
 				
 				// Log
-				if (EventSource.LOGGER.isLoggable(IncaLogger.EVENT_NOTIFY)) {
+				if (EventSource.LOGGER.isLoggable(Logs.EVENT_NOTIFY)) {
 					if (!toString().contains("DebugTreeViewController")) {
 						EventSource.LOGGER.log(
-								IncaLogger.EVENT_NOTIFY,
+								Logs.EVENT_NOTIFY,
 								"NOTIFY event " + event
 								+ " --> TO " + toString());
 					}

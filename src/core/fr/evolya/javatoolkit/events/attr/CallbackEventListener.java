@@ -2,7 +2,7 @@ package fr.evolya.javatoolkit.events.attr;
 
 import java.lang.reflect.Method;
 
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 
 public final class CallbackEventListener<L extends EventListener> implements EventCallback<L> {
 
@@ -31,10 +31,10 @@ public final class CallbackEventListener<L extends EventListener> implements Eve
 				}
 				
 				// Log
-				if (EventSource.LOGGER.isLoggable(IncaLogger.EVENT_NOTIFY)) {
+				if (EventSource.LOGGER.isLoggable(Logs.EVENT_NOTIFY)) {
 					if (!toString().contains("DebugTreeViewController")) {
 						EventSource.LOGGER.log(
-								IncaLogger.EVENT_NOTIFY,
+								Logs.EVENT_NOTIFY,
 								"NOTIFY event " + event
 								+ " --> TO " + toString());
 					}
@@ -61,7 +61,7 @@ public final class CallbackEventListener<L extends EventListener> implements Eve
 				// elles vont toutes être appelée les unes après les autres jusqu'à la bonne
 				// si elle existe.
 				catch (IllegalArgumentException e) {
-					if (EventSource.LOGGER.isLoggable(IncaLogger.WARNING)) {
+					if (EventSource.LOGGER.isLoggable(Logs.WARNING)) {
 						StringBuilder sb = new StringBuilder();
 						sb.append(e.getClass().getSimpleName());
 						sb.append(" - ");
@@ -88,7 +88,7 @@ public final class CallbackEventListener<L extends EventListener> implements Eve
 							sb.append(args == null ? "NULL" : type.getSimpleName());
 						}
 						sb.append(")");
-						EventSource.LOGGER.log(IncaLogger.WARNING, sb.toString());
+						EventSource.LOGGER.log(Logs.WARNING, sb.toString());
 					}
 				}
 				

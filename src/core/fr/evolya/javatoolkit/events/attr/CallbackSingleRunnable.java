@@ -1,6 +1,6 @@
 package fr.evolya.javatoolkit.events.attr;
 
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 
 public final class CallbackSingleRunnable<L extends EventListener> implements EventCallback<L> {
 
@@ -23,10 +23,10 @@ public final class CallbackSingleRunnable<L extends EventListener> implements Ev
 			return true;
 		}
 		// Log
-		if (EventSource.LOGGER.isLoggable(IncaLogger.EVENT_NOTIFY)) {
+		if (EventSource.LOGGER.isLoggable(Logs.EVENT_NOTIFY)) {
 			if (!toString().contains("DebugTreeViewController")) {
 				EventSource.LOGGER.log(
-						IncaLogger.EVENT_NOTIFY,
+						Logs.EVENT_NOTIFY,
 						"NOTIFY event " + eventName
 						+ " --> TO " + _runnable);
 			}

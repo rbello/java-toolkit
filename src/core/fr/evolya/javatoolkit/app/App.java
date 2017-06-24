@@ -15,7 +15,7 @@ import fr.evolya.javatoolkit.app.event.ApplicationStarted;
 import fr.evolya.javatoolkit.app.event.ApplicationStarting;
 import fr.evolya.javatoolkit.appstandard.bridge.ILocalApplication;
 import fr.evolya.javatoolkit.appstandard.bridge.services.ILocalService;
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.Instance;
 import fr.evolya.javatoolkit.code.Instance.FuturInstance;
 import fr.evolya.javatoolkit.events.fi.Listener;
@@ -26,7 +26,7 @@ import fr.evolya.javatoolkit.gui.swing.SwingHelper;
 public abstract class App extends Observable
 	implements ILocalApplication {
 	
-	public static final Logger LOGGER = IncaLogger.getLogger("App (v2)");
+	public static final Logger LOGGER = Logs.getLogger("App (v2)");
 	
 	private Map<Class<?>, Instance> components = new HashMap<>();
 	
@@ -61,8 +61,8 @@ public abstract class App extends Observable
 			throw new IllegalAccessError("Component " + clazz.getSimpleName() + " allready exists");
 		}
 		components.put(clazz, instance);
-		if (LOGGER.isLoggable(IncaLogger.DEBUG)) {
-			LOGGER.log(IncaLogger.DEBUG, String.format(
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, String.format(
 					"Add component %s to app %s (%s)",
 					clazz.getSimpleName(),
 					get(AppConfiguration.class).getProperty("App.Name"),
@@ -127,7 +127,7 @@ public abstract class App extends Observable
 		
 		notify(ApplicationReady.class, this);
 		
-		LOGGER.log(IncaLogger.INFO, "Application is ready !");
+		LOGGER.log(Logs.INFO, "Application is ready !");
 		
 	}
 	
@@ -142,8 +142,8 @@ public abstract class App extends Observable
 				args[0].toLowerCase().equals("debug=1");
 		
 		// Ajustement du niveau de log
-		IncaLogger.setDefaultLevel(debugMode ? IncaLogger.INFO : IncaLogger.NONE);
-		IncaLogger.setGlobalLevel(debugMode ? IncaLogger.INFO : IncaLogger.NONE);
+		Logs.setDefaultLevel(debugMode ? Logs.INFO : Logs.NONE);
+		Logs.setGlobalLevel(debugMode ? Logs.INFO : Logs.NONE);
 		
     	// Initialisations pour Swing
     	SwingHelper.initLookAndFeel();
@@ -164,8 +164,8 @@ public abstract class App extends Observable
 	}
 
 	public void setLogLevel(Level level) {
-		IncaLogger.setDefaultLevel(level);
-		IncaLogger.setGlobalLevel(level);
+		Logs.setDefaultLevel(level);
+		Logs.setGlobalLevel(level);
 	}
 	
 	@Override

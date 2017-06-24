@@ -8,10 +8,10 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 
 /**
- * Implémentation de la l'interface IObservable.
+ * Implï¿½mentation de la l'interface IObservable.
  * 
  * <E> Le type d'event
  */
@@ -20,7 +20,7 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 	/**
 	 * Logger
 	 */
-	protected static final Logger LOGGER = IncaLogger.getLogger("EventDispatcher");
+	protected static final Logger LOGGER = Logs.getLogger("EventDispatcher");
 
 	/**
 	 * La liste des listeners.
@@ -30,19 +30,19 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 	protected Map<Object, SortedMap<Integer, Triggerable<E>>> _eventsListeners = new HashMap<Object, SortedMap<Integer, Triggerable<E>>>();
 	
 	/**
-	 * L'objet observable qui est associé à ce dispatcher (pour les logs)
+	 * L'objet observable qui est associï¿½ ï¿½ ce dispatcher (pour les logs)
 	 */
 	protected IObservable<E> _sender = null;
 
 	/**
-	 * Permet de spécifier un autre objet observable pour lui rediriger tous
-	 * les events qui sont propagés sur ce dispatcher.
+	 * Permet de spï¿½cifier un autre objet observable pour lui rediriger tous
+	 * les events qui sont propagï¿½s sur ce dispatcher.
 	 */
 	protected IObservable<E> _redirect = null;
 
 	/**
 	 * Permet de configurer si les exceptions doivent stopper la propagation
-	 * des events, ou bien simplement être loggées.
+	 * des events, ou bien simplement ï¿½tre loggï¿½es.
 	 */
 	public boolean _exceptionRaiseStopPropagation = false;
 	
@@ -55,7 +55,7 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 	/**
 	 * Constructeur, avec l
 	 * 
-	 * @param sender L'objet qui emet les évents réellement
+	 * @param sender L'objet qui emet les ï¿½vents rï¿½ellement
 	 */
 	public EventDispatcher(IObservable<E> sender) {
 		_sender = sender;
@@ -164,21 +164,21 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 	
 	protected boolean trigger(E event, IEventDispatcher<E> source, IListener<E> listenerFilter, Object... args) {
 		
-		// Vérification des arguments
+		// Vï¿½rification des arguments
 		if (event == null) {
 			throw new NullPointerException();
 		}
 		
 		// Debug
-		if (LOGGER.isLoggable(IncaLogger.EVENT)) {
-			Level lvl = IncaLogger.EVENT;
+		if (LOGGER.isLoggable(Logs.EVENT)) {
+			Level lvl = Logs.EVENT;
 			StringBuilder sb = new StringBuilder();
 			sb.append("TRIGGER [");
 			sb.append(event);
 			sb.append("]");
 			sb.append(_sender == null ? "" : " SENDER=" + _sender.getClass().getSimpleName());
 			if (source != null && source != this) {
-				lvl = IncaLogger.EVENT_REDIRECT;
+				lvl = Logs.EVENT_REDIRECT;
 				sb.append(" ORIGINAL_SENDER=" + source);
 			}
 			sb.append(" ARGS=(");
@@ -215,8 +215,8 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 			map = _eventsListeners.get(event);
 		}
 		
-		// Inversion de l'ordre, pour respecter les priorités : plus
-		// elle est haute, plus on est prévenu tôt
+		// Inversion de l'ordre, pour respecter les prioritï¿½s : plus
+		// elle est haute, plus on est prï¿½venu tï¿½t
 		SortedMap<Integer, Triggerable<E>> m = new TreeMap<Integer, Triggerable<E>>(Collections.reverseOrder());
 		m.putAll(map);
 		map = m;
@@ -239,8 +239,8 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 			}
 			
 			// Log
-			if (LOGGER.isLoggable(IncaLogger.EVENT)) {
-				LOGGER.log(IncaLogger.EVENT, "NOTIFY [" + event
+			if (LOGGER.isLoggable(Logs.EVENT)) {
+				LOGGER.log(Logs.EVENT, "NOTIFY [" + event
 						+ "] TARGET=" + listener + "()  PRIORITY=" + index);
 			}
 			
@@ -259,8 +259,8 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 			catch (Throwable ex) {
 				
 				// Debug
-				if (LOGGER.isLoggable(IncaLogger.ERROR)) {
-					LOGGER.log(IncaLogger.ERROR, "Exception on callback trigger "
+				if (LOGGER.isLoggable(Logs.ERROR)) {
+					LOGGER.log(Logs.ERROR, "Exception on callback trigger "
 							+ this.getClass().getCanonicalName() + ".trigger('"
 							+ event + "', '" + listener + "') : "
 							+ ex.getClass().getCanonicalName() + " - " + ex.getMessage());
@@ -353,8 +353,8 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 	}
 
 	/**
-	 * Cette interface est utilisée pour notifier les listeners de
-	 * l'arrivée d'un event.
+	 * Cette interface est utilisï¿½e pour notifier les listeners de
+	 * l'arrivï¿½e d'un event.
 	 * 
 	 * @param <E> Le type d'event
 	 */
@@ -372,16 +372,16 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 	}
 	
 	/**
-	 * Cet objet désigne un listener classique, c-à-d qui implémente IListener.
+	 * Cet objet dï¿½signe un listener classique, c-ï¿½-d qui implï¿½mente IListener.
 	 * 
-	 * La méthode notifyEvent() est appelée sur ce listener à la notification.
+	 * La mï¿½thode notifyEvent() est appelï¿½e sur ce listener ï¿½ la notification.
 	 *
 	 * @param <E> Le type d'event
 	 */
 	protected static class InterfaceTriggerable<E> implements Triggerable<E> {
 		
 		/**
-		 * Le listener associé
+		 * Le listener associï¿½
 		 */
 		private IListener<E> listener;
 		
@@ -401,7 +401,7 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 		}
 		
 		/**
-		 * Renvoie le listener associé
+		 * Renvoie le listener associï¿½
 		 */
 		@Override
 		public IListener<E> getListener() {
@@ -418,8 +418,8 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 	}
 	
 	/**
-	 * Cet objet désigne un listener simple, quand un nom de méthode
-	 * est donné et qu'on va le chercher en utilisant la réflexion.
+	 * Cet objet dï¿½signe un listener simple, quand un nom de mï¿½thode
+	 * est donnï¿½ et qu'on va le chercher en utilisant la rï¿½flexion.
 	 * 
 	 * @param <E> Le type d'event
 	 */
@@ -431,7 +431,7 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 		private IListener<E> listener;
 		
 		/**
-		 * Le nom de la méthode à appeler
+		 * Le nom de la mï¿½thode ï¿½ appeler
 		 */
 		private String methodName;
 		
@@ -448,42 +448,42 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 			
 			// Technique 1
 			//
-			// On recherche une méthode qui a exactement la bonne
-			// signature par rapport aux arguments donnés
+			// On recherche une mï¿½thode qui a exactement la bonne
+			// signature par rapport aux arguments donnï¿½s
 			java.lang.reflect.Method m = null;
 			
-			// Nombre de méthode ayant ce nom trouvées
+			// Nombre de mï¿½thode ayant ce nom trouvï¿½es
 			int count = 0;
 			
-			// On parcours les méthodes de la classe du listener
+			// On parcours les mï¿½thodes de la classe du listener
 			for (java.lang.reflect.Method n : listener.getClass().getMethods()) {
 				
-				// Vérification du nom de la méthode
+				// Vï¿½rification du nom de la mï¿½thode
 				if (!n.getName().equals(methodName)) continue;
 				
-				// On a trouvé une méthode avec le même nom
+				// On a trouvï¿½ une mï¿½thode avec le mï¿½me nom
 				count++;
 				
-				// Les classes des parametres de la méthode
+				// Les classes des parametres de la mï¿½thode
 				Class<?>[] params = n.getParameterTypes();
 				
-				// Vérification du nombre d'arguments
+				// Vï¿½rification du nombre d'arguments
 				if (params.length > args.length) continue;
 				
-				// Pour tester la validité des arguments par rapport au nombre de paramétres
+				// Pour tester la validitï¿½ des arguments par rapport au nombre de paramï¿½tres
 				boolean valid = true;
 				
-				// On parcours les paramètres
+				// On parcours les paramï¿½tres
 				for (int i = 0, l = params.length; i < l; i++) {
 					
-					// Si on n'a pas d'argument pour ce paramère, on est dans une
+					// Si on n'a pas d'argument pour ce paramï¿½re, on est dans une
 					// situation ambigue, mais on va donner raison
 					if (args[i] == null) continue;
 					
-					// L'argument ne correspond pas à la classe du paramètre
+					// L'argument ne correspond pas ï¿½ la classe du paramï¿½tre
 					if (!params[i].isInstance(args[i])) {
 
-						if (LOGGER.isLoggable(IncaLogger.DEBUG)) {
+						if (LOGGER.isLoggable(Logs.DEBUG)) {
 							StringBuilder sb = new StringBuilder();
 							sb.append("Mismatch at argument ");
 							sb.append(i);
@@ -516,7 +516,7 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 								sb.append(e);
 								break;
 							}
-							LOGGER.log(IncaLogger.DEBUG, sb.toString());
+							LOGGER.log(Logs.DEBUG, sb.toString());
 						}
 						
 						valid = false;
@@ -525,7 +525,7 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 					
 				}
 				
-				// On a trouvé
+				// On a trouvï¿½
 				if (valid) {
 					m = n;
 					break;
@@ -535,7 +535,7 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 			
 			// Technique 2
 			//
-			// On recherche une méthode ayant le nom donné et qui a une String et
+			// On recherche une mï¿½thode ayant le nom donnï¿½ et qui a une String et
 			// un Object[] en argument : comme notifyEvent() et IListener.
 			//
 			// NOTE : c'est couteux et c'est pas utile normalement car on utilise
@@ -544,7 +544,7 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 			/*if (m == null) {
 				try {
 					
-					// Recherche de la méthode par rapport à sa signature
+					// Recherche de la mï¿½thode par rapport ï¿½ sa signature
 					m = listener.getClass().getMethod(methodName, new Class<?>[] {
 						String.class,
 						Object[].class
@@ -556,9 +556,9 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 				} catch (Throwable ex) { }
 			}*/
 			
-			// Aucune callback trouvé
+			// Aucune callback trouvï¿½
 			if (m == null) {
-				if (LOGGER.isLoggable(IncaLogger.ERROR)) {
+				if (LOGGER.isLoggable(Logs.ERROR)) {
 					StringBuilder sb = new StringBuilder();
 					sb.append("Method ");
 					sb.append(methodName);
@@ -572,13 +572,13 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 					sb.append(" (found ");
 					sb.append(count);
 					sb.append(" method(s) with this name)");
-					LOGGER.log(IncaLogger.ERROR, sb.toString());
+					LOGGER.log(Logs.ERROR, sb.toString());
 				}
 				// On laisse continuer la propagation.
 				return true;
 			}
 			
-			// On adapte le nombre d'argument à la méthode
+			// On adapte le nombre d'argument ï¿½ la mï¿½thode
 			int length = m.getParameterTypes().length;
 			if (length != args.length) {
 				Object[] copy = new Object[length];
@@ -589,14 +589,14 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 				copy = null;
 			}
 			
-			// Pour permetre l'invocation d'une méthode dans une classe anonyme
+			// Pour permetre l'invocation d'une mï¿½thode dans une classe anonyme
 			m.setAccessible(true);
 			
-			// Si la méthode renvoie une boolean, on s'en sert pour le retour
+			// Si la mï¿½thode renvoie une boolean, on s'en sert pour le retour
 			if (m.getReturnType().toString().equals("boolean") || m.getReturnType() == Boolean.class) {
 				return (Boolean) m.invoke(listener, args);
 			}
-			// Sinon on fait juste l'invocation, et on renvera TRUE à la fin
+			// Sinon on fait juste l'invocation, et on renvera TRUE ï¿½ la fin
 			else {
 				m.invoke(listener, args);
 				return true;
@@ -645,12 +645,12 @@ public class EventDispatcher<E> implements IEventDispatcher<E> {
 	public void redirect(IObservable<E> target) {
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.DEBUG)) {
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
 			if (target != null) {
-				LOGGER.log(IncaLogger.DEBUG, "REDIRECT " + this + " -> "+ target.events());
+				LOGGER.log(Logs.DEBUG, "REDIRECT " + this + " -> "+ target.events());
 			}
 			else {
-				LOGGER.log(IncaLogger.DEBUG, "UNREDIRECT " + this);
+				LOGGER.log(Logs.DEBUG, "UNREDIRECT " + this);
 			}
 		}
 		

@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import fr.evolya.javatoolkit.appstandard.events.ViewControllerListener;
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.events.attr.EventListener;
 import fr.evolya.javatoolkit.events.attr.EventSource;
 import fr.evolya.javatoolkit.gui.swing.ProxyFrameView;
@@ -26,7 +26,7 @@ import fr.evolya.javatoolkit.gui.swing.decoratedframe.DecoratedFrame;
 public abstract class AppViewController<V extends AppView<W, E, C>, W, E, C>
 	extends AbstractPlugin {
 
-	public static final Logger LOGGER = IncaLogger.getLogger("GUI");
+	public static final Logger LOGGER = Logs.getLogger("GUI");
 	
 	/**
 	 * La vue associée à ce controleur
@@ -155,8 +155,8 @@ public abstract class AppViewController<V extends AppView<W, E, C>, W, E, C>
     	}
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.INFO)) {
-			LOGGER.log(IncaLogger.INFO, "View created: " + view + " (by " + getClass().getSimpleName() + ")");
+		if (LOGGER.isLoggable(Logs.INFO)) {
+			LOGGER.log(Logs.INFO, "View created: " + view + " (by " + getClass().getSimpleName() + ")");
 		}
 		
 		// ID unique de cette vue
@@ -282,8 +282,8 @@ public abstract class AppViewController<V extends AppView<W, E, C>, W, E, C>
     	}
     	
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.INFO)) {
-			LOGGER.log(IncaLogger.INFO, "View closed: " + view + " (by " + getClass().getSimpleName() + ")");
+		if (LOGGER.isLoggable(Logs.INFO)) {
+			LOGGER.log(Logs.INFO, "View closed: " + view + " (by " + getClass().getSimpleName() + ")");
 		}
     
     	// Destruction interne

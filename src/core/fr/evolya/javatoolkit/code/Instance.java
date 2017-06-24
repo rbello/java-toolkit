@@ -62,7 +62,7 @@ public class Instance<T> {
 			if (this.clazz == null) return null;
 			if (isFutur()) {
 				try {
-					App.LOGGER.log(IncaLogger.DEBUG_FINE, "Instantiate future object: "
+					App.LOGGER.log(Logs.DEBUG_FINE, "Instantiate future object: "
 							+ clazz.getSimpleName());
 					instance = (T) clazz.newInstance();
 				}

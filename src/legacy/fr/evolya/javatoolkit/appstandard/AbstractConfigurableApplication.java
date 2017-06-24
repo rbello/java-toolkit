@@ -7,7 +7,7 @@ import fr.evolya.javatoolkit.app.config.Configurable;
 import fr.evolya.javatoolkit.app.config.NonPersistentConfiguration;
 import fr.evolya.javatoolkit.app.config.PropertiesFileConfiguration;
 import fr.evolya.javatoolkit.appstandard.events.ConfigListener;
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.Util;
 import fr.evolya.javatoolkit.events.attr.EventSource;
 
@@ -86,8 +86,8 @@ public abstract class AbstractConfigurableApplication
 		}
 		catch (Exception ex) {
 			// Log
-			if (App.LOGGER.isLoggable(IncaLogger.INFO)) {
-				App.LOGGER.log(IncaLogger.INFO, "Unable to load configuration: " + _configFilename
+			if (App.LOGGER.isLoggable(Logs.INFO)) {
+				App.LOGGER.log(Logs.INFO, "Unable to load configuration: " + _configFilename
 						+ " (" + ex.getClass().getSimpleName() + " : " + ex.getMessage() + ")");
 			}
 			// On renvoie un false pour indiquer l'erreur
@@ -95,8 +95,8 @@ public abstract class AbstractConfigurableApplication
 		}
 		
 		// Log
-		if (App.LOGGER.isLoggable(IncaLogger.INFO)) {
-			App.LOGGER.log(IncaLogger.INFO, "Configuration loaded: " + _configFilename);
+		if (App.LOGGER.isLoggable(Logs.INFO)) {
+			App.LOGGER.log(Logs.INFO, "Configuration loaded: " + _configFilename);
 		}
 		
 		// On informe l'application
@@ -105,8 +105,8 @@ public abstract class AbstractConfigurableApplication
 		}
 		catch (Throwable t) {
 			// Log
-			if (App.LOGGER.isLoggable(IncaLogger.ERROR)) {
-				App.LOGGER.log(IncaLogger.ERROR, t.getClass().getSimpleName() + " thrown by onConfigurationRestored() : "
+			if (App.LOGGER.isLoggable(Logs.ERROR)) {
+				App.LOGGER.log(Logs.ERROR, t.getClass().getSimpleName() + " thrown by onConfigurationRestored() : "
 						+ t.getMessage(), t);
 			}
 			return false;
@@ -142,16 +142,16 @@ public abstract class AbstractConfigurableApplication
 			_eventsConfig.trigger("afterConfigurationSaved", _config, this, _configFilename);
 			
 			// Log
-			if (LOGGER.isLoggable(IncaLogger.INFO)) {
-				LOGGER.log(IncaLogger.INFO, "Configuration saved: " + _configFilename);
+			if (LOGGER.isLoggable(Logs.INFO)) {
+				LOGGER.log(Logs.INFO, "Configuration saved: " + _configFilename);
 			}
 			
 			return true;
 			
 		} catch (Exception ex) {
 			// Log
-			if (App.LOGGER.isLoggable(IncaLogger.INFO)) {
-				App.LOGGER.log(IncaLogger.INFO, "Unable to save configuration: " + _configFilename
+			if (App.LOGGER.isLoggable(Logs.INFO)) {
+				App.LOGGER.log(Logs.INFO, "Unable to save configuration: " + _configFilename
 						+ " (" + ex.getClass().getSimpleName() + " : " + ex.getMessage() + ")");
 			}
 			return false;
@@ -188,8 +188,8 @@ public abstract class AbstractConfigurableApplication
 		case "properties" : return new PropertiesFileConfiguration();
 		}
 		// Log
-		if (log && App.LOGGER.isLoggable(IncaLogger.INFO)) {
-			App.LOGGER.log(IncaLogger.INFO, "No configuration implementation found for '"
+		if (log && App.LOGGER.isLoggable(Logs.INFO)) {
+			App.LOGGER.log(Logs.INFO, "No configuration implementation found for '"
 					+ extension + "' extension");
 		}
 		return null;

@@ -25,7 +25,7 @@ import javax.swing.plaf.FontUIResource;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.gui.ViewBounds;
 import fr.evolya.javatoolkit.gui.animation.AnimationConfig;
 import fr.evolya.javatoolkit.gui.animation.Timeline;
@@ -39,7 +39,7 @@ public class SwingHelper {
 	/**
 	 * Le logger de cette classe.
 	 */
-	public static final Logger LOGGER = IncaLogger.getLogger("GUI");
+	public static final Logger LOGGER = Logs.getLogger("GUI");
 	
 	/**
 	 * Indique si l'initialisation du système d'animation a déjà été fait.
@@ -90,8 +90,8 @@ public class SwingHelper {
         	}
         	catch (ClassNotFoundException ex2) {
         		// On a rien trouvé, le changement du look&feel ne pourra avoir lieu
-        		if (LOGGER.isLoggable(IncaLogger.WARNING)) {
-        			LOGGER.log(IncaLogger.WARNING, "Unable to detect Substance look and feel. The library may not be loaded.");
+        		if (LOGGER.isLoggable(Logs.WARNING)) {
+        			LOGGER.log(Logs.WARNING, "Unable to detect Substance look and feel. The library may not be loaded.");
         		}
         		// Fin du processus
         		return;
@@ -107,14 +107,14 @@ public class SwingHelper {
 		    	try {
 		    		UIManager.setLookAndFeel(lafClass);
 		    		// Le chargement a réussi, on log
-		    		if (LOGGER.isLoggable(IncaLogger.INFO)) {
-		    			LOGGER.log(IncaLogger.INFO, "Look and feel loaded: " + lafClass);
+		    		if (LOGGER.isLoggable(Logs.INFO)) {
+		    			LOGGER.log(Logs.INFO, "Look and feel loaded: " + lafClass);
 		    		}
 		    	}
 		    	catch (Throwable ex) {
 		    		// Le chargement a échoué, on log
-		    		if (LOGGER.isLoggable(IncaLogger.ERROR)) {
-		    			LOGGER.log(IncaLogger.ERROR, "Unable to load look and feel: " + lafClass, ex);
+		    		if (LOGGER.isLoggable(Logs.ERROR)) {
+		    			LOGGER.log(Logs.ERROR, "Unable to load look and feel: " + lafClass, ex);
 		    		}
 		    	}
 			}

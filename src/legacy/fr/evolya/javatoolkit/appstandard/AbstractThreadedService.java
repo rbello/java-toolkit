@@ -3,7 +3,7 @@ package fr.evolya.javatoolkit.appstandard;
 import java.util.logging.Logger;
 
 import fr.evolya.javatoolkit.appstandard.events.ServiceListener;
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.annotations.AsynchOperation;
 import fr.evolya.javatoolkit.code.annotations.ToOverride;
 import fr.evolya.javatoolkit.events.attr.EventSource;
@@ -23,7 +23,7 @@ public abstract class AbstractThreadedService extends AbstractPlugin
 	/**
 	 * Logger des services.
 	 */
-	public static final Logger LOGGER = IncaLogger.getLogger("Services");
+	public static final Logger LOGGER = Logs.getLogger("Services");
 
 	/**
 	 * Indique si ce service doit se lancer au démarrage de l'application.
@@ -136,12 +136,12 @@ public abstract class AbstractThreadedService extends AbstractPlugin
 		_worker.start();
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.INFO)) {
+		if (LOGGER.isLoggable(Logs.INFO)) {
 			if (getApplication() != null) {
-				LOGGER.log(IncaLogger.INFO, "Service " + getApplication().getPluginName(this) + " is started");
+				LOGGER.log(Logs.INFO, "Service " + getApplication().getPluginName(this) + " is started");
 			}
 			else {
-				LOGGER.log(IncaLogger.INFO, getClass().getSimpleName() + " is started");
+				LOGGER.log(Logs.INFO, getClass().getSimpleName() + " is started");
 			}
 		}
 		
@@ -349,8 +349,8 @@ public abstract class AbstractThreadedService extends AbstractPlugin
 		}
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.INFO)) {
-			LOGGER.log(IncaLogger.INFO, "Service " + getApplication().getPluginName(this)
+		if (LOGGER.isLoggable(Logs.INFO)) {
+			LOGGER.log(Logs.INFO, "Service " + getApplication().getPluginName(this)
 					+ " was stopped (" + count + " job(s) has been halted)");
 		}
 		

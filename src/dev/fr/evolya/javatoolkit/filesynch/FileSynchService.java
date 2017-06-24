@@ -8,13 +8,13 @@ import fr.evolya.javatoolkit.appstandard.AbstractThreadedService;
 import fr.evolya.javatoolkit.appstandard.App;
 import fr.evolya.javatoolkit.appstandard.AppService;
 import fr.evolya.javatoolkit.appstandard.bridge.services.ELocalServiceType;
-import fr.evolya.javatoolkit.code.IncaLogger;
-import fr.evolya.javatoolkit.code.RunnableTimer;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.events.attr.EventSource;
+import fr.evolya.javatoolkit.time.RunnableTimer;
 
 public class FileSynchService extends AbstractThreadedService implements AppService, Runnable {
 
-	public static final Logger LOGGER = IncaLogger.getLogger("FileSynch");
+	public static final Logger LOGGER = Logs.getLogger("FileSynch");
 	
 	private List<FileSynchManager> _mgrs;
 
@@ -89,13 +89,13 @@ public class FileSynchService extends AbstractThreadedService implements AppServ
 						continue;
 					}
 					// Log
-					if (LOGGER.isLoggable(IncaLogger.INFO)) {
-						LOGGER.log(IncaLogger.INFO, "FileSynchManager ready: " + mgr);
+					if (LOGGER.isLoggable(Logs.INFO)) {
+						LOGGER.log(Logs.INFO, "FileSynchManager ready: " + mgr);
 					}
 				}
 				catch (Throwable t) {
-					if (LOGGER.isLoggable(IncaLogger.DEBUG)) {
-						LOGGER.log(IncaLogger.DEBUG, "Unable to initialize FileSynchManager: "
+					if (LOGGER.isLoggable(Logs.DEBUG)) {
+						LOGGER.log(Logs.DEBUG, "Unable to initialize FileSynchManager: "
 								+ mgr, t);
 					}
 					continue;
@@ -111,8 +111,8 @@ public class FileSynchService extends AbstractThreadedService implements AppServ
 			}
 
 			// Log
-			if (LOGGER.isLoggable(IncaLogger.INFO)) {
-				LOGGER.log(IncaLogger.INFO, "Found " + operations.size() + " changes on "
+			if (LOGGER.isLoggable(Logs.INFO)) {
+				LOGGER.log(Logs.INFO, "Found " + operations.size() + " changes on "
 						+ mgr);
 			}
 			

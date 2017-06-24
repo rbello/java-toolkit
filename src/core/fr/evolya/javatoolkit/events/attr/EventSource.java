@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.annotations.DesignPattern;
 import fr.evolya.javatoolkit.code.annotations.Pattern;
 import fr.evolya.javatoolkit.code.annotations.ToOverride;
@@ -21,7 +21,7 @@ public /*abstract*/ class EventSource<L extends EventListener> {
 	/**
 	 * Logger
 	 */
-	protected static final Logger LOGGER = IncaLogger.getLogger("EventSource");
+	protected static final Logger LOGGER = Logs.getLogger("EventSource");
 	
 	/**
 	 * Liste des listeners.
@@ -117,8 +117,8 @@ public /*abstract*/ class EventSource<L extends EventListener> {
 		}
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
-			LOGGER.log(IncaLogger.EVENT_BIND, "BIND event listener "
+		if (LOGGER.isLoggable(Logs.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
+			LOGGER.log(Logs.EVENT_BIND, "BIND event listener "
 					+ listener.getClass().getSimpleName() + " --> TO "
 					+ toString());
 		}
@@ -163,8 +163,8 @@ public /*abstract*/ class EventSource<L extends EventListener> {
 		}
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
-			LOGGER.log(IncaLogger.EVENT_BIND, "BIND method "
+		if (LOGGER.isLoggable(Logs.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
+			LOGGER.log(Logs.EVENT_BIND, "BIND method "
 					+ target.getClass().getSimpleName() + "." + targetMethodName + "() --> TO "
 					+ toString() + "." + eventName);
 		}
@@ -199,8 +199,8 @@ public /*abstract*/ class EventSource<L extends EventListener> {
 		}
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
-			LOGGER.log(IncaLogger.EVENT_BIND, "BIND runnable "
+		if (LOGGER.isLoggable(Logs.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
+			LOGGER.log(Logs.EVENT_BIND, "BIND runnable "
 					+ target + " --> TO "
 					+ toString() + "." + eventName);
 		}
@@ -240,8 +240,8 @@ public /*abstract*/ class EventSource<L extends EventListener> {
 		}
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
-			LOGGER.log(IncaLogger.EVENT_BIND, "BIND (IListener) "
+		if (LOGGER.isLoggable(Logs.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
+			LOGGER.log(Logs.EVENT_BIND, "BIND (IListener) "
 					+ listener.getClass().getSimpleName() + " --> TO "
 					+ toString() + ".*");
 		}
@@ -281,8 +281,8 @@ public /*abstract*/ class EventSource<L extends EventListener> {
 		}
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
-			LOGGER.log(IncaLogger.EVENT_BIND, "BIND listener "
+		if (LOGGER.isLoggable(Logs.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
+			LOGGER.log(Logs.EVENT_BIND, "BIND listener "
 					+ listener.getClass() + " --> TO "
 					+ toString() + "." + eventName);
 		}
@@ -335,8 +335,8 @@ public /*abstract*/ class EventSource<L extends EventListener> {
 		}
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
-			LOGGER.log(IncaLogger.EVENT_BIND, "BIND source "
+		if (LOGGER.isLoggable(Logs.EVENT_BIND) && !getListenerClass().getSimpleName().equals("SourceListener")) {
+			LOGGER.log(Logs.EVENT_BIND, "BIND source "
 					+ target + " --> TO "
 					+ toString() + ".*");
 		}
@@ -665,8 +665,8 @@ public /*abstract*/ class EventSource<L extends EventListener> {
 				// Notification
 				if (!listener.notifyEvent(this, eventName, args)) {
 					// Log
-					if (LOGGER.isLoggable(IncaLogger.EVENT_INTERRUPT)) {
-						LOGGER.log(IncaLogger.EVENT_INTERRUPT, "HALT BROADCAST event " + eventName
+					if (LOGGER.isLoggable(Logs.EVENT_INTERRUPT)) {
+						LOGGER.log(Logs.EVENT_INTERRUPT, "HALT BROADCAST event " + eventName
 								+ " by " + listener.toString());
 					}
 					// Rupture de la propagation

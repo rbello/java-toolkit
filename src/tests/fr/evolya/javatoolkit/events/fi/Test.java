@@ -3,7 +3,7 @@ package fr.evolya.javatoolkit.events.fi;
 import java.awt.EventQueue;
 import java.util.concurrent.Callable;
 
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.Instance;
 import fr.evolya.javatoolkit.code.Instance.FuturInstance;
 import fr.evolya.javatoolkit.test.Assert;
@@ -17,7 +17,7 @@ public class Test extends Observable {
 	@BeforeTests
 	public void beforeTest() {
 		this.observable = new Test();
-		IncaLogger.setLoggerLevel(Observable.LOGGER, IncaLogger.ALL);
+		Logs.setLoggerLevel(Observable.LOGGER, Logs.ALL);
 	}
 	
 	@TestMethod(1)

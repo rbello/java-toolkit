@@ -4,7 +4,7 @@ import java.util.logging.Logger;
 
 import fr.evolya.javatoolkit.app.event.ApplicationBuilding;
 import fr.evolya.javatoolkit.app.event.ApplicationStopping;
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.annotations.AsynchOperation;
 import fr.evolya.javatoolkit.events.fi.BindOnEvent;
 import fr.evolya.javatoolkit.exceptions.StateChangeException;
@@ -21,7 +21,7 @@ public abstract class ThreadedService implements AppActivity {
 	/**
 	 * Logger des services.
 	 */
-	public static final Logger LOGGER = IncaLogger.getLogger("Service (v2)");
+	public static final Logger LOGGER = Logs.getLogger("Service (v2)");
 
 	/**
 	 * Le worker.
@@ -63,8 +63,8 @@ public abstract class ThreadedService implements AppActivity {
 		_worker.start();
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.INFO)) {
-			LOGGER.log(IncaLogger.INFO, getClass().getSimpleName() + " is started");
+		if (LOGGER.isLoggable(Logs.INFO)) {
+			LOGGER.log(Logs.INFO, getClass().getSimpleName() + " is started");
 		}
 		
 	}
@@ -127,8 +127,8 @@ public abstract class ThreadedService implements AppActivity {
 		}
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.INFO)) {
-			LOGGER.log(IncaLogger.INFO, "Service " + getClass().getSimpleName()
+		if (LOGGER.isLoggable(Logs.INFO)) {
+			LOGGER.log(Logs.INFO, "Service " + getClass().getSimpleName()
 					+ " was stopped (" + count + " job(s) has been halted)");
 		}
 		

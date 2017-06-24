@@ -18,7 +18,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 import fr.evolya.javatoolkit.appstandard.events.ViewListener;
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.events.attr.EventSource;
 import fr.evolya.javatoolkit.gui.ViewBounds;
 import fr.evolya.javatoolkit.gui.animation.Timeline;
@@ -301,8 +301,8 @@ public class BackgroundOperationStackPanel extends JPanelView {
 //			}
 			
 			// Log
-			if (Timeline.LOGGER.isLoggable(IncaLogger.DEBUG)) {
-				Timeline.LOGGER.log(IncaLogger.DEBUG, "Resize for " + _operations.size() + " operations");
+			if (Timeline.LOGGER.isLoggable(Logs.DEBUG)) {
+				Timeline.LOGGER.log(Logs.DEBUG, "Resize for " + _operations.size() + " operations");
 			}
 			
 			// Création de la timeline

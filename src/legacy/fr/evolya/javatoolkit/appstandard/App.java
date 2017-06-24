@@ -20,7 +20,7 @@ import fr.evolya.javatoolkit.appstandard.states.ApplicationState;
 import fr.evolya.javatoolkit.appstandard.states.PausedState;
 import fr.evolya.javatoolkit.appstandard.states.StartedState;
 import fr.evolya.javatoolkit.appstandard.states.StoppedState;
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.Util;
 import fr.evolya.javatoolkit.code.annotations.DesignPattern;
 import fr.evolya.javatoolkit.code.annotations.Pattern;
@@ -41,7 +41,7 @@ public abstract class App implements ILocalApplication {
 	/**
 	 * Logger des applications.
 	 */
-	public static final Logger LOGGER = IncaLogger.getLogger("Application");
+	public static final Logger LOGGER = Logs.getLogger("Application");
 	
 	/**
 	 * Sauvegarde de la dernière instance d'application créee.
@@ -167,8 +167,8 @@ public abstract class App implements ILocalApplication {
 			}
 			
 			// Log
-			if (LOGGER.isLoggable(IncaLogger.INFO)) {
-				LOGGER.log(IncaLogger.INFO, "Application " + _appName + " is starting");
+			if (LOGGER.isLoggable(Logs.INFO)) {
+				LOGGER.log(Logs.INFO, "Application " + _appName + " is starting");
 			}
 			
 			// On enregistre l'activité parente
@@ -184,8 +184,8 @@ public abstract class App implements ILocalApplication {
 			_eventsApp.dispatch("onApplicationStarted", this);
 			
 			// Log
-			if (LOGGER.isLoggable(IncaLogger.INFO)) {
-				LOGGER.log(IncaLogger.INFO, "Application " + _appName + " is started");
+			if (LOGGER.isLoggable(Logs.INFO)) {
+				LOGGER.log(Logs.INFO, "Application " + _appName + " is started");
 			}
 			
 			// Event after
@@ -314,8 +314,8 @@ public abstract class App implements ILocalApplication {
 		}
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.INFO)) {
-			LOGGER.log(IncaLogger.INFO, "Close intent");
+		if (LOGGER.isLoggable(Logs.INFO)) {
+			LOGGER.log(Logs.INFO, "Close intent");
 		}
 		
 		// Event before
@@ -324,8 +324,8 @@ public abstract class App implements ILocalApplication {
 		}
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.INFO)) {
-			LOGGER.log(IncaLogger.INFO, "Application " + _appName + " is stopping");
+		if (LOGGER.isLoggable(Logs.INFO)) {
+			LOGGER.log(Logs.INFO, "Application " + _appName + " is stopping");
 		}
 		
 		// Set as stopped
@@ -341,8 +341,8 @@ public abstract class App implements ILocalApplication {
 				}
 				catch (Throwable t) {
 					// Log
-					if (LOGGER.isLoggable(IncaLogger.WARNING)) {
-						LOGGER.log(IncaLogger.WARNING, "Unable to stop activity: "
+					if (LOGGER.isLoggable(Logs.WARNING)) {
+						LOGGER.log(Logs.WARNING, "Unable to stop activity: "
 								+ getPluginName(p), t);
 					}
 				}
@@ -356,8 +356,8 @@ public abstract class App implements ILocalApplication {
 			}
 			catch (Throwable t) {
 				// Log
-				if (LOGGER.isLoggable(IncaLogger.WARNING)) {
-					LOGGER.log(IncaLogger.WARNING, "Unable to dispose plugin: "
+				if (LOGGER.isLoggable(Logs.WARNING)) {
+					LOGGER.log(Logs.WARNING, "Unable to dispose plugin: "
 							+ getPluginName(p), t);
 				}
 			}
@@ -375,8 +375,8 @@ public abstract class App implements ILocalApplication {
 		_eventsApp.dispose();
 		
 		// Log
-		if (LOGGER.isLoggable(IncaLogger.INFO)) {
-			LOGGER.log(IncaLogger.INFO, "Application " + _appName + " is stopped");
+		if (LOGGER.isLoggable(Logs.INFO)) {
+			LOGGER.log(Logs.INFO, "Application " + _appName + " is stopped");
 		}
 		
 		// Destruct
@@ -583,16 +583,16 @@ public abstract class App implements ILocalApplication {
 		// ajouté après le lancement de l'application.
 		if (isStarted()) {
 			// Debug
-			if (LOGGER.isLoggable(IncaLogger.INFO)) {
-				LOGGER.log(IncaLogger.INFO, "Plugin added: " + plugin.getClass().getSimpleName()
+			if (LOGGER.isLoggable(Logs.INFO)) {
+				LOGGER.log(Logs.INFO, "Plugin added: " + plugin.getClass().getSimpleName()
 						+ " (" + plugin + ")");
 			}
 			_eventsApp.triggerOnly("onApplicationStarted", plugin, this);
 		}
 		
 		// Debug
-		if (LOGGER.isLoggable(IncaLogger.DEBUG)) {
-			LOGGER.log(IncaLogger.DEBUG, "addPlugin(" + plugin.getClass().getCanonicalName() + ")");
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, "addPlugin(" + plugin.getClass().getCanonicalName() + ")");
 		}
 		
 		// Status OK
@@ -723,8 +723,8 @@ public abstract class App implements ILocalApplication {
 				args[0].toLowerCase().equals("debug=1");
 		
 		// Ajustement du niveau de log
-		IncaLogger.setDefaultLevel(debugMode ? IncaLogger.INFO : IncaLogger.NONE);
-		IncaLogger.setGlobalLevel(debugMode ? IncaLogger.INFO : IncaLogger.NONE);
+		Logs.setDefaultLevel(debugMode ? Logs.INFO : Logs.NONE);
+		Logs.setGlobalLevel(debugMode ? Logs.INFO : Logs.NONE);
 		
     	// Initialisations pour Swing
     	SwingHelper.initLookAndFeel();

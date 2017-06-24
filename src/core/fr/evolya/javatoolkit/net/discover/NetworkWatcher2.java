@@ -12,7 +12,7 @@ import java.util.List;
 
 import fr.evolya.javatoolkit.app.AppActivity;
 import fr.evolya.javatoolkit.app.ThreadedService;
-import fr.evolya.javatoolkit.code.IncaLogger;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.Util;
 import fr.evolya.javatoolkit.net.discover.events.OnInterfaceDetected;
 import fr.evolya.javatoolkit.net.discover.events.OnInterfaceDisabled;
@@ -176,8 +176,8 @@ public class NetworkWatcher2 extends ThreadedService
 			}
 		}
 		catch (SocketException ex) {
-			if (LOGGER.isLoggable(IncaLogger.WARNING)) {
-				LOGGER.log(IncaLogger.WARNING, "Unable to list network interfaces: " + ex.getMessage());
+			if (LOGGER.isLoggable(Logs.WARNING)) {
+				LOGGER.log(Logs.WARNING, "Unable to list network interfaces: " + ex.getMessage());
 			}
 		}
 
