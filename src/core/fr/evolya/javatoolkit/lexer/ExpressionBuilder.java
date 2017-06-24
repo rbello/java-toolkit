@@ -1,12 +1,12 @@
 package fr.evolya.javatoolkit.lexer;
 
-import fr.evolya.javatoolkit.code.lexer.exception.EmptyExpressionException;
-import fr.evolya.javatoolkit.code.lexer.exception.ExpressionDeclarationMalformedException;
-import fr.evolya.javatoolkit.code.lexer.exception.IllegalEscapeCharacterException;
-import fr.evolya.javatoolkit.code.lexer.exception.MalformedStringDeclarationException;
-import fr.evolya.javatoolkit.code.lexer.exception.ParserException;
-import fr.evolya.javatoolkit.code.lexer.exception.ReachedEndOfLineWhileParsingException;
-import fr.evolya.javatoolkit.code.lexer.exception.WrongOperatorSyntaxException;
+import fr.evolya.javatoolkit.lexer.exception.EmptyExpressionException;
+import fr.evolya.javatoolkit.lexer.exception.ExpressionDeclarationMalformedException;
+import fr.evolya.javatoolkit.lexer.exception.IllegalEscapeCharacterException;
+import fr.evolya.javatoolkit.lexer.exception.MalformedStringDeclarationException;
+import fr.evolya.javatoolkit.lexer.exception.ParserException;
+import fr.evolya.javatoolkit.lexer.exception.ReachedEndOfLineWhileParsingException;
+import fr.evolya.javatoolkit.lexer.exception.WrongOperatorSyntaxException;
 
 /**
  * Cet objet fabrique une expression à partir d'une string.
