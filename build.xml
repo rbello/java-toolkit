@@ -1,0 +1,59 @@
+<project name="java-toolkit" default="compile" basedir=".">
+	
+	<property name="version.number" value="3.1.6" />
+	
+	<property name="lib.dir" value="./lib/" />
+	<property name="bin.dir" value="./bin/" />
+	<property name="dist.dir" value="./dist/" />
+	<property name="dist.file" value="${dist.dir}/java-toolkit-${version.number}.jar" />
+	
+	<!-- First, I create my classpath (build.classpath) from all the jar files in my lib directory -->
+	<path id="build.classpath">
+	  <fileset dir="${lib.dir}">
+	    <include name="**/*.jar" />
+	  </fileset>
+	</path>
+	
+	<target name="clean">
+		<delete dir="${bin.dir}" />
+		<mkdir dir="${bin.dir}"/>
+	</target>
+	
+	<target name="compile">
+
+	  <!-- convert build.classpath to mf.classpath (the string needed for the manifest task) -->
+	  <pathconvert property="mf.classpath" pathsep=" ">
+	      <path refid="build.classpath" />
+	      <flattenmapper />
+	  </pathconvert>
+
+	  <!-- Build the manifest file, using mf.classpath -->
+	  <tstamp />
+	  <manifest file="MANIFEST.MF">
+	    <attribute name="Created-By" value="www.evolya.fr" />
+	    <attribute name="Implementation-Version" value="${version.number}"/>   
+	    <attribute name="Built-Date" value="${TODAY}"/>
+	    <!--<attribute name="Class-Path" value="${mf.classpath}" />-->
+	  </manifest>
+	  
+	  <!-- create the jar file, including the manifest file we just created -->
+	  <jar basedir="${bin.dir}" 
+	       destfile="${dist.file}"
+	       includes="**/*.*"
+	       excludes="**/*Test*"
+	       manifest="MANIFEST.MF" />
+	
+	</target>
+		
+	<target name="dist" depends="compile">
+		  <!-- copy all the jar files out to the destination directory (dest.dir) -->
+		  <copy todir="${dist.dir}">
+		    <fileset dir="${lib.dir}">
+		      <exclude name="junit*" />
+		      <include name="*.jar"/>
+		      <include name="*.zip"/>
+		    </fileset>
+		  </copy>
+	</target>
+	
+</project>
