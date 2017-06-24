@@ -10,6 +10,8 @@ This API is currently Stable.
 
 ## Usage
 
+Using HOTP generator :
+
 ```java
 // Create generator
 HOTP generator = new HOTP("LJHL5P65A5QCJ7GB");
