@@ -27,7 +27,7 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package fr.evolya.javatoolkit.gui.animation.swing;
+package fr.evolya.javatoolkit.gui.swing.animation;
 
 import java.awt.Component;
 import java.awt.Rectangle;

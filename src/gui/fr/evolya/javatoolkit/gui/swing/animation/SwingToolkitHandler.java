@@ -27,70 +27,31 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
-package fr.evolya.javatoolkit.gui.animation.swing;
+package fr.evolya.javatoolkit.gui.swing.animation;
 
 import java.awt.Component;
-import java.awt.Rectangle;
 
-import fr.evolya.javatoolkit.gui.animation.Timeline;
+import javax.swing.SwingUtilities;
+
+import fr.evolya.javatoolkit.gui.animation.UIToolkitHandler;
 
 
-public class SwingRepaintTimeline extends Timeline {
-	private SwingRepaintCallback repaintCallback;
-
-	public SwingRepaintTimeline(Component mainTimelineComp) {
-		this(mainTimelineComp, null);
-	}
-
-	public SwingRepaintTimeline(Component mainTimelineComp, Rectangle toRepaint) {
-		super(mainTimelineComp);
-		this.repaintCallback = new SwingRepaintCallback(mainTimelineComp,
-				toRepaint);
-		this.addCallback(this.repaintCallback);
-	}
-
-	public void forceRepaintOnNextPulse() {
-		this.repaintCallback.forceRepaintOnNextPulse();
-	}
-
-	public void setAutoRepaintMode(boolean autoRepaintMode) {
-		this.repaintCallback.setAutoRepaintMode(autoRepaintMode);
-	}
-
-	public void setRepaintRectangle(Rectangle rect) {
-		this.repaintCallback.setRepaintRectangle(rect);
+public class SwingToolkitHandler implements UIToolkitHandler {
+	@Override
+	public boolean isHandlerFor(Object mainTimelineObject) {
+		return (mainTimelineObject instanceof Component);
 	}
 
 	@Override
-	public void play() {
-		throw new UnsupportedOperationException(
-				"Only infinite looping is supported");
+	public boolean isInReadyState(Object mainTimelineObject) {
+		return ((Component) mainTimelineObject).isDisplayable();
 	}
 
 	@Override
-	public void playReverse() {
-		throw new UnsupportedOperationException(
-				"Only infinite looping is supported");
-	}
-
-	@Override
-	public void replay() {
-		throw new UnsupportedOperationException(
-				"Only infinite looping is supported");
-	}
-
-	@Override
-	public void replayReverse() {
-		throw new UnsupportedOperationException(
-				"Only infinite looping is supported");
-	}
-
-	@Override
-	public void playLoop(int loopCount, RepeatBehavior repeatBehavior) {
-		if (loopCount >= 0) {
-			throw new UnsupportedOperationException(
-					"Only infinite looping is supported");
-		}
-		super.playLoop(loopCount, repeatBehavior);
+	public void runOnUIThread(Object mainTimelineObject, Runnable runnable) {
+		if (SwingUtilities.isEventDispatchThread())
+			runnable.run();
+		else
+			SwingUtilities.invokeLater(runnable);
 	}
 }

@@ -1,4 +1,4 @@
-package fr.evolya.javatoolkit.gui.animation.swing.sample;
+package fr.evolya.javatoolkit.gui.swing.animation.sample;
 
 import java.awt.Color;
 import java.awt.Graphics;

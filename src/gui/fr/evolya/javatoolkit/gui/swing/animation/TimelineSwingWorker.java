@@ -27,31 +27,27 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
-package fr.evolya.javatoolkit.gui.animation.swing;
+package fr.evolya.javatoolkit.gui.swing.animation;
 
-import java.awt.Component;
+import javax.swing.SwingWorker;
 
-import javax.swing.SwingUtilities;
-
-import fr.evolya.javatoolkit.gui.animation.UIToolkitHandler;
+import fr.evolya.javatoolkit.gui.animation.TimelineScenario;
 
 
-public class SwingToolkitHandler implements UIToolkitHandler {
+public abstract class TimelineSwingWorker<T, V> extends SwingWorker<T, V>
+		implements TimelineScenario.TimelineScenarioActor {
 	@Override
-	public boolean isHandlerFor(Object mainTimelineObject) {
-		return (mainTimelineObject instanceof Component);
+	public void play() {
+		this.execute();
 	}
 
 	@Override
-	public boolean isInReadyState(Object mainTimelineObject) {
-		return ((Component) mainTimelineObject).isDisplayable();
+	public boolean supportsReplay() {
+		return false;
 	}
 
 	@Override
-	public void runOnUIThread(Object mainTimelineObject, Runnable runnable) {
-		if (SwingUtilities.isEventDispatchThread())
-			runnable.run();
-		else
-			SwingUtilities.invokeLater(runnable);
+	public void resetDoneFlag() {
+		throw new UnsupportedOperationException();
 	}
 }

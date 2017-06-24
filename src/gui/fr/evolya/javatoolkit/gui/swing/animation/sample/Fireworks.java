@@ -1,4 +1,4 @@
-package fr.evolya.javatoolkit.gui.animation.swing.sample;
+package fr.evolya.javatoolkit.gui.swing.animation.sample;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -23,8 +23,8 @@ import fr.evolya.javatoolkit.gui.animation.Timeline.RepeatBehavior;
 import fr.evolya.javatoolkit.gui.animation.TimelineScenario;
 import fr.evolya.javatoolkit.gui.animation.callback.TimelineScenarioCallback;
 import fr.evolya.javatoolkit.gui.animation.interpolator.CorePropertyInterpolators;
-import fr.evolya.javatoolkit.gui.animation.swing.AWTPropertyInterpolators;
-import fr.evolya.javatoolkit.gui.animation.swing.SwingRepaintTimeline;
+import fr.evolya.javatoolkit.gui.swing.animation.AWTPropertyInterpolators;
+import fr.evolya.javatoolkit.gui.swing.animation.SwingRepaintTimeline;
 
 public class Fireworks extends JFrame {
 

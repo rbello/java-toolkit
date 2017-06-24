@@ -1,4 +1,4 @@
-package fr.evolya.javatoolkit.gui.animation.swing;
+package fr.evolya.javatoolkit.gui.swing.animation;
 
 import javax.swing.JSplitPane;
 

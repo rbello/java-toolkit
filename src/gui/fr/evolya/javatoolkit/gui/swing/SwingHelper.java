@@ -32,7 +32,7 @@ import fr.evolya.javatoolkit.gui.animation.Timeline;
 import fr.evolya.javatoolkit.gui.animation.Timeline.TimelineState;
 import fr.evolya.javatoolkit.gui.animation.callback.TimelineCallbackAdapter;
 import fr.evolya.javatoolkit.gui.animation.interpolator.CorePropertyInterpolators;
-import fr.evolya.javatoolkit.gui.animation.swing.AWTPropertyInterpolators;
+import fr.evolya.javatoolkit.gui.swing.animation.AWTPropertyInterpolators;
 
 public class SwingHelper {
 	
