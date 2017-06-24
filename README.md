@@ -3,6 +3,7 @@
 ![Version-4](http://static.evolya.fr/badge/badge-version.php?value=4.0)
 ![Licence-Free](http://static.evolya.fr/badge/badge-licence.php?value=free)
 ![Tests-Passed](http://static.evolya.fr/badge/badge-tests.php?value=passed)
+![Java-18](http://static.evolya.fr/badge/badge-java.php?value=1.8)
 
 ### Packages
 
