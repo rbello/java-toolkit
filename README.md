@@ -1,7 +1,8 @@
 # Java Toolkit
 
 ![Version-4](http://static.evolya.fr/badge/badge-version.php?value=4.0)
-![Licence-Free](http://static.evolya.fr/badge/badge-licence.php?value=Free)
+![Licence-Free](http://static.evolya.fr/badge/badge-licence.php?value=free)
+![Tests-Passed](http://static.evolya.fr/badge/badge-tests.php?value=passed)
 
 ### Packages
 
