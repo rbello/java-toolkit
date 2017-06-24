@@ -62,5 +62,8 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# SVN
+# Versionning
 .svn/
+.git/
+
+MANIFEST.MF
