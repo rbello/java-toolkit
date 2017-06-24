@@ -9,8 +9,6 @@ package fr.evolya.javatoolkit.test;
 import java.util.List;
 import java.util.Set;
 
-import fr.evolya.javatoolkit.types.PixelDimension;
-
 
 public abstract class TestCase {
 
@@ -148,22 +146,6 @@ public abstract class TestCase {
 	public void assertNotEmpty(String test, List<?> s) {
 		if (s != null && s.size() > 0) return;
 		out(test+"");
-	}
-	
-	public void assertDimensionZero(String test,
-			PixelDimension d) {
-		if (d != null) {
-			if (d.getWidth() == 0 && d.getHeight() == 0) return;
-		}
-		out(test);
-	}
-	
-	public void assertDimensionNotZero(String test,
-			PixelDimension d) {
-		if (d != null) {
-			if (d.getWidth() > 0 && d.getHeight() > 0) return;
-		}
-		out(test);
 	}
 	
 	public TestCase sout(Object o) {

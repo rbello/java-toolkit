@@ -14,3 +14,4 @@ v4
 - [Lexer Tool](https://github.com/rbello/java-toolkit/tree/master/src/core/fr/evolya/javatoolkit/lexer#lexer-api) A tool for implementing an interpreter to create custom languages.
 - [Mathematics](https://github.com/rbello/java-toolkit/tree/master/src/core/fr/evolya/javatoolkit/math#math-api) A toolkit for mathematics.
 - [Networking](https://github.com/rbello/java-toolkit/tree/master/src/core/fr/evolya/javatoolkit/net#network-api) An API for interconnecting an application over a TCP / IP network.
+- [CLI - Command Line Interface](https://github.com/rbello/java-toolkit/tree/master/src/core/fr/evolya/javatoolkit/cli#command-line-interface-api) This package contains a toolkit to implements a Command Line Interface (CLI)
