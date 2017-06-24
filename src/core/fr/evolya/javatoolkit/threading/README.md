@@ -11,7 +11,7 @@ Which offers a processing queue to link the execution of jobs.
 
 ## State
 
-This API is currently in Stable.
+This API is currently Stable.
 
 ## Usage
 
