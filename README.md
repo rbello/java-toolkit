@@ -5,6 +5,11 @@
 ![Tests-Passed](http://static.evolya.fr/badge/badge-tests.php?value=passed)
 ![Java-18](http://static.evolya.fr/badge/badge-java.php?value=1.8)
 
+### Releases
+
+- [Lastest 4.0](https://github.com/rbello/java-toolkit/raw/master/dist/java-toolkit-4.0.0.jar) 
+- [Legacy 3.0](https://github.com/rbello/java-toolkit/raw/master/dist/java-toolkit-3.1.6.jar)
+
 ### Packages
 
 - [Coder tools](https://github.com/rbello/java-toolkit/tree/master/src/core/fr/evolya/javatoolkit/code#coder-tools) A collection of stuff for general purpose programming.
@@ -25,7 +30,6 @@ ___
 ### Dependencies
 
 ![UML CorePackageDiagram](https://raw.githubusercontent.com/rbello/java-toolkit/master/doc/UML_CorePackageDiagram.png)
-
 ___
 
 Created in 2008
