@@ -2,11 +2,12 @@
 
 ## Description
 
-A framework for simply creating applications on an event-driven model and by injecting dependencies.
+Several tools to take advantage of multi-threading capabilities in data processing and application execution.
 
 This package mainly contains:
-- [Parallel class]() which provides functional methods for collections' multi-threaded operations.
-- [Worker package]() 
+- [Parallel class](https://github.com/rbello/java-toolkit/blob/master/src/core/fr/evolya/javatoolkit/threading/Parallel.java) which provides functional methods for collections' multi-threaded operations.
+- [Worker package](https://github.com/rbello/java-toolkit/tree/master/src/core/fr/evolya/javatoolkit/threading/worker) 
+Which offers a processing queue to link the execution of jobs.
 
 ## State
 
