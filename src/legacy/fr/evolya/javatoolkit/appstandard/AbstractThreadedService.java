@@ -6,11 +6,11 @@ import fr.evolya.javatoolkit.appstandard.events.ServiceListener;
 import fr.evolya.javatoolkit.code.IncaLogger;
 import fr.evolya.javatoolkit.code.annotations.AsynchOperation;
 import fr.evolya.javatoolkit.code.annotations.ToOverride;
-import fr.evolya.javatoolkit.code.worker.IWorker;
-import fr.evolya.javatoolkit.code.worker.TimerOperation;
-import fr.evolya.javatoolkit.code.worker.Worker;
 import fr.evolya.javatoolkit.events.attr.EventSource;
 import fr.evolya.javatoolkit.exceptions.StateChangeException;
+import fr.evolya.javatoolkit.threading.worker.IWorker;
+import fr.evolya.javatoolkit.threading.worker.TimerOperation;
+import fr.evolya.javatoolkit.threading.worker.Worker;
 
 /**
  * Classe adapter pour la création de services pouvant avoir des tâches à lancer
