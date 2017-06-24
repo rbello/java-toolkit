@@ -10,13 +10,13 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.evolya.javatoolkit.code.worker.IWorker;
 import fr.evolya.javatoolkit.events.attr.EventSource;
 import fr.evolya.javatoolkit.net.http.Http;
 import fr.evolya.javatoolkit.net.http.HttpContext;
 import fr.evolya.javatoolkit.net.http.HttpRequest;
 import fr.evolya.javatoolkit.soho.session.ISohoSession;
 import fr.evolya.javatoolkit.soho.session.SohoSession;
+import fr.evolya.javatoolkit.threading.worker.IWorker;
 
 /**
  * Connecteur à un serveur Soho, permettant d'ouvrir des sessions avec lui.
