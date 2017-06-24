@@ -1,0 +1,10 @@
+Package fr.evolya.javatoolkit.appstandard
+
+	Ce package offre une base pour la création d'applications au
+	standard de ce toolkit.
+	
+	L'idée est de proposer un socle pour la création d'applications,
+	avec la gestion des events et un m�canisme de plugin très souple.
+	Tous le câblage entre les composants de l'application se fait
+	grâce au système d'event. L'application peut avoir des états,
+	en fonction des actions de l'utilisateur.
