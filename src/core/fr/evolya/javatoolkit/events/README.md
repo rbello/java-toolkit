@@ -4,10 +4,10 @@
 
 This package contains several implementations of Observer DP.
 
-- [fi implementation]() is stable. This implementation works on the principle of annotations that will allow to subscribe to the events. Compatible with dispatch on HMI but mono-threaded.
-- [attr implementation]() is in development. This implementation imitates the C# style where events are exposed as class attributes.
-- [alpha implementation]() is stable. This implementation is very complete, it allows to give a priority to the listeners during the propagation, to pass method names as callback (reflection), to make redirections of event between several sources, to use asynch-propagation, to configure the management of Exceptions raises and interrupt the events propagations.
-- [basic implementation]() is stable. This very simple implementation can be used for microprograms that do not require advenced features.
+- [fi implementation](https://github.com/rbello/java-toolkit/tree/master/src/core/fr/evolya/javatoolkit/events/fi) is stable. This implementation works on the principle of annotations that will allow to subscribe to the events. Compatible with dispatch on HMI but mono-threaded.
+- [attr implementation](https://github.com/rbello/java-toolkit/tree/master/src/core/fr/evolya/javatoolkit/events/attr) is in development. This implementation imitates the C# style where events are exposed as class attributes.
+- [alpha implementation](https://github.com/rbello/java-toolkit/tree/master/src/core/fr/evolya/javatoolkit/events/alpha) is stable. This implementation is very complete, it allows to give a priority to the listeners during the propagation, to pass method names as callback (reflection), to make redirections of event between several sources, to use asynch-propagation, to configure the management of Exceptions raises and interrupt the events propagations.
+- [basic implementation](https://github.com/rbello/java-toolkit/tree/master/src/core/fr/evolya/javatoolkit/events/basic) is stable. This very simple implementation can be used for microprograms that do not require advenced features.
 
 ## State
 
