@@ -16,6 +16,16 @@
 
 This API is currently Stable.
 
+## Samples
+
+A DecoratedFrame with ConsoleView inside:
+
+![DecoratedFrame sample](https://raw.githubusercontent.com/rbello/java-toolkit/master/doc/Screenshot_DecoratedFrame.png)
+
+An application debug view:
+
+![AppDebug sample](https://raw.githubusercontent.com/rbello/java-toolkit/master/doc/Screenshot_AppDebug.png)
+
 ## Credits
 
 - R. Bello
