@@ -2,8 +2,8 @@ package fr.evolya.javatoolkit.events.attr;
 
 import java.util.ArrayList;
 
-import fr.evolya.javatoolkit.code.Callback;
 import fr.evolya.javatoolkit.code.annotations.AsynchOperation;
+import fr.evolya.javatoolkit.code.funcint.Callback;
 
 /**
  * Une source d'event permettant le trigger asynchrone
