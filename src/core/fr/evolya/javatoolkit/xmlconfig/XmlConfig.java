@@ -105,18 +105,18 @@ public class XmlConfig {
 
 	/**
 	 * Add configuration from the specified file.
+	 * @throws XmlConfigException 
 	 */
-	public void addConfiguration(File file) throws XmlConfigException,
-			IOException {
+	public void addConfiguration(File file) throws IOException, XmlConfigException {
 		
 		addConfiguration(file, new FileInputStream(file));
 	}
 
 	/**
 	 * Add configuration from the specified input stream.
+	 * @throws XmlConfigException 
 	 */
-	public void addConfiguration(InputStream in) throws XmlConfigException,
-			IOException {
+	public void addConfiguration(InputStream in) throws IOException, XmlConfigException {
 		
 		addConfiguration(null, in);
 		
@@ -203,14 +203,14 @@ public class XmlConfig {
 	/**
 	 * Return the number of properties stored in the current configuration.
 	 */
-	public long getPropertiesCount() {
+	public int getPropertiesCount() {
 		return properties.size();
 	}
 
 	/**
 	 * Return the number of named beans stored in the current configuration.
 	 */
-	public long getBeansCount() {
+	public int getBeansCount() {
 		return beans.size();
 	}
 
