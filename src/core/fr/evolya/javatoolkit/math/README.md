@@ -10,6 +10,6 @@ This API is currently Stable.
 
 ## Credits
 
-Geodesy: Mike Gavaghan
-Vecmath: Sun Microsystems
-Interpolate: Paul Bourke
+- Geodesy: Mike Gavaghan
+- Vecmath: Sun Microsystems
+- Interpolate: Paul Bourke
