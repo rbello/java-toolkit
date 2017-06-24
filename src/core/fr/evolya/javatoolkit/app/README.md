@@ -41,6 +41,29 @@ public static void main(String[] args) {
 }
 ```
 
+The default lifecycle of an application will trigger this sequence of events : 
+`ApplicationStarting -> ApplicationBuilding -> ApplicationStarted -> ApplicationReady -> GuiIsReady`
+
+Then in each module, you can attach methods on runtime events :
+
+```java
+public class ModuleConsole {
+
+		@BindOnEvent(GuiIsReady.class)
+		@EventArgClassFilter(ConsoleView.class)
+		@GuiTask
+		public void buildMenuSession(ConsoleView view, App app) {
+			// Do some stuff
+		}
+
+}
+```
+
+Annotation used:
+- Annoation `@BindOnEvent(Class<Event>)` is used to define witch event to listener.
+- Annotation `@EventArgClassFilter(Class<Event>)` will filter only events triggered by the given source.
+- Annotation `@GuiTask` will force execution on Event Dispatch Thread (EDT).
+
 ## Credits
 
 R. Bello
