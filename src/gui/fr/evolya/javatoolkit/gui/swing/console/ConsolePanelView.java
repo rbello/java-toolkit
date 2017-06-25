@@ -32,9 +32,9 @@ import javax.swing.event.CaretListener;
 
 import fr.evolya.javatoolkit.cli.CLISessionStream;
 import fr.evolya.javatoolkit.code.Flag;
-import fr.evolya.javatoolkit.code.Util;
 import fr.evolya.javatoolkit.code.annotations.AsynchOperation;
 import fr.evolya.javatoolkit.code.funcint.Callback;
+import fr.evolya.javatoolkit.code.utils.StringUtils;
 import fr.evolya.javatoolkit.events.attr.EventSource;
 import fr.evolya.javatoolkit.gui.swing.Clipboard;
 import fr.evolya.javatoolkit.gui.swing.JPanelView;
@@ -877,7 +877,7 @@ public class ConsolePanelView extends JPanelView implements IConsoleView, CLISes
 		}
 		String data = _outputConsole.getText();
 		for (int i = data.length() - 1; i >= 0; --i) {
-			if (data.charAt(i) == Util.NL_CHAR) {
+			if (data.charAt(i) == StringUtils.NL_CHAR) {
 				howMany--;
 				if (howMany == 0) {
 					_outputConsole.setText(data.substring(0, i + 1));
@@ -885,7 +885,7 @@ public class ConsolePanelView extends JPanelView implements IConsoleView, CLISes
 				}
 			}
 		}
-		_outputConsole.setText(Util.EMPTYSTRING);
+		_outputConsole.setText(StringUtils.EMPTYSTRING);
 	}
 
 	@Override

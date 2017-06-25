@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
 import fr.evolya.javatoolkit.code.Instance;
+import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Listener<EVENT> {
@@ -105,19 +106,10 @@ public class Listener<EVENT> {
 			this.target = new Instance(target);
 		}
 		this.gui = onGui;
-		this.method = findMethod(eventType.getMethods()[0], target);
+		this.method = ReflectionUtils.findMethod(eventType.getMethods()[0], target);
 		// On inscrit l'observable à ce moment.
 		observable.addListener(this);
 		return observable;
-	}
-	
-	private static Method findMethod(Method method, Object target) {
-		// TODO Doc
-		// TODO Comparer aussi les arguments
-		for (Method m : target.getClass().getMethods()) {
-			if (m.getName().equals(method.getName())) return m;
-		}
-		throw new UnsupportedOperationException("Unable to bind method");
 	}
 	
 	@SafeVarargs

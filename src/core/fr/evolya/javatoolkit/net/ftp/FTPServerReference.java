@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Date;
 
-import fr.evolya.javatoolkit.code.Util;
+import fr.evolya.javatoolkit.code.utils.Utils;
 
 public class FTPServerReference {
 	
@@ -109,16 +109,16 @@ public class FTPServerReference {
 	}
 
 	public void mkdir(String path) throws Exception {
-		ftp.createDirectory(Util.clean_path(path));
+		ftp.createDirectory(Utils.clean_path(path));
 	}
 	
 	public void upload(File file, String path, FTPDataTransferListener listener) throws Exception {
-		ftp.changeDirectory(Util.dirname(Util.clean_path(path)));
+		ftp.changeDirectory(Utils.dirname(Utils.clean_path(path)));
 		ftp.upload(file.getName(), new FileInputStream(file), 0, 0, listener);
 	}
 
 	public void download(File file, String path, FTPDataTransferListener listener) throws Exception {
-		ftp.changeDirectory(Util.dirname(Util.clean_path(path)));
+		ftp.changeDirectory(Utils.dirname(Utils.clean_path(path)));
 		ftp.download(file.getName(), file, listener);
 	}
 

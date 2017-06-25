@@ -1,4 +1,4 @@
-package fr.evolya.javatoolkit.code;
+package fr.evolya.javatoolkit.code.utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,18 +22,9 @@ import fr.evolya.javatoolkit.code.annotations.Bug;
 /**
  * Toolkit de méthodes PHP.
  */
-public final class Util {
+public final class Utils {
 
-	public static final String WHITESPACE = " ";
-	public static final String EMPTYSTRING = "";
-	public static final String PIPE = "|";
-	public static final String NL = "\n";
-	public static final String TAB = "\t";
-	public static final String COMA = ",";
-	public static final String DOT = ".";
-	public static final String SLASH = "/";
-	public static final String DOT_ESCAPED = "\\.";
-	public static final char NL_CHAR = '\n';
+	
 
 	/***
 	 * Fusionne les éléments d'un tableau en une chaîne
@@ -110,25 +101,25 @@ public final class Util {
 
 	public static String clean_path(String path) {
 		while (path.contains("//"))
-			path = path.replace("//", "/");
+			path = path.replace("//", StringUtils.SLASH);
 		return path;
 	}
 
 	public static String dirname(String path) {
 		if (path == null)
-			return "/";
-		if (path.equals(""))
-			return "/";
-		if (path.equals("/"))
-			return "/";
-		String[] tokens = path.split("/");
+			return StringUtils.SLASH;
+		if (path.equals(StringUtils.EMPTYSTRING))
+			return StringUtils.SLASH;
+		if (path.equals(StringUtils.SLASH))
+			return StringUtils.SLASH;
+		String[] tokens = path.split(StringUtils.SLASH);
 		StringBuilder sb = new StringBuilder();
 		for (String s : Arrays.copyOfRange(tokens, 1, tokens.length - 1)) {
-			sb.append("/");
+			sb.append(StringUtils.SLASH);
 			sb.append(s);
 		}
 		if (sb.length() == 0)
-			return "/";
+			return StringUtils.SLASH;
 		return sb.toString();
 	}
 
@@ -204,7 +195,7 @@ public final class Util {
 		try {
 			while ((buffer = in.readLine()) != null) {
 				sb.append(buffer);
-				sb.append(Util.NL_CHAR);
+				sb.append(StringUtils.NL_CHAR);
 			}
 		} finally {
 			in.close();

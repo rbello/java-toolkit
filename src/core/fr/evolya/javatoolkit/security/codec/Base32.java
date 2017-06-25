@@ -1,6 +1,6 @@
 package fr.evolya.javatoolkit.security.codec;
 
-import fr.evolya.javatoolkit.code.StringUtils;
+import fr.evolya.javatoolkit.code.utils.StringUtils;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more

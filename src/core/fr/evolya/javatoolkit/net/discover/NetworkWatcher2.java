@@ -13,7 +13,8 @@ import java.util.List;
 import fr.evolya.javatoolkit.app.AppActivity;
 import fr.evolya.javatoolkit.app.ThreadedService;
 import fr.evolya.javatoolkit.code.Logs;
-import fr.evolya.javatoolkit.code.Util;
+import fr.evolya.javatoolkit.code.utils.StringUtils;
+import fr.evolya.javatoolkit.code.utils.Utils;
 import fr.evolya.javatoolkit.net.discover.events.OnInterfaceDetected;
 import fr.evolya.javatoolkit.net.discover.events.OnInterfaceDisabled;
 import fr.evolya.javatoolkit.net.discover.events.OnInterfaceEnabled;
@@ -193,7 +194,7 @@ public class NetworkWatcher2 extends ThreadedService
 			for (InetAddress addr : iface.getAddresses()) {
 				if (addr instanceof Inet4Address) {
 					String name = addr.toString();
-					if (name.startsWith(Util.SLASH)) name = name.substring(1);
+					if (name.startsWith(StringUtils.SLASH)) name = name.substring(1);
 					if (name.equals(ip))
 					{
 						return new Object[]{ iface, addr };
@@ -310,7 +311,7 @@ public class NetworkWatcher2 extends ThreadedService
 		// TODO Implémenter un délais plus long pour ce type de recherche
 		
 		try {
-			String[] data = Util.readAll(new URL("http://ip.evolya.fr/isp/")).split(Util.NL);
+			String[] data = Utils.readAll(new URL("http://ip.evolya.fr/isp/")).split(StringUtils.NL);
 //			String[] data = "RemoteAddress=78.218.214.148\nRemoteHost=cof16-1-78-218-214-148.fbx.proxad.net\nISP=AS12322 Free SAS\nGeoipCountryCode=FR\nGeoipCountryName=France\nGeoipRegionCode=B3\nGeoipCityName=Montgiscard\nGeoipLat=43.460701\nGeoipLng=1.567400".split(Util.NL);
 //			if (false) throw new IOException();
 			

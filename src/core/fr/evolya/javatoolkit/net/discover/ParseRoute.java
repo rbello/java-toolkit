@@ -9,7 +9,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 
-import fr.evolya.javatoolkit.code.Util;
+import fr.evolya.javatoolkit.code.utils.StringUtils;
+import fr.evolya.javatoolkit.code.utils.Utils;
 
 /**
  * Find out the local IP address and default gateway
@@ -63,11 +64,11 @@ public class ParseRoute
 
     private void parse() 
     {
-        if(Util.isWindows())
+        if(Utils.isWindows())
         {
             parseWindows();
         }
-        else if(Util.isLinux())
+        else if(Utils.isLinux())
         {
             parseLinux();
         }
@@ -133,7 +134,7 @@ public class ParseRoute
                         if(obj instanceof Inet4Address)
                         {
                             _ip =  obj.toString();
-                            if(_ip.startsWith(Util.SLASH)) _ip = _ip.substring(1);
+                            if(_ip.startsWith(StringUtils.SLASH)) _ip = _ip.substring(1);
                             return;
                         }
                     }

@@ -14,8 +14,8 @@ import fr.evolya.javatoolkit.cli.v2.TextShell.Observable;
 import fr.evolya.javatoolkit.cli.v2.TextShell.OutputStream;
 import fr.evolya.javatoolkit.cli.v2.TextShell.PromptOutputStream;
 import fr.evolya.javatoolkit.cli.v2.TextShell.Reader;
-import fr.evolya.javatoolkit.code.Util;
 import fr.evolya.javatoolkit.code.annotations.AsynchOperation;
+import fr.evolya.javatoolkit.code.utils.StringUtils;
 
 public class SystemInputOutputStream implements OutputStream, InputStream, PromptOutputStream {
 
@@ -63,7 +63,7 @@ public class SystemInputOutputStream implements OutputStream, InputStream, Promp
 
 	@Override
 	public OutputStream println(String str, boolean error) {
-		return print(str + Util.NL_CHAR, error);
+		return print(str + StringUtils.NL_CHAR, error);
 	}
 
 	@Override
@@ -98,31 +98,31 @@ public class SystemInputOutputStream implements OutputStream, InputStream, Promp
 
 	@Override
 	public InputStream read(Reader<?> reader) {
-		return TextShell.Utils.invokeAsynch(this, reader);
+		return TextShell.ShellUtils.invokeAsynch(this, reader);
 	}
 	
 	@Override
 	@AsynchOperation
 	public InputStream read(LineReader reader) {
-		return TextShell.Utils.invokeAsynch(this, reader);
+		return TextShell.ShellUtils.invokeAsynch(this, reader);
 	}
 
 	@Override
 	@AsynchOperation
 	public InputStream read(IntReader reader) {
-		return TextShell.Utils.invokeAsynch(this, reader);
+		return TextShell.ShellUtils.invokeAsynch(this, reader);
 	}
 
 	@Override
 	@AsynchOperation
 	public InputStream read(FloatReader reader) {
-		return TextShell.Utils.invokeAsynch(this, reader);
+		return TextShell.ShellUtils.invokeAsynch(this, reader);
 	}
 
 	@Override
 	@AsynchOperation
 	public InputStream read(BooleanReader reader) {
-		return TextShell.Utils.invokeAsynch(this, reader);
+		return TextShell.ShellUtils.invokeAsynch(this, reader);
 	}
 
 	public BufferedReader getInputStream() {

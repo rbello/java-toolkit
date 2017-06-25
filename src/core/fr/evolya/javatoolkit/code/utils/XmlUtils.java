@@ -1,4 +1,4 @@
-package fr.evolya.javatoolkit.xmlconfig;
+package fr.evolya.javatoolkit.code.utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +14,9 @@ import org.w3c.dom.NodeList;
  * 
  * @version 1.1
  */
-public class XmlTool {
+public final class XmlUtils {
 
-	private XmlTool() {
+	private XmlUtils() {
 	}
 	
     /**

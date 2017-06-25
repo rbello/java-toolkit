@@ -15,7 +15,7 @@ import fr.evolya.javatoolkit.cli.v2.TextShell.Observable;
 import fr.evolya.javatoolkit.cli.v2.TextShell.RichTextOutputStream;
 import fr.evolya.javatoolkit.code.MutableMap;
 import fr.evolya.javatoolkit.code.MutableMap.Setter;
-import fr.evolya.javatoolkit.code.Util;
+import fr.evolya.javatoolkit.code.utils.StringUtils;
 
 public class TextPaneOutputStream implements RichTextOutputStream<SimpleAttributeSet> {
 
@@ -100,7 +100,7 @@ public class TextPaneOutputStream implements RichTextOutputStream<SimpleAttribut
 
 	@Override
 	public RichTextOutputStream<SimpleAttributeSet> println(String str) {
-		return print(str + Util.NL_CHAR, false);
+		return print(str + StringUtils.NL_CHAR, false);
 	}
 
 	@Override
@@ -121,7 +121,7 @@ public class TextPaneOutputStream implements RichTextOutputStream<SimpleAttribut
 
 	@Override
 	public RichTextOutputStream<SimpleAttributeSet> println(String str, boolean error) {
-		return print(str + Util.NL_CHAR, error);
+		return print(str + StringUtils.NL_CHAR, error);
 	}
 
 	@Override

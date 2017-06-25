@@ -8,7 +8,7 @@ import fr.evolya.javatoolkit.app.config.NonPersistentConfiguration;
 import fr.evolya.javatoolkit.app.config.PropertiesFileConfiguration;
 import fr.evolya.javatoolkit.appstandard.events.ConfigListener;
 import fr.evolya.javatoolkit.code.Logs;
-import fr.evolya.javatoolkit.code.Util;
+import fr.evolya.javatoolkit.code.utils.Utils;
 import fr.evolya.javatoolkit.events.attr.EventSource;
 
 /**
@@ -167,7 +167,7 @@ public abstract class AbstractConfigurableApplication
 		// Si la configuration n'a pas d'implementation précise
 		if (_config instanceof NonPersistentConfiguration) {
 			// On passe par la factory pour trouver une implémentation qui match avec l'extension
-			AppConfiguration config = configFactory(Util.get_extension(_configFilename), log);
+			AppConfiguration config = configFactory(Utils.get_extension(_configFilename), log);
 			// Impossible de fabriquer la config
 			if (config != null) {
 				// On conserve les anciennes valeurs

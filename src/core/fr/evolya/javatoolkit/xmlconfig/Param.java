@@ -6,6 +6,8 @@ import java.util.Map;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import fr.evolya.javatoolkit.code.utils.XmlUtils;
+
 /**
  * An object representing a parameter.
  *
@@ -86,7 +88,7 @@ class Param {
                 : Class.forName(className);
         } else if (typeName.equals("bean")) {
             Element elem = (Element)param;
-            List<Node> list = XmlTool.getChildrenByTagName(elem, "bean");
+            List<Node> list = XmlUtils.getChildrenByTagName(elem, "bean");
             value = XmlConfig.handleBean(conf, (Element)list.get(0), null, mapProperties, mapBeans);
             clazz = (className == null) ? value.getClass()
                 : Class.forName(className);

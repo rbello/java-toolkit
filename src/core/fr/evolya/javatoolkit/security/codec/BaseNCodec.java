@@ -16,7 +16,7 @@ package fr.evolya.javatoolkit.security.codec;
  * limitations under the License.
  */
 
-import fr.evolya.javatoolkit.code.StringUtils;
+import fr.evolya.javatoolkit.code.utils.StringUtils;
 
 /**
  * Abstract superclass for Base-N encoders and decoders.

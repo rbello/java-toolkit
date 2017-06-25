@@ -3,7 +3,7 @@ package fr.evolya.javatoolkit.cli;
 import java.io.IOException;
 import java.util.List;
 
-import fr.evolya.javatoolkit.code.Util;
+import fr.evolya.javatoolkit.code.utils.StringUtils;
 
 public class Handle {
 
@@ -165,7 +165,7 @@ public class Handle {
 	}
 
 	public synchronized void writeLine() {
-		writeLine(Util.EMPTYSTRING);
+		writeLine(StringUtils.EMPTYSTRING);
 	}
 
 	public synchronized void removeLines(int howMany) {

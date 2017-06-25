@@ -7,7 +7,7 @@ import java.util.TimeZone;
 
 import fr.evolya.javatoolkit.code.Cache;
 import fr.evolya.javatoolkit.code.Logs;
-import fr.evolya.javatoolkit.code.Util;
+import fr.evolya.javatoolkit.code.utils.Utils;
 import fr.evolya.javatoolkit.net.ftp.FTPDataTransferListener;
 import fr.evolya.javatoolkit.net.ftp.FTPFile;
 import fr.evolya.javatoolkit.net.ftp.FTPServerReference;
@@ -39,7 +39,7 @@ public class SynchDirectoryFTP implements SynchDirectory {
 	public String[] list(String path) {
 		
 		// Clean
-		path = Util.clean_path(_path + "/" + path);
+		path = Utils.clean_path(_path + "/" + path);
 		
 		// Get value
 		FTPFile[] list = cache.getValue(path);
@@ -75,7 +75,7 @@ public class SynchDirectoryFTP implements SynchDirectory {
 	private boolean exists(String path, int type) {
 		
 		// Clean
-		path = Util.clean_path(path);
+		path = Utils.clean_path(path);
 		
 		// Si un cache existe pour ce chemin, c'est qu'il s'agit d'un répertoire
 		if (cache.isCachedAndValid(path)) {
@@ -83,7 +83,7 @@ public class SynchDirectoryFTP implements SynchDirectory {
 		}
 		
 		// On recherche le parent de ce répertoire
-		String parent = Util.dirname(path);
+		String parent = Utils.dirname(path);
 		String filename = new File(path).getName();
 		
 		// On demande au cache le listing des fichiers
@@ -119,9 +119,9 @@ public class SynchDirectoryFTP implements SynchDirectory {
 	@Override
 	public void mkdir(String path) {
 		try {
-			path = Util.clean_path(path);
+			path = Utils.clean_path(path);
 			_server.mkdir(path);
-			cache.invalidate(Util.dirname(path));
+			cache.invalidate(Utils.dirname(path));
 		} catch (Exception e) {
 			handleException(e);
 		}
@@ -154,7 +154,7 @@ public class SynchDirectoryFTP implements SynchDirectory {
 	@Override
 	public Date getCreatedDate(String path) {
 		try {
-			return Util.toGMT(_server.getCreatedDate(path), this._timezone);
+			return Utils.toGMT(_server.getCreatedDate(path), this._timezone);
 		} catch (Exception e) {
 			handleException(e);
 			return null;
@@ -164,7 +164,7 @@ public class SynchDirectoryFTP implements SynchDirectory {
 	@Override
 	public Date getModifiedDate(String path) {
 		try {
-			return Util.toGMT(_server.getModifiedDate(path), this._timezone);
+			return Utils.toGMT(_server.getModifiedDate(path), this._timezone);
 		} catch (Exception e) {
 			handleException(e);
 			return null;
@@ -243,9 +243,9 @@ public class SynchDirectoryFTP implements SynchDirectory {
 		public void completed() {
 			try {
 				// On recupère la date de modification du fichier sur le serveur en GMT
-				Date modified = Util.toGMT(_server.getModifiedDate(path), _timezone);
+				Date modified = Utils.toGMT(_server.getModifiedDate(path), _timezone);
 				// On modifie cette date pour qu'elle soit comme celle du système de fichier d'origine
-				modified = Util.toTimeZone(modified, fs.getTimeZone());
+				modified = Utils.toTimeZone(modified, fs.getTimeZone());
 				// On modifie cette date sur le système local
 				file.setLastModified(modified.getTime());
 			} catch (Exception e) {

@@ -23,6 +23,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import fr.evolya.javatoolkit.code.utils.XmlUtils;
+
 /**
  * This class constructs objects from an XML file.
  * 
@@ -448,7 +450,7 @@ public class XmlConfig {
 		}
 
 		// Get the defined constructor (if any).
-		List<Node> constructors = XmlTool.getChildrenByTagName(elem, "constructor");
+		List<Node> constructors = XmlUtils.getChildrenByTagName(elem, "constructor");
 		if (constructors.size() > 1) {
 			throw new XmlConfigException("Multiple constructors defined for "
 					+ name);
@@ -601,7 +603,7 @@ public class XmlConfig {
 		}
 
 		Class<?> b_class = bean.getClass();
-		List<Node> params = XmlTool.getChildrenByTagName((Element) call, "param");
+		List<Node> params = XmlUtils.getChildrenByTagName((Element) call, "param");
 
 		Class<?>[] p_classes = new Class[params.size()];
 		Object[] p_values = new Object[params.size()];
@@ -745,7 +747,7 @@ public class XmlConfig {
 	protected static Object initializeBean(XmlConfig conf, Class<?> clazz, Node node,
 			Map<String, String> mapProperties, Map<String, Object> mapBeans) throws Exception {
 
-		List<Node> params = XmlTool.getChildrenByTagName((Element) node, "param");
+		List<Node> params = XmlUtils.getChildrenByTagName((Element) node, "param");
 		Class<?>[] p_classes = new Class[params.size()];
 		Object[] p_values = new Object[params.size()];
 		for (int i = 0; i < params.size(); i++) {

@@ -14,7 +14,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import java.util.TimeZone;
 
-import fr.evolya.javatoolkit.code.Util;
+import fr.evolya.javatoolkit.code.utils.Utils;
 
 public class SynchDirectoryFilesystem implements SynchDirectory {
 
@@ -121,7 +121,7 @@ public class SynchDirectoryFilesystem implements SynchDirectory {
 			// On arrondi à la seconde, car la plupart des systèmes de fichiers
 			// ne gèrent pas les millisecondes
 			long millis = (long) Math.floor(attr.creationTime().toMillis() / 1000) * 1000;
-			return Util.toGMT(new Date(millis), this.timezone);
+			return Utils.toGMT(new Date(millis), this.timezone);
 		}
 		catch (Exception ex) {
 			return null;
@@ -143,7 +143,7 @@ public class SynchDirectoryFilesystem implements SynchDirectory {
 		// On arrondi à la seconde, car la plupart des systèmes de fichiers
 		// ne gèrent pas les millisecondes
 		long millis = (long) Math.floor(file.lastModified() / 1000) * 1000;
-		return Util.toGMT(new Date(millis), timezone); 
+		return Utils.toGMT(new Date(millis), timezone); 
 	}
 
 	@Override

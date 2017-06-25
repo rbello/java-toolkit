@@ -1,4 +1,4 @@
-package fr.evolya.javatoolkit.code;
+package fr.evolya.javatoolkit.code.utils;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,6 +19,8 @@ package fr.evolya.javatoolkit.code;
 
 import java.io.UnsupportedEncodingException;
 
+import fr.evolya.javatoolkit.code.CharEncoding;
+
 /**
  * Converts String to and from bytes using the encodings required by the Java specification. These encodings are specified in <a
  * href="http://java.sun.com/j2se/1.4.2/docs/api/java/nio/charset/Charset.html">Standard charsets</a>
@@ -30,6 +32,17 @@ import java.io.UnsupportedEncodingException;
  * @since 1.4
  */
 public class StringUtils {
+	
+	public static final String WHITESPACE = " ";
+	public static final String EMPTYSTRING = "";
+	public static final String PIPE = "|";
+	public static final String NL = "\n";
+	public static final String TAB = "\t";
+	public static final String COMA = ",";
+	public static final String DOT = ".";
+	public static final String SLASH = "/";
+	public static final String DOT_ESCAPED = "\\.";
+	public static final char NL_CHAR = '\n';
 
     /**
      * Encodes the given string into a sequence of bytes using the ISO-8859-1 charset, storing the result into a new

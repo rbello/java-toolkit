@@ -17,9 +17,9 @@ import fr.evolya.javatoolkit.cli.v2.AdvancedShell;
 import fr.evolya.javatoolkit.cli.v2.BasicShell.Command;
 import fr.evolya.javatoolkit.cli.v2.TextShell;
 import fr.evolya.javatoolkit.code.MutableMap;
-import fr.evolya.javatoolkit.code.Util;
 import fr.evolya.javatoolkit.code.annotations.DesignPattern;
 import fr.evolya.javatoolkit.code.annotations.Pattern;
+import fr.evolya.javatoolkit.code.utils.Utils;
 
 @DesignPattern(type = Pattern.Adapter)
 public class JConsolePanel extends JPanel implements TextShell<TextPaneInputStream, TextPaneOutputStream> {
@@ -77,7 +77,7 @@ public class JConsolePanel extends JPanel implements TextShell<TextPaneInputStre
 				if (!preventDefault) {
 					
 					// Caractère non affichable
-					if (!Util.isPrintableChar(evt.getKeyChar())) {
+					if (!Utils.isPrintableChar(evt.getKeyChar())) {
 						return;
 					}
 

@@ -13,7 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import fr.evolya.javatoolkit.appstandard.AbstractSingleFrameApplication;
-import fr.evolya.javatoolkit.code.Util;
+import fr.evolya.javatoolkit.code.utils.Utils;
 import fr.evolya.javatoolkit.exceptions.AllreadyStartedException;
 
 /**

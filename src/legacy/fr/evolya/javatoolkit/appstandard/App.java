@@ -21,9 +21,9 @@ import fr.evolya.javatoolkit.appstandard.states.PausedState;
 import fr.evolya.javatoolkit.appstandard.states.StartedState;
 import fr.evolya.javatoolkit.appstandard.states.StoppedState;
 import fr.evolya.javatoolkit.code.Logs;
-import fr.evolya.javatoolkit.code.Util;
 import fr.evolya.javatoolkit.code.annotations.DesignPattern;
 import fr.evolya.javatoolkit.code.annotations.Pattern;
+import fr.evolya.javatoolkit.code.utils.Utils;
 import fr.evolya.javatoolkit.events.attr.EventSource;
 import fr.evolya.javatoolkit.exceptions.AllreadyStartedException;
 import fr.evolya.javatoolkit.exceptions.AllreadyStoppedException;
@@ -773,7 +773,7 @@ public abstract class App implements ILocalApplication {
             if (file.createNewFile())
             {
                 file.deleteOnExit();
-                Util.filePutContents(file, "" + runtimePid);
+                Utils.filePutContents(file, "" + runtimePid);
                 return true;
             }
         }

@@ -10,11 +10,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fr.evolya.javatoolkit.cli.argparser.Args;
-import fr.evolya.javatoolkit.code.Util;
 import fr.evolya.javatoolkit.code.annotations.AsynchOperation;
 import fr.evolya.javatoolkit.code.annotations.ByCopy;
 import fr.evolya.javatoolkit.code.annotations.ThreadSafe;
 import fr.evolya.javatoolkit.code.funcint.Callback;
+import fr.evolya.javatoolkit.code.utils.StringUtils;
+import fr.evolya.javatoolkit.code.utils.Utils;
 
 public class CLI {
 
@@ -389,19 +390,19 @@ public class CLI {
 		
 		// On a détecté des commandes à passer en pipe, on va les enregistrer
 		// dans la réponse aussi.
-		commandLine = Util.EMPTYSTRING;
+		commandLine = StringUtils.EMPTYSTRING;
 		int i = 0;
 		for (String token : new ArrayList<String>(tokensList)) {
 			if (result.pipeQuery != null) {
-				result.pipeQuery += (result.pipeQuery.isEmpty() ? Util.EMPTYSTRING : Util.WHITESPACE) + token;
+				result.pipeQuery += (result.pipeQuery.isEmpty() ? StringUtils.EMPTYSTRING : StringUtils.WHITESPACE) + token;
 				tokensList.remove(i);
 			}
-			else if (token.equals(Util.PIPE)) {
-				result.pipeQuery = Util.EMPTYSTRING;
+			else if (token.equals(StringUtils.PIPE)) {
+				result.pipeQuery = StringUtils.EMPTYSTRING;
 				tokensList.remove(i);
 			}
 			else {
-				commandLine += (commandLine.isEmpty() ? Util.EMPTYSTRING : Util.WHITESPACE) + token;
+				commandLine += (commandLine.isEmpty() ? StringUtils.EMPTYSTRING : StringUtils.WHITESPACE) + token;
 				i++;
 			}
 		}
@@ -424,7 +425,7 @@ public class CLI {
 	private void extract(Handle result, boolean isUserIntent, Object userObject) {
 		
 		// On enregistre la ligne de commande brute
-		result.stringRaw = Util.implode(Util.WHITESPACE, result.tokensAll);
+		result.stringRaw = Utils.implode(StringUtils.WHITESPACE, result.tokensAll);
 		
 		// On sauvegarde les paramàtres données
 		result.isUserIntent = isUserIntent;
