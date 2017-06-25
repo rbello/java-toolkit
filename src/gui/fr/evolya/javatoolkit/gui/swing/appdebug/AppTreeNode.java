@@ -7,9 +7,9 @@ import java.util.Map;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import fr.evolya.javatoolkit.app.cdi.Instance;
 import fr.evolya.javatoolkit.appstandard.AppPlugin;
 import fr.evolya.javatoolkit.appstandard.bridge.ILocalApplication;
-import fr.evolya.javatoolkit.code.Instance;
 import fr.evolya.javatoolkit.events.attr.EventSource;
 
 /**

@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 
 import fr.evolya.javatoolkit.app.App;
-import fr.evolya.javatoolkit.code.Instance.FuturInstance;
+import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 
 public class SwingApp extends App {
 
@@ -40,8 +40,8 @@ public class SwingApp extends App {
 				throw new RuntimeException(e);
 			}
 		}
-		FuturInstance result = new FuturInstance(Object.class);
-		FuturInstance exception = new FuturInstance(Exception.class);
+		FuturInstance<Object> result = new FuturInstance<>(Object.class);
+		FuturInstance<Exception> exception = new FuturInstance<>(Exception.class);
 		
 		// On change de thread
 		try {
@@ -49,8 +49,8 @@ public class SwingApp extends App {
 				try {
 					T t = task.call();
 					result.setInstance(t);
-				} catch (Exception e) {
-					exception.setInstance(exception);
+				} catch (Exception ex) {
+					exception.setInstance(ex);
 				}
 			});
 			if (!exception.isFutur()) {

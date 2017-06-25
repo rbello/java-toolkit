@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import fr.evolya.javatoolkit.code.Instance.FuturInstance;
+import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 
 public class Assert {
 	

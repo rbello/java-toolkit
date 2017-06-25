@@ -3,9 +3,9 @@ package fr.evolya.javatoolkit.events.fi;
 import java.awt.EventQueue;
 import java.util.concurrent.Callable;
 
+import fr.evolya.javatoolkit.app.cdi.Instance;
+import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 import fr.evolya.javatoolkit.code.Logs;
-import fr.evolya.javatoolkit.code.Instance;
-import fr.evolya.javatoolkit.code.Instance.FuturInstance;
 import fr.evolya.javatoolkit.test.Assert;
 import fr.evolya.javatoolkit.test.Assert.BeforeTests;
 import fr.evolya.javatoolkit.test.Assert.TestMethod;

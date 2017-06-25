@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import fr.evolya.javatoolkit.app.cdi.DependencyInjectionContext;
+import fr.evolya.javatoolkit.app.cdi.Instance;
+import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 import fr.evolya.javatoolkit.app.config.AppConfiguration;
 import fr.evolya.javatoolkit.app.config.NonPersistentConfiguration;
 import fr.evolya.javatoolkit.app.event.ApplicationBuilding;
@@ -14,8 +17,6 @@ import fr.evolya.javatoolkit.app.event.ApplicationStarted;
 import fr.evolya.javatoolkit.app.event.ApplicationStarting;
 import fr.evolya.javatoolkit.appstandard.bridge.ILocalApplication;
 import fr.evolya.javatoolkit.appstandard.bridge.services.ILocalService;
-import fr.evolya.javatoolkit.code.Instance;
-import fr.evolya.javatoolkit.code.Instance.FuturInstance;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.events.fi.Listener;
 import fr.evolya.javatoolkit.events.fi.Observable;
@@ -29,14 +30,24 @@ public abstract class App extends Observable
 	
 	private String _state = "Stopped";
 	
-	private DependencyInjectionContext cdi = new DependencyInjectionContext();
+	private DependencyInjectionContext cdi;
 	
 	public App() {
+		
+		// Create CDI context
+		cdi = new DependencyInjectionContext((task) -> {
+			this.invokeAndWaitOnGuiDispatchThread(task);
+		});
+		
+		// Register this class into CDI
 		cdi.register(App.class, new Instance<>(this));
+		
+		// Add configuration component
 		AppConfiguration conf = new NonPersistentConfiguration();
 		conf.setProperty("App.Name", "NoName");
 		conf.setProperty("App.Version", "0.0");
 		add(AppConfiguration.class, new Instance(conf));
+		
 	}
 	
 	public App add(Class<?> instance) {

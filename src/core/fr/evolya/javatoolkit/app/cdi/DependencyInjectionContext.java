@@ -1,4 +1,4 @@
-package fr.evolya.javatoolkit.app;
+package fr.evolya.javatoolkit.app.cdi;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -6,12 +6,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
-import fr.evolya.javatoolkit.code.Instance;
-import fr.evolya.javatoolkit.code.Instance.FuturInstance;
+import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.annotations.Inject;
+import fr.evolya.javatoolkit.code.funcint.Action;
 import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 
 public class DependencyInjectionContext {
@@ -21,6 +22,12 @@ public class DependencyInjectionContext {
 	private Map<Class<?>, Instance<?>> components = new HashMap<>();
 
 	private List<Injection> injections = new ArrayList<>();
+
+	private Action<Callable<?>> guiDelegate;
+	
+	public DependencyInjectionContext(Action<Callable<?>> guiDelegate) {
+		this.guiDelegate = guiDelegate;
+	}
 
 	public Map<Class<?>, Instance<?>> getComponents() {
 		return components;
@@ -165,7 +172,20 @@ public class DependencyInjectionContext {
 	public void build() {
 		synchronized (components) {
 			for (Instance<?> component : components.values()) {
-				if (component.isFutur()) {
+				// Allready created
+				if (!component.isFutur()) continue;
+				// Execute on GUI
+				if (component.isGuiInstance()) {
+					guiDelegate.action(new Callable<Instance<?>>() {
+						@Override
+						public Instance<?> call() throws Exception {
+							component.getInstance();
+							return component;
+						}
+					});
+				}
+				// Execute in this thead
+				else {
 					component.getInstance();
 				}
 			}

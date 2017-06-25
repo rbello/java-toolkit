@@ -1,11 +1,15 @@
-package fr.evolya.javatoolkit.code;
+package fr.evolya.javatoolkit.app.cdi;
 
+import java.lang.reflect.Constructor;
+
+import fr.evolya.javatoolkit.code.annotations.GuiTask;
 import fr.evolya.javatoolkit.code.funcint.Action;
 
 public class Instance<T> {
 	
 	protected T instance = null;
-	protected Class<T> clazz = null;
+	protected Class<T> type = null;
+	protected boolean gui;
 	
 	@SuppressWarnings("unchecked")
 	public <X extends T> Instance(X instance) {
@@ -16,14 +20,21 @@ public class Instance<T> {
 			throw new IllegalArgumentException("Circular instance");
 		}
 		this.instance = instance;
-		this.clazz = (Class<T>) instance.getClass();
+		this.type = (Class<T>) instance.getClass();
+		try {
+			Constructor<?> constructor = type.getConstructor(new Class<?>[] { });
+			this.gui = constructor.getAnnotation(GuiTask.class) != null;
+		}
+		catch (Exception e) {
+			this.gui = false;
+		}
 	}
 	
 	protected Instance() {
 	}
 	
 	public Class<?> getInstanceClass() {
-		return clazz;
+		return type;
 	}
 	
 	public Object getInstance() {
@@ -32,6 +43,10 @@ public class Instance<T> {
 	
 	public boolean isFutur() {
 		return false;
+	}
+	
+	public boolean isGuiInstance() {
+		return this.gui;
 	}
 	
 //	public static class OptionalInstance extends Instance {
@@ -44,26 +59,32 @@ public class Instance<T> {
 
 	public static class FuturInstance<T> extends Instance<T> {
 		
-		private Class<T> clazz;
+//		private Class<T> type;
 		private Throwable ex = null;
 		private Action<T> callback;
 		
 		public FuturInstance() {
-			super();
-			this.clazz = null;
+			this(null);
 		}
 		
-		public FuturInstance(Class<T> clazz) {
+		public FuturInstance(Class<T> type) {
 			super();
-			this.clazz = clazz;
+			this.type = type;
+			try {
+				Constructor<?> constructor = type.getConstructor(new Class<?>[] { });
+				this.gui = constructor.getAnnotation(GuiTask.class) != null;
+			}
+			catch (Exception e) {
+				this.gui = false;
+			}
 		}
 		
 		@Override
 		public synchronized T getInstance() {
-			if (this.clazz == null) return null;
+			if (this.type == null) return null;
 			if (isFutur()) {
 				try {
-					instance = (T) clazz.newInstance();
+					instance = (T) type.newInstance();
 					if (this.callback != null)
 						this.callback.action(instance);
 				}
@@ -77,7 +98,7 @@ public class Instance<T> {
 		
 		@Override
 		public Class<T> getInstanceClass() {
-			return clazz;
+			return type;
 		}
 		
 		public boolean isFutur() {
@@ -89,7 +110,7 @@ public class Instance<T> {
 			if (this.instance != null)
 				throw new IllegalStateException("FutureInstance is allready created");
 			this.instance = instance;
-			this.clazz = (Class<T>) instance.getClass();
+			this.type = (Class<T>) instance.getClass();
 			if (this.callback != null)
 				this.callback.action(instance);
 		}

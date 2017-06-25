@@ -10,8 +10,8 @@ import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import fr.evolya.javatoolkit.code.Instance;
-import fr.evolya.javatoolkit.code.Instance.FuturInstance;
+import fr.evolya.javatoolkit.app.cdi.Instance;
+import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.annotations.GuiTask;
 

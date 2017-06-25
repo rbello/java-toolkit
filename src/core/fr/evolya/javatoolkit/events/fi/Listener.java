@@ -3,7 +3,7 @@ package fr.evolya.javatoolkit.events.fi;
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
-import fr.evolya.javatoolkit.code.Instance;
+import fr.evolya.javatoolkit.app.cdi.Instance;
 import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 
 @SuppressWarnings({"rawtypes", "unchecked"})

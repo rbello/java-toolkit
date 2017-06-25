@@ -3,7 +3,7 @@ package fr.evolya.javatoolkit.events.fi;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 
-import fr.evolya.javatoolkit.code.Instance.FuturInstance;
+import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 import fr.evolya.javatoolkit.code.annotations.GuiTask;
 
 @SuppressWarnings({"rawtypes", "unchecked"})

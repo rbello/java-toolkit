@@ -5,10 +5,10 @@ import java.awt.Container;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import fr.evolya.javatoolkit.app.App;
+import fr.evolya.javatoolkit.app.cdi.Instance;
 import fr.evolya.javatoolkit.appstandard.AppPlugin;
 import fr.evolya.javatoolkit.appstandard.AppService;
 import fr.evolya.javatoolkit.appstandard.AppViewController;
-import fr.evolya.javatoolkit.code.Instance;
 import fr.evolya.javatoolkit.events.fi.Listener;
 
 public class ComponentTreeNode extends DefaultMutableTreeNode {
