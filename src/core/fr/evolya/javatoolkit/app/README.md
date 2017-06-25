@@ -45,11 +45,14 @@ The default lifecycle of an application will trigger this sequence of events :
 `ApplicationBuilding -> ApplicationStarting -> ApplicationStarted -> ApplicationReady -> GuiIsReady`
 All objects are created during `ApplicationBuilding` and dependencies injections are solved during this step.
 
-Then in each module, you can attach methods on runtime events :
+Then in each module, you can attach methods on runtime events and dependencies injections:
 
 ```java
 public class ModuleConsole {
 
+		@Inject
+		App application; // Injection
+		
 		@BindOnEvent(GuiIsReady.class)
 		@EventArgClassFilter(ConsoleView.class)
 		@GuiTask
