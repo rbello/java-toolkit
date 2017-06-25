@@ -106,7 +106,7 @@ public class Listener<EVENT> {
 			this.target = new Instance(target);
 		}
 		this.gui = onGui;
-		this.method = ReflectionUtils.findMethod(eventType.getMethods()[0], target);
+		this.method = ReflectionUtils.getMethodMatching(target, eventType.getMethods()[0]);
 		// On inscrit l'observable à ce moment.
 		observable.addListener(this);
 		return observable;

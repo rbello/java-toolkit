@@ -23,6 +23,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 import fr.evolya.javatoolkit.code.utils.XmlUtils;
 
 /**
@@ -566,10 +567,10 @@ public class XmlConfig {
 		Class<?> b_class = bean.getClass();
 		String m_name = getSetterMethodName(attr.getName());
 		Class<?>[] p_classes = new Class[] { attr.getClazz() };
-		Method method = getDeclaredMethod(b_class, m_name, p_classes);
+		Method method = ReflectionUtils.getMethodMatching(b_class, m_name, p_classes);
 		if (method == null) {
 			throw new XmlConfigException("Class " + b_class + " does "
-					+ "not contain method " + getMethodName(m_name, p_classes));
+					+ "not contain method " + ReflectionUtils.getMethodSignature(m_name, p_classes));
 		}
 
 		method.invoke(bean, new Object[] { attr.getValue() });
@@ -613,10 +614,10 @@ public class XmlConfig {
 			p_values[i] = param.getValue();
 		}
 
-		Method method = getDeclaredMethod(b_class, m_name, p_classes);
+		Method method = ReflectionUtils.getMethodMatching(b_class, m_name, p_classes);
 		if (method == null) {
 			throw new XmlConfigException("Class " + b_class.getName() + " does "
-					+ "not contain method " + getMethodName(m_name, p_classes));
+					+ "not contain method " + ReflectionUtils.getMethodSignature(m_name, p_classes));
 		}
 
 		method.invoke(bean, p_values);
@@ -670,7 +671,7 @@ public class XmlConfig {
 		Class<?>[] p_classes = new Class[] { l_class };
 		Object m_param[] = new Object[1];
 		m_param = new Object[1];
-		Method method = getDeclaredMethod(b_class, m_name, p_classes);
+		Method method = ReflectionUtils.getMethodMatching(b_class, m_name, p_classes);
 		
 		if (method != null) {
 			
@@ -689,7 +690,7 @@ public class XmlConfig {
 		
 		m_name = getGetterMethodName(l_name);
 		p_classes = new Class[] { };
-		method = getDeclaredMethod(b_class, m_name, p_classes);
+		method = ReflectionUtils.getMethodMatching(b_class, m_name, p_classes);
 		
 		if (method != null) {
 			if (method.getReturnType().equals(List.class)) {
@@ -715,7 +716,7 @@ public class XmlConfig {
 		
 		m_name = getSetterMethodName(l_name);
 		p_classes = new Class[] { List.class };
-		method = getDeclaredMethod(b_class, m_name, p_classes);
+		method = ReflectionUtils.getMethodMatching(b_class, m_name, p_classes);
 		if (method != null) {
 			
 			List<Object> b_list = new LinkedList<Object>();
@@ -764,7 +765,7 @@ public class XmlConfig {
 		} catch (Throwable t) {
 			throw new XmlConfigException("Failed to invoke method "
 					+ clazz.getName() + "."
-					+ getMethodName("<init>", p_classes), t);
+					+ ReflectionUtils.getMethodSignature("<init>", p_classes), t);
 		}
 	}
 
@@ -865,91 +866,6 @@ public class XmlConfig {
 		return sb.toString();
 	}
 
-	/**
-	 * Recursively search through the class hierarchy of <code>c</code> for
-	 * the specified method.
-	 * 
-	 * @revision Inca Framework : static
-	 */
-	protected static Method getDeclaredMethod(Class<?> clazz, String name, Class<?>[] args) {
-
-		Method out = null;
-		
-		for (Method m : clazz.getDeclaredMethods()) {
-			
-			// Le nom de la méthode ne correspond pas
-			if (!m.getName().equals(name)) {
-				continue;
-			}
-			
-			// On recherche les types des arguments de la méthode
-			Class<?>[] types = m.getParameterTypes();
-			
-			// Si le nombre d'argument ne match pas
-			if (args.length != types.length) {
-				continue;
-			}
-
-			StringBuilder sb = new StringBuilder();
-
-			// On parcours les types
-			int i = 0;
-			boolean ok = true;
-			for (Class<?> type : m.getParameterTypes()) {
-				
-				// R�cup�ration de l'argument correspondant au param�tre
-				Class<?> arg = args[i++];
-				
-				sb.append(type.getCanonicalName() + "/" + arg.getCanonicalName() + ",");
-				
-				// Type générique
-				// La plus-value de cette méthode est ici.
-				if (type.getCanonicalName().equals("java.lang.Object")) {
-					continue;
-				}
-
-				// Mauvais type d'argument
-				if (!type.getCanonicalName().equals(arg.getCanonicalName())) {
-					ok = false;
-					break;
-				}
-
-			}
-			
-			// Method found
-			if (ok) {
-				out = m;
-				break;
-			}
-			
-		}
-		
-		// Recursivity
-		if (out == null) {
-			clazz = clazz.getSuperclass();
-			if (clazz != null) {
-				out = getDeclaredMethod(clazz, name, args);
-			}
-		}
-		
-		return out;
-	}
-
-	/**
-	 * Helper method for generating method names.
-	 * 
-	 * @revision Inca Framework : static
-	 */
-	protected static String getMethodName(String n, Class<?>[] p) {
-		StringBuffer sb = new StringBuffer(n).append("(");
-		for (int i = 0; i < p.length; i++) {
-			if (i > 0) {
-				sb.append(", ");
-			}
-			sb.append(p[i].getName());
-		}
-		sb.append(")");
-		return sb.toString();
-	}
+	
 	
 }

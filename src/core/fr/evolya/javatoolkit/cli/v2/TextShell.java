@@ -183,7 +183,7 @@ public interface TextShell<IN extends TextShell.InputStream, OUT extends TextShe
 		}
 	}
 	
-	static abstract class Utils {
+	static abstract class ShellUtils {
 		public static Pattern REGEX = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
 		public static List<String> split(String input) {
 			Matcher m = REGEX .matcher(input);

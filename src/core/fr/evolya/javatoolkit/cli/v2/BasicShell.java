@@ -41,7 +41,7 @@ public class BasicShell<IN extends InputStream, OUT extends PromptOutputStream>
 
 	public static abstract class Command {
 		public static List<String> parse(String input) {
-			return TextShell.Utils.split(input.trim());
+			return TextShell.ShellUtils.split(input.trim());
 		}
 		public abstract void handle(List<String> args, String plain, String cmd);
 	}
