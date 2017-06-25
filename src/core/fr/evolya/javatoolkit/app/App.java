@@ -1,7 +1,6 @@
 package fr.evolya.javatoolkit.app;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -15,9 +14,9 @@ import fr.evolya.javatoolkit.app.event.ApplicationStarted;
 import fr.evolya.javatoolkit.app.event.ApplicationStarting;
 import fr.evolya.javatoolkit.appstandard.bridge.ILocalApplication;
 import fr.evolya.javatoolkit.appstandard.bridge.services.ILocalService;
-import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.Instance;
 import fr.evolya.javatoolkit.code.Instance.FuturInstance;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.events.fi.Listener;
 import fr.evolya.javatoolkit.events.fi.Observable;
 import fr.evolya.javatoolkit.gui.swing.SwingHelper;
@@ -28,15 +27,16 @@ public abstract class App extends Observable
 	
 	public static final Logger LOGGER = Logs.getLogger("App (v2)");
 	
-	private Map<Class<?>, Instance> components = new HashMap<>();
-	
 	private String _state = "Stopped";
 	
+	private DependencyInjectionContext cdi = new DependencyInjectionContext();
+	
 	public App() {
+		cdi.register(App.class, new Instance<>(this));
 		AppConfiguration conf = new NonPersistentConfiguration();
 		conf.setProperty("App.Name", "NoName");
 		conf.setProperty("App.Version", "0.0");
-		add(AppConfiguration.class, conf);
+		add(AppConfiguration.class, new Instance(conf));
 	}
 	
 	public App add(Class<?> instance) {
@@ -49,58 +49,39 @@ public abstract class App extends Observable
 	}
 	
 	public App add(Instance instance) {
-		return add(instance.getInstanceClass(), instance);
+		Class<?> type = instance.getInstanceClass();
+		if (type == null) throw new NullPointerException("Invalid pure futur object");
+		return add(type, instance);
 	}
 	
-	public App add(Class<?> clazz, Object instance) {
-		return add(clazz, new Instance(instance));
-	}
-	
-	public App add(Class<?> clazz, Instance instance) {
-		if (components.containsKey(clazz)) {
-			throw new IllegalAccessError("Component " + clazz.getSimpleName() + " allready exists");
-		}
-		components.put(clazz, instance);
+	public App add(Class<?> type, Instance instance) {
+		
+		// Register object in CDI context
+		cdi.register(type, instance);
+		
+		// Log
 		if (LOGGER.isLoggable(Logs.DEBUG)) {
 			LOGGER.log(Logs.DEBUG, String.format(
 					"Add component %s to app %s (%s)",
-					clazz.getSimpleName(),
+					type.getSimpleName(),
 					get(AppConfiguration.class).getProperty("App.Name"),
 					instance.isFutur() ? "futur" : "instance"
 					));
 		}
+		
+		// Search for events annotations
 		addListener(instance);
+		
 		return this;
 	}
 
-	public <T> T get(Class<T> clazz) {
-		if (!components.containsKey(clazz)) return null;
-//		T t = (T) components.get(clazz);
-//		if (t == null) {
-//			try {
-//				t = clazz.newInstance();
-//				System.out.println("Instantiation de " + clazz.getSimpleName());
-//				components.put(clazz, t);
-//			} catch (Throwable e) {
-//				System.err.println("Unable to instantiate " + clazz.getSimpleName());
-//			}
-//		}
-		return (T) components.get(clazz).getInstance();
+	public <T> T get(Class<T> type) {
+		return cdi.getInstance(type);
 	}
 
-	public Map<Class<?>, Instance> getComponents() {
-		return components;
+	public Map<Class<?>, Instance<?>> getComponents() {
+		return cdi.getComponents();
 	}
-	
-
-//	public App bind(Object listener) {
-//		if (listener != null) listeners.add(listener);
-//		return this;
-//	}
-//	
-//	public void bind(Class<?> class1, Runnable object) {
-//		
-//	}
 	
 	public String getState() {
 		return _state ;
@@ -117,10 +98,13 @@ public abstract class App extends Observable
 				ApplicationReady.class
 				);
 		
+		_state = "Building";
+		notify(ApplicationBuilding.class, this);
+		
+		cdi.build();
+		
 		_state = "Starting";
 		notify(ApplicationStarting.class, this);
-		
-		notify(ApplicationBuilding.class, this);
 		
 		_state = "Started";
 		notify(ApplicationStarted.class, this);
@@ -158,10 +142,10 @@ public abstract class App extends Observable
 		return get(AppConfiguration.class).toString("%s v%s", "App.Name", "App.Version");
 	}
 
-	public <T> T get(String id, Class<T> classe) {
-		if (!components.containsKey(id)) return null;
-		return (T) components.get(id).getInstance();
-	}
+//	public <T> T get(String id, Class<T> classe) {
+//		if (!components.containsKey(id)) return null;
+//		return (T) components.get(id).getInstance();
+//	}
 
 	public void setLogLevel(Level level) {
 		Logs.setDefaultLevel(level);
@@ -186,8 +170,7 @@ public abstract class App extends Observable
 
 	@Override
 	public ILocalService[] getPublishedServices() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -212,9 +195,8 @@ public abstract class App extends Observable
 	}
 	
 	public App remove(Class<?> clazz) {
-		if (!components.containsKey(clazz)) return this;
-		components.remove(clazz);
-		// TODO Detach events !
+		cdi.unregister(clazz);
+		// removeListener(clazz); TODO
 		return this;
 	}
 

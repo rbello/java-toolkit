@@ -61,7 +61,7 @@ public class AppTreeNode extends DefaultMutableTreeNode {
 			// On fabrique un noeud pour les plugins de l'application
 			final DefaultMutableTreeNode pluginsNode = new DefaultMutableTreeNode("Components");
 			// On parcours les composants
-			for (Map.Entry<Class<?>, Instance> component : app2.getComponents().entrySet()) {
+			for (Map.Entry<Class<?>, Instance<?>> component : app2.getComponents().entrySet()) {
 				// Et on fabrique les noeuds enfants
 				pluginsNode.add(new ComponentTreeNode(app2, component.getValue()));
 			}

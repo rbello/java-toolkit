@@ -1,5 +1,7 @@
 package fr.evolya.javatoolkit.code;
 
+import fr.evolya.javatoolkit.code.funcint.Action;
+
 public class Instance<T> {
 	
 	protected T instance = null;
@@ -44,6 +46,7 @@ public class Instance<T> {
 		
 		private Class<T> clazz;
 		private Throwable ex = null;
+		private Action<T> callback;
 		
 		public FuturInstance() {
 			super();
@@ -61,6 +64,8 @@ public class Instance<T> {
 			if (isFutur()) {
 				try {
 					instance = (T) clazz.newInstance();
+					if (this.callback != null)
+						this.callback.action(instance);
 				}
 				catch (Throwable ex) {
 					this.ex = ex;
@@ -85,6 +90,12 @@ public class Instance<T> {
 				throw new IllegalStateException("FutureInstance is allready created");
 			this.instance = instance;
 			this.clazz = (Class<T>) instance.getClass();
+			if (this.callback != null)
+				this.callback.action(instance);
+		}
+
+		public void onInstanceCreated(Action<T> action) {
+			this.callback = action;
 		}
 		
 	}

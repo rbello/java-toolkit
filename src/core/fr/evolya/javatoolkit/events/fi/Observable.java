@@ -10,9 +10,10 @@ import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.Instance;
 import fr.evolya.javatoolkit.code.Instance.FuturInstance;
+import fr.evolya.javatoolkit.code.Logs;
+import fr.evolya.javatoolkit.code.annotations.GuiTask;
 
 public abstract class Observable {
 
@@ -156,13 +157,11 @@ public abstract class Observable {
 			.forEach((method) -> {
 				BindOnEvent a = method.getAnnotation(BindOnEvent.class);
 				Class<?> eventType = a.value();
-				String[] tmp = eventType.toString().split("\\.");
-				String eventName = tmp[tmp.length - 1];
-				
+				String eventName = eventType.getSimpleName();
 				// Debug
 				if (LOGGER.isLoggable(Logs.DEBUG)) {
 					LOGGER.log(Logs.DEBUG, String.format(
-							"  `-> Bind event %s on method %s::%s",
+							"  `-> Bind event %s on method %s::%s()",
 							eventName,
 							instance.getInstanceClass().getSimpleName(),
 							method.getName()

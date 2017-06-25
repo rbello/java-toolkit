@@ -1,8 +1,8 @@
 package fr.evolya.javatoolkit.code.funcint;
 
 @FunctionalInterface
-public interface Action<A, B> {
+public interface Action<T> {
 	
-	void action(A a, B b);
+	void action(T arg);
 	
 }

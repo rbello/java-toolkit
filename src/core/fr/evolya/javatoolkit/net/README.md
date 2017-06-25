@@ -19,7 +19,7 @@ NetworkWatcher watcher = new NetworkWatcher();
 watcher.setUpdateFrequency(3000); // ms
 
 // Add listener
-watcher.getEventsService().bind(new NetworkWatcherListener {
+watcher.getEventsService().bind(new NetworkWatcherListener() {
 	
 	public void onInterfaceDetected(TypeInterface net, boolean enabled) {}
 	
