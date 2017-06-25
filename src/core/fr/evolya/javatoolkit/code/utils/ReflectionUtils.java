@@ -113,6 +113,7 @@ public final class ReflectionUtils {
      * @param baseClass the base class
      * @param childClass the child class
      * @return a list of the raw classes for the actual type arguments.
+     * @see http://www.artima.com/weblogs/viewpost.jsp?thread=208860
      */
     public static <T> List<Class<?>> getTypeArguments(
             Class<T> baseClass, Class<? extends T> childClass)
@@ -123,10 +124,10 @@ public final class ReflectionUtils {
         while (!baseClass.equals(getClass(type))) {
             if (type instanceof Class) {
                 // there is no useful information for us in raw types, so just keep going.
-                type = ((Class) type).getGenericSuperclass();
+                type = ((Class<?>) type).getGenericSuperclass();
             } else {
                 ParameterizedType parameterizedType = (ParameterizedType) type;
-                Class<?> rawType = (Class) parameterizedType.getRawType();
+                Class<?> rawType = (Class<?>) parameterizedType.getRawType();
 
                 Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
                 TypeVariable<?>[] typeParameters = rawType.getTypeParameters();
@@ -144,7 +145,7 @@ public final class ReflectionUtils {
         // the raw class for that type argument.
         Type[] actualTypeArguments;
         if (type instanceof Class) {
-            actualTypeArguments = ((Class) type).getTypeParameters();
+            actualTypeArguments = ((Class<?>) type).getTypeParameters();
         } else {
             actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
         }
@@ -165,6 +166,7 @@ public final class ReflectionUtils {
      *
      * @param type the type
      * @return the underlying class
+     * @see http://www.artima.com/weblogs/viewpost.jsp?thread=208860
      */
     public static Class<?> getClass(Type type)
     {
