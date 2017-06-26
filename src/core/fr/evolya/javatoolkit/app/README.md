@@ -69,7 +69,7 @@ Annotation used:
 - Annotation `@GuiTask` will force execution on Event Dispatch Thread (EDT).
 - Annotation `@Inject` will inject the dependency according to field type.
 
-A bootstrap for [creating a Swing application using MVC](https://github.com/rbello/java-toolkit/tree/master/src/tests/fr/evolya/javatoolkit/code/app/swing) is available.
+A bootstrap for [creating a Swing application using MVC](https://github.com/rbello/java-toolkit/tree/master/src/tests/fr/evolya/javatoolkit/core/app/swing) is available.
 
 ## Credits
 
