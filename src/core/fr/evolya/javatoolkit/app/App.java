@@ -36,7 +36,13 @@ public abstract class App extends Observable
 		
 		// Create CDI context
 		cdi = new DependencyInjectionContext((task) -> {
-			this.invokeAndWaitOnGuiDispatchThread(task);
+			try {
+				this.invokeAndWaitOnGuiDispatchThread(task);
+			}
+			catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		});
 		
 		// Register this class into CDI
@@ -47,6 +53,13 @@ public abstract class App extends Observable
 		conf.setProperty("App.Name", "NoName");
 		conf.setProperty("App.Version", "0.0");
 		add(AppConfiguration.class, new Instance(conf));
+		
+		// Intercept SIGINT signal
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+		    public void run() {
+		    	// TODO
+		    }
+		 });
 		
 	}
 	

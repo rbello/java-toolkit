@@ -37,7 +37,7 @@ public class Instance<T> {
 		return type;
 	}
 	
-	public Object getInstance() {
+	public T getInstance() {
 		return instance;
 	}
 	
@@ -47,6 +47,10 @@ public class Instance<T> {
 	
 	public boolean isGuiInstance() {
 		return this.gui;
+	}
+	
+	public synchronized T getInstance(Action<Runnable> guiDelegate) {
+		return instance;
 	}
 	
 //	public static class OptionalInstance extends Instance {
@@ -81,19 +85,35 @@ public class Instance<T> {
 		
 		@Override
 		public synchronized T getInstance() {
+			return getInstance(null);
+		}
+		
+		@Override
+		public synchronized T getInstance(Action<Runnable> guiDelegate) {
 			if (this.type == null) return null;
 			if (isFutur()) {
-				try {
-					instance = (T) type.newInstance();
-					if (this.callback != null)
-						this.callback.action(instance);
+				if (gui && guiDelegate != null) {
+					guiDelegate.call(() -> {
+						createInstance();
+					});
 				}
-				catch (Throwable ex) {
-					this.ex = ex;
-					ex.printStackTrace();
+				else {
+					createInstance();
 				}
+				if (this.callback != null)
+					this.callback.call(instance);
 			}
 			return instance;
+		}
+		
+		private void createInstance() {
+			try {
+				instance = (T) type.newInstance();
+			}
+			catch (Throwable ex) {
+				this.ex = ex;
+				ex.printStackTrace();
+			}
 		}
 		
 		@Override
@@ -101,6 +121,7 @@ public class Instance<T> {
 			return type;
 		}
 		
+		@Override
 		public boolean isFutur() {
 			return instance == null && ex == null;
 		}
@@ -112,7 +133,7 @@ public class Instance<T> {
 			this.instance = instance;
 			this.type = (Class<T>) instance.getClass();
 			if (this.callback != null)
-				this.callback.action(instance);
+				this.callback.call(instance);
 		}
 
 		public void onInstanceCreated(Action<T> action) {

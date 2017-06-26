@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
@@ -23,9 +22,9 @@ public class DependencyInjectionContext {
 
 	private List<Injection> injections = new ArrayList<>();
 
-	private Action<Callable<?>> guiDelegate;
+	private Action<Runnable> guiDelegate;
 	
-	public DependencyInjectionContext(Action<Callable<?>> guiDelegate) {
+	public DependencyInjectionContext(Action<Runnable> guiDelegate) {
 		this.guiDelegate = guiDelegate;
 	}
 
@@ -54,7 +53,7 @@ public class DependencyInjectionContext {
 			}
 			return null;
 		}
-		return (T) components.get(type).getInstance();
+		return (T) components.get(type).getInstance(guiDelegate);
 	}
 	
 	public void register(Class<?> type, Instance<?> instance) {
@@ -105,7 +104,7 @@ public class DependencyInjectionContext {
 			.filter(injection -> !injection.done && 
 					injection.type == instance.getInstanceClass())
 			.forEach((injection) -> {
-				injection.inject(instance.getInstance());
+				injection.inject(instance.getInstance(guiDelegate));
 				injection.done = true;
 			});
 	}
@@ -174,20 +173,7 @@ public class DependencyInjectionContext {
 			for (Instance<?> component : components.values()) {
 				// Allready created
 				if (!component.isFutur()) continue;
-				// Execute on GUI
-				if (component.isGuiInstance()) {
-					guiDelegate.action(new Callable<Instance<?>>() {
-						@Override
-						public Instance<?> call() throws Exception {
-							component.getInstance();
-							return component;
-						}
-					});
-				}
-				// Execute in this thead
-				else {
-					component.getInstance();
-				}
+				component.getInstance(guiDelegate);
 			}
 		}
 	}
@@ -209,7 +195,7 @@ public class DependencyInjectionContext {
 			LOGGER.log(Logs.DEBUG_FINE, "Inject " + instance.getClass().getSimpleName() + " into " + this);
 			field.setAccessible(true);
 			try {
-				field.set(this.instance.getInstance(), instance);
+				field.set(this.instance.getInstance(guiDelegate), instance);
 			}
 			catch (Exception e) {
 				// TODO Auto-generated catch block

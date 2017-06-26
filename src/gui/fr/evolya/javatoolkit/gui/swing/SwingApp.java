@@ -58,6 +58,10 @@ public class SwingApp extends App {
 			}
 			return (T) result.getInstance();
 		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			return null;
+		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
