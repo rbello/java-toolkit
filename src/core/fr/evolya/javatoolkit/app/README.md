@@ -42,7 +42,7 @@ public static void main(String[] args) {
 ```
 
 The default lifecycle of an application will trigger this sequence of events : 
-`ApplicationBuilding -> ApplicationStarting -> ApplicationStarted -> ApplicationReady -> GuiIsReady`
+`ApplicationBuilding -> ApplicationStarting -> ApplicationStarted -> ApplicationReady`
 All objects are created during `ApplicationBuilding` and dependencies injections are solved during this step.
 
 Then in each module, you can attach methods on runtime events and dependencies injections:
@@ -67,6 +67,8 @@ Annotation used:
 - Annotation `@BindOnEvent(Class<Event>)` is used to define witch event to listener.
 - Annotation `@EventArgClassFilter(Class<Event>)` will filter only events triggered by the given source.
 - Annotation `@GuiTask` will force execution on Event Dispatch Thread (EDT).
+
+A bootstrap for [creating a Swing application using MVC](https://github.com/rbello/java-toolkit/tree/master/src/tests/fr/evolya/javatoolkit/code/app/swing).
 
 ## Credits
 
