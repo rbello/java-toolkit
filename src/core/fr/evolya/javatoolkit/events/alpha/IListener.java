@@ -3,21 +3,21 @@ package fr.evolya.javatoolkit.events.alpha;
 /**
  * Interface pour les listeners.
  * 
- * Cette interface est utilisée par la classe IObservable.
+ * Cette interface est utilisÃ©e par la classe IObservable.
  * 
  * <E> Le type d'event
  */
 public interface IListener<E> {
 
 	/**
-	 * Appelé lors de la notification d'un événement.
+	 * AppelÃ© lors de la notification d'un Ã©vÃ©nement.
 	 * 
 	 * Le retour boolean permet de stopper la propagation de l'event
-	 * si la valeur renvoyée est FALSE. Lors de l'invocation du trigger()
-	 * il est possible de récupérer ce boolean, et d'interrompre aussi
+	 * si la valeur renvoyÃ©e est FALSE. Lors de l'invocation du trigger()
+	 * il est possible de rÃ©cupÃ©rer ce boolean, et d'interrompre aussi
 	 * une partie de l'execution. C'est un comportement facultatif.
 	 * 
-	 * Pour ne pas perturber le système, renvoyer TRUE sauf si vous avez
+	 * Pour ne pas perturber le systÃ¨me, renvoyer TRUE sauf si vous avez
 	 * une bonne raison de vous interompre l'envoie de l'event.  
 	 * 
 	 * @param event L'identifiant ou l'objet de l'event

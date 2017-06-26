@@ -46,6 +46,46 @@ Using inline-code :
 	          });
 ```
 
+## Usage of ATTR implementation
+
+```java
+public interface MyEventListener extends EventListener {
+	// Define your own methods here...
+	public void onSomethingBegins(Something objet);
+	public void onSomethingFinished(Something objet, boolean result);
+}
+
+public class MySubscriber {
+
+	private EventSource<MyEventListener> source = new EventSource<>(MyEventListener.class);
+	
+	public MySubscriber() {
+	
+		// Bind an instance of event interface
+		source.bind(new MyEventListener() {
+			...
+		});
+		
+		// Bind a method (by reflection)
+		source.bind("onSomethingBegins", this, "handleOnSomethingBegins");
+		
+		// Bind a runnable
+		source.bind("onSomethingFinished", () -> {
+			// Execute but arguments are lost
+		});
+		
+		// Then trigger an event
+		source.trigger("onSomethingFinished", new Something(), false);
+		
+	}
+	
+	public void handleOnSomethingBegins(Something objet) {
+		// This method was subscribed and have to respect prototype
+	}
+
+}
+```
+
 ## Credits
 
 R. Bello

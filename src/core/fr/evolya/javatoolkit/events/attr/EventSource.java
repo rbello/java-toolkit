@@ -263,7 +263,7 @@ public /*abstract*/ class EventSource<L extends EventListener> {
 	}
 	
 	/**
-	 * Associer un IListener � un event en particulier.
+	 * Associer un IListener à un event en particulier.
 	 * 
 	 * @param eventName Le nom de l'event.
 	 * @param listener L'instance du listener.
