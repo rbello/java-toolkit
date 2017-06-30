@@ -1,6 +1,7 @@
 package fr.evolya.javatoolkit.events.fi;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.function.Predicate;
 
 import fr.evolya.javatoolkit.app.cdi.Instance;
@@ -17,14 +18,8 @@ public class Listener<EVENT> {
 	
 	protected boolean gui = false;
 	protected Predicate<Object>[] filters = null;
+	private boolean isStatic;
 	
-	
-	/**
-	 * Constructeur.
-	 *
-	 * @param observable 
-	 * @param eventType
-	 */
 	public Listener(Observable observable, Class<EVENT> eventType) {
 		if (observable == null || eventType == null) {
 			throw new NullPointerException();
@@ -33,24 +28,18 @@ public class Listener<EVENT> {
 		this.eventType = eventType;
 		this.target = null;
 		this.method = null;
+		this.isStatic = false;
 	}
-	
-//	protected Listener(Observable observable, Class<EVENT> eventType, Instance<?> target) {
-//		this(observable, eventType, target, getMethod(eventType.getMethods()[0], target));
-//	}
 	
 	protected Listener(Observable observable, Class<EVENT> eventType, Instance<?> target, Method method) {
 		if (observable == null || eventType == null || target == null || method == null) {
 			throw new NullPointerException();
 		}
-//		if (method.getDeclaringClass() != target.getInstanceClass()) {
-//			throw new IllegalArgumentException("Not the same declaring class ("
-//					+ method.getDeclaringClass() + " / " + target.getInstanceClass() + ")");
-//		}
 		this.observable = observable;
 		this.eventType = eventType;
 		this.target = target;
 		this.method = method;
+		this.isStatic = Modifier.isStatic(method.getModifiers());
 	}
 	
 	public Class<?> getEventType() {
@@ -124,6 +113,14 @@ public class Listener<EVENT> {
 
 	public Object getTarget() {
 		return target.getInstance();
+	}
+	
+	public boolean isStaticCall() {
+		return isStatic;
+	}
+
+	public Instance<?> getInstance() {
+		return target;
 	}
 	
 }
