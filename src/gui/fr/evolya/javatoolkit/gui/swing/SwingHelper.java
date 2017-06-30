@@ -1,11 +1,17 @@
 package fr.evolya.javatoolkit.gui.swing;
 
+import java.awt.AWTException;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Enumeration;
 import java.util.logging.Logger;
@@ -302,6 +308,46 @@ public class SwingHelper {
 			return component;
 		}
 		return getTopParentZ(component.getParent());
+	}
+	
+	public static boolean enableHideToSystemTray(final JFrame frame, final Image icon, 
+			final String tooltip) {
+		
+		if (!SystemTray.isSupported()){
+			return false;
+		}
+		
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		
+		final SystemTray tray = SystemTray.getSystemTray();
+		
+		TrayIcon trayIcon = new TrayIcon(icon, tooltip);
+		
+        trayIcon.setImageAutoSize(true);
+        trayIcon.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frame.setExtendedState(JFrame.NORMAL);
+				frame.setVisible(true);
+				tray.remove(trayIcon);
+			}
+		});
+        
+        frame.addWindowListener(new WindowAdapter() {
+        	@Override
+        	public void windowClosing(WindowEvent e) {
+        		// On place l'icône
+				try {
+					tray.add(trayIcon);
+				}
+				catch (AWTException ex) {
+					return;
+				}
+				frame.setVisible(false);
+				frame.setExtendedState(JFrame.ICONIFIED);
+        	}
+		});
+
+        return true;
 	}
 	
 }
