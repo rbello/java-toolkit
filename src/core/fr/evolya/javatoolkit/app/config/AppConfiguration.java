@@ -11,8 +11,6 @@ public interface AppConfiguration {
 
 	public boolean containsKey(String key);
 
-	public String getProperty(String key);
-	
 	public AppConfiguration setProperty(String key, String value);
 	
 	public AppConfiguration addProperties(Map<String, String> set);
@@ -20,5 +18,13 @@ public interface AppConfiguration {
 	public Map<String, String> getProperties();
 
 	public String toString(String string, String... properties);
+	
+	public String getProperty(String key);
+	
+	public String getProperty(String key, String defaultValue);
+
+	public long getPropertyInt(String key);
+	
+	public long getPropertyInt(String key, int defaultValue);
 
 }

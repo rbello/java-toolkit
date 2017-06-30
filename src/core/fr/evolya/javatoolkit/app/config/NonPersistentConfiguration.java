@@ -33,11 +33,6 @@ public class NonPersistentConfiguration implements AppConfiguration {
 	}
 
 	@Override
-	public String getProperty(String key) {
-		return _config.get(key);
-	}
-
-	@Override
 	public AppConfiguration setProperty(String key, String value) {
 		_config.put(key, value);
 		return this;
@@ -57,6 +52,26 @@ public class NonPersistentConfiguration implements AppConfiguration {
 	@Override
 	public String toString(String string, String... properties) {
 		return String.format(string, Arrays.stream(properties).filter(p -> _config.containsKey(p)).map(p -> _config.get(p)).collect(Collectors.toList()).toArray());
+	}
+
+	@Override
+	public String getProperty(String key) {
+		return _config.get(key);
+	}
+	
+	@Override
+	public String getProperty(String key, String defaultValue) {
+		return _config.containsKey(key) ? _config.get(key) : defaultValue;
+	}
+
+	@Override
+	public long getPropertyInt(String key) {
+		return Integer.parseInt(_config.get(key));
+	}
+
+	@Override
+	public long getPropertyInt(String key, int defaultValue) {
+		return _config.containsKey(key) ? Integer.parseInt(_config.get(key)) : defaultValue;
 	}
 
 }
