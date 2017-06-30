@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import fr.evolya.javatoolkit.app.cdi.Instance;
 import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
@@ -40,106 +41,6 @@ public abstract class Observable {
 	 */
 	public final <T> Listener<T> when(Class<T> eventType) {
 		return new Listener<T>(Observable.this, eventType);
-	}
-	
-	final void addListener(Listener<?> listener) {
-		if (listener == null)
-			throw new NullPointerException();
-		
-		if (listener.getMethod() == null)
-			throw new NullPointerException("Unable to add " + listener + ": no method");
-		
-		// TODO Synchronized
-		listeners.add(listener);
-		
-		// L'événement doit être répété
-		if (repeatedEvents.containsKey(listener.getEventType())) {
-			
-			Object[] args = repeatedEvents.get(listener.getEventType());
-			if (args != null) {
-				// Log
-				if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
-					String argsm = "";
-					for (int i = 0; i < args.length; ++i)
-						argsm += (i > 0 ? ", " : "") + (args[i] == null ? "null" : args[i].toString());
-					LOGGER.log(Logs.DEBUG_FINE, "  Repeat event " + listener.getEventType().getSimpleName() + " [" + argsm + "]"
-							+ " to " + listener.toString());
-				}
-				// Notify listener
-				execute(listener.getEventType(), listener.getMethod(), listener, args);
-			}
-		}
-		
-	}
-	
-	public final void notify(Class<?> eventType, Object... args) {
-		
-		// Debug
-		final boolean debug = LOGGER.isLoggable(Logs.DEBUG_FINE);
-		if (debug) {
-			String argsm = "";
-			for (int i = 0; i < args.length; ++i)
-				argsm += (i > 0 ? ", " : "") + (args[i] == null ? "null" : args[i].toString());
-			LOGGER.log(Logs.DEBUG_FINE, "  Notify event " + eventType.getSimpleName() + " [" + argsm + "]");
-		}
-		
-		// Mark as repeated
-		if (repeatedEvents.containsKey(eventType)) {
-			repeatedEvents.put(eventType, args);
-		}
-		
-		// Broadcast
-		new ArrayList<>(listeners).stream()
-			.filter((item) -> {
-				// On vérifie que ce soit bien ce type d'event qui soit demandé, et
-				// que le listener accepte les données.
-				return item.getEventType() == eventType && item.accept(args);
-			})
-			.forEach((item) -> {
-				// Debug
-				if (debug) {
-					LOGGER.log(Logs.DEBUG_FINE, "    `-> To handler " + item);
-				}
-				// On execute le listener
-				item.notify(args);
-			});
-	}
-	
-	protected final Object execute(Class<?> clazz, Method m, Listener<?> item, Object[] args) {
-		if (m == null) {
-			throw new NullPointerException("Method is null");
-		}
-		if (m.getParameters().length < args.length) {
-			Object[] copy = args;
-			args = new Object[m.getParameters().length];
-			for (int i = 0; i < args.length; ++i) {
-				args[i] = copy[i];
-			}
-		}
-		try {
-			Object target = item.getTarget();
-			if (target == null) throw new NullPointerException("Invoke target is null");
-			m.setAccessible(true);
-			return m.invoke(target, args);
-		}
-		catch (IllegalArgumentException e) {
-			//Method m2 = clazz.getMethods()[0];
-			LOGGER.log(Logs.ERROR, "Dispatch error");
-			LOGGER.log(Logs.INFO, "  Listener: " + item);
-			LOGGER.log(Logs.INFO, "  Event " + clazz.getSimpleName() + " : " + e.getMessage());
-			if (e.getMessage().equals("object is not an instance of declaring class")) {
-				LOGGER.log(Logs.INFO, "  Object class: " + item.getTarget().getClass().getName());
-				LOGGER.log(Logs.INFO, "  Declaring class: " + m.getDeclaringClass().getName());
-			}
-			LOGGER.log(Logs.INFO, "  Target method is " + item.getTarget().getClass() + "::" + m.getName() + "(" + Arrays.stream(m.getParameterTypes()).map(Class::getName).collect(Collectors.joining(", ")) + ")");
-//			LOGGER.log(IncaLogger.INFO, "  Expected arguments are: (" + Arrays.stream(m2.getParameterTypes()).map(Class::getName).collect(Collectors.joining(", ")) + ")");
-			LOGGER.log(Logs.INFO, "  Event arguments are: (" + Arrays.stream(args).map((o) -> o.getClass().getName()).collect(Collectors.joining(", ")) + ")");
-			e.printStackTrace();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		return Void.TYPE;
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -184,6 +85,118 @@ public abstract class Observable {
 				}
 				addListener(l);
 			});
+	}
+	
+	final void addListener(Listener<?> listener) {
+		if (listener == null)
+			throw new NullPointerException();
+		
+		if (listener.getMethod() == null)
+			throw new NullPointerException("Unable to add " + listener + ": no method");
+		
+		// TODO Synchronized
+		listeners.add(listener);
+		
+		// L'événement doit être répété
+		if (repeatedEvents.containsKey(listener.getEventType())) {
+			
+			Object[] args = repeatedEvents.get(listener.getEventType());
+			if (args != null) {
+				// Log
+				if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+					String argsm = "";
+					for (int i = 0; i < args.length; ++i)
+						argsm += (i > 0 ? ", " : "") + (args[i] == null ? "null" : args[i].toString());
+					LOGGER.log(Logs.DEBUG_FINE, "  Repeat event " + listener.getEventType().getSimpleName() + " [" + argsm + "]"
+							+ " to " + listener.toString());
+				}
+				// Notify listener
+				execute(listener.getEventType(), listener.getMethod(), listener, args);
+			}
+		}
+		
+	}
+	
+	public final void notify(Instance<?> target, Class<?> eventType, Object... args) {
+		notify(eventType, args, new ArrayList<>(listeners).stream()
+			.filter((item) -> {
+				// On vérifie que ce soit bien ce type d'event qui soit demandé, et
+				// que le listener accepte les données, et également qu'il s'agit bien
+				// de l'instance cible.
+				return item.getInstance() == target && item.getEventType() == eventType && item.accept(args);
+			}));
+	}
+	
+	public final void notify(Class<?> eventType, Object... args) {
+		notify(eventType, args, new ArrayList<>(listeners).stream()
+			.filter((item) -> {
+				// On vérifie que ce soit bien ce type d'event qui soit demandé, et
+				// que le listener accepte les données.
+				return item.getEventType() == eventType && item.accept(args);
+			}));
+	}
+	
+	private void notify(Class<?> eventType, Object[] args, Stream<Listener<?>> steam) {
+		
+		// Debug
+		final boolean debug = LOGGER.isLoggable(Logs.DEBUG_FINE);
+		if (debug) {
+			String argsm = "";
+			for (int i = 0; i < args.length; ++i)
+				argsm += (i > 0 ? ", " : "") + (args[i] == null ? "null" : args[i].toString());
+			LOGGER.log(Logs.DEBUG_FINE, "Notify event " + eventType.getSimpleName() + " [" + argsm + "]");
+		}
+		
+		// Mark as repeated
+		if (repeatedEvents.containsKey(eventType)) {
+			repeatedEvents.put(eventType, args);
+		}
+		
+		// Broadcast
+		steam.forEach((item) -> {
+				// Debug
+				if (debug) {
+					LOGGER.log(Logs.DEBUG_FINE, "  `-> To handler " + item);
+				}
+				// On execute le listener
+				item.notify(args);
+			});
+	}
+
+	protected final Object execute(Class<?> clazz, Method m, Listener<?> item, Object[] args) {
+		if (m == null) {
+			throw new NullPointerException("Method is null");
+		}
+		if (m.getParameters().length < args.length) {
+			Object[] copy = args;
+			args = new Object[m.getParameters().length];
+			for (int i = 0; i < args.length; ++i) {
+				args[i] = copy[i];
+			}
+		}
+		try {
+			Object target = item.isStaticCall() ? null : item.getTarget();
+			if (!item.isStaticCall() && target == null) 
+				throw new NullPointerException("Invoke target is null");
+			m.setAccessible(true);
+			return m.invoke(target, args);
+		}
+		catch (IllegalArgumentException e) {
+			LOGGER.log(Logs.ERROR, "Dispatch error");
+			LOGGER.log(Logs.INFO, "  Listener: " + item);
+			LOGGER.log(Logs.INFO, "  Event " + clazz.getSimpleName() + " : " + e.getMessage());
+			if (e.getMessage().equals("object is not an instance of declaring class")) {
+				LOGGER.log(Logs.INFO, "  Object class: " + item.getTarget().getClass().getName());
+				LOGGER.log(Logs.INFO, "  Declaring class: " + m.getDeclaringClass().getName());
+			}
+			LOGGER.log(Logs.INFO, "  Target method is " + item.getTarget().getClass() + "::" + m.getName() + "(" + Arrays.stream(m.getParameterTypes()).map(Class::getName).collect(Collectors.joining(", ")) + ")");
+			LOGGER.log(Logs.INFO, "  Event arguments are: (" + Arrays.stream(args).map((o) -> o.getClass().getName()).collect(Collectors.joining(", ")) + ")");
+			e.printStackTrace();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		return Void.TYPE;
 	}
 	
 	public final void repeatForNewListeners(Class<?>... events) {
