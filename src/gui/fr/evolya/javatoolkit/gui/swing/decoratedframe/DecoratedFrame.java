@@ -18,7 +18,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -32,11 +31,12 @@ import javax.swing.border.LineBorder;
 
 import fr.evolya.javatoolkit.app.App;
 import fr.evolya.javatoolkit.app.event.ApplicationStarting;
+import fr.evolya.javatoolkit.app.event.ApplicationWakeup;
 import fr.evolya.javatoolkit.events.fi.BindOnEvent;
 import fr.evolya.javatoolkit.events.fi.ModelCreated;
+import fr.evolya.javatoolkit.events.fi.ModelEvent.ModelItemAdded;
 import fr.evolya.javatoolkit.events.fi.Observable;
 import fr.evolya.javatoolkit.events.fi.ObservableList;
-import fr.evolya.javatoolkit.events.fi.ModelEvent.ModelItemAdded;
 import fr.evolya.javatoolkit.gui.swing.ComponentDragger;
 import fr.evolya.javatoolkit.gui.swing.ComponentResizer;
 
@@ -230,18 +230,26 @@ public class DecoratedFrame extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				if (!_isMaximized) {
 					setState(Frame.MAXIMIZED_BOTH);
-					_maximizeRestoreButton.setIcon(getImageIcon("restore.png"));
+					_maximizeRestoreButton.setIcon(getImageIcon("/fr/evolya/javatoolkit/gui/swing/decoratedframe/restore.png"));
 				}
 				else {
 					setState(Frame.NORMAL);
-					_maximizeRestoreButton.setIcon(getImageIcon("maximize.png"));
+					_maximizeRestoreButton.setIcon(getImageIcon("/fr/evolya/javatoolkit/gui/swing/decoratedframe/maximize.png"));
 				}
 			}
 		};
 		
 		_closeAction = new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				System.exit(1);
+				// Dispatch event before
+				DecoratedFrame.this.dispatchEvent(new WindowEvent(DecoratedFrame.this, WindowEvent.WINDOW_CLOSING));
+				// Then exit
+				if (getDefaultCloseOperation() == EXIT_ON_CLOSE)
+					System.exit(1);
+				else if (getDefaultCloseOperation() == DISPOSE_ON_CLOSE)
+					dispose();
+				else if (getDefaultCloseOperation() == HIDE_ON_CLOSE)
+					setVisible(false);
 			}
 		};
 		
@@ -250,7 +258,7 @@ public class DecoratedFrame extends JFrame {
 		Dimension d = new Dimension(40, 18);
 		
 		_iconizeButton = new JButton("");
-		_iconizeButton.setIcon(getImageIcon("minimize.png"));
+		_iconizeButton.setIcon(getImageIcon("/fr/evolya/javatoolkit/gui/swing/decoratedframe/minimize.png"));
 		_iconizeButton.setMinimumSize(d);
 		_iconizeButton.setPreferredSize(d);
 		_iconizeButton.setMaximumSize(d);
@@ -262,7 +270,7 @@ public class DecoratedFrame extends JFrame {
 		menuBar.add(_iconizeButton);
 		
 		_maximizeRestoreButton = new JButton("");
-		_maximizeRestoreButton.setIcon(getImageIcon("maximize.png"));
+		_maximizeRestoreButton.setIcon(getImageIcon("/fr/evolya/javatoolkit/gui/swing/decoratedframe/maximize.png"));
 		_maximizeRestoreButton.setMinimumSize(d);
 		_maximizeRestoreButton.setPreferredSize(d);
 		_maximizeRestoreButton.setMaximumSize(d);
@@ -277,7 +285,7 @@ public class DecoratedFrame extends JFrame {
 		d = new Dimension(50, (int) d.getHeight());
 		
 		_closeButton = new JButton("");
-		_closeButton.setIcon(getImageIcon("close.png"));
+		_closeButton.setIcon(getImageIcon("/fr/evolya/javatoolkit/gui/swing/decoratedframe/close.png"));
 		_closeButton.setMinimumSize(d);
 		_closeButton.setPreferredSize(d);
 		_closeButton.setMaximumSize(d);
@@ -344,16 +352,6 @@ public class DecoratedFrame extends JFrame {
 			
 		}
 		
-	}
-	
-	/**
-	 * Ce système n'est pas supporté par cette classe.
-	 * Utiliser setIconImage(Image) à la place.
-	 */
-	@Override
-	@Deprecated
-	public synchronized void setIconImages(List<? extends Image> icons) {
-		super.setIconImages(icons);
 	}
 	
 	/**
@@ -563,23 +561,17 @@ public class DecoratedFrame extends JFrame {
 		_closeAction = listener;
 	}
 	
-	@Override
-	public void dispose() {
-		// TODO Auto-generated method stub
-		super.dispose();
-	}
-	
 	/**
 	 * Permet de charger une image se trouvant dans le package de cette classe.
 	 */
 	protected static Image getImage(String filename) {
 		return Toolkit.getDefaultToolkit().getImage(
-				DecoratedFrame.class.getResource("/fr/evolya/javatoolkit/gui/swing/decoratedframe/" + filename));
+				DecoratedFrame.class.getResource(filename));
 	}
 	
 	/**
 	 * Permet de charger une image se trouvant dans le package de cette classe,
-	 * et d'en faire une ic�ne.
+	 * et d'en faire une icône.
 	 */
 	protected static ImageIcon getImageIcon(String filename) {
 		return new ImageIcon(getImage(filename));
@@ -611,6 +603,18 @@ public class DecoratedFrame extends JFrame {
 	
 	public MenuModel getMenuModel() {
 		return modelMenu;
+	}
+	
+	@BindOnEvent(ApplicationWakeup.class)
+	public void bringToFront() {
+		setVisible(true);
+		int state = getExtendedState();
+		state &= ~JFrame.ICONIFIED;
+		setExtendedState(state);
+		setAlwaysOnTop(true);
+		toFront();
+		requestFocus();
+		setAlwaysOnTop(false);
 	}
 	
 }
