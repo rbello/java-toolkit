@@ -42,7 +42,7 @@ public static void main(String[] args) {
 ```
 
 The default lifecycle of an application will trigger this sequence of events : 
-`ApplicationBuilding -> ApplicationStarting -> ApplicationStarted -> ApplicationReady`
+`BeforeApplicationStarted -> ApplicationBuilding -> ApplicationStarting -> ApplicationStarted -> ApplicationReady`
 All objects are created during `ApplicationBuilding` and dependencies injections are solved during this step.
 
 Then in each module, you can attach methods on application events and dependencies injections:

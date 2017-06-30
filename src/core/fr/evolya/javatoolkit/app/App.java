@@ -15,6 +15,7 @@ import fr.evolya.javatoolkit.app.event.ApplicationBuilding;
 import fr.evolya.javatoolkit.app.event.ApplicationReady;
 import fr.evolya.javatoolkit.app.event.ApplicationStarted;
 import fr.evolya.javatoolkit.app.event.ApplicationStarting;
+import fr.evolya.javatoolkit.app.event.BeforeApplicationStarted;
 import fr.evolya.javatoolkit.appstandard.bridge.ILocalApplication;
 import fr.evolya.javatoolkit.appstandard.bridge.services.ILocalService;
 import fr.evolya.javatoolkit.code.Logs;
@@ -84,8 +85,8 @@ public abstract class App extends Observable
 		cdi.register(type, instance);
 		
 		// Log
-		if (LOGGER.isLoggable(Logs.DEBUG)) {
-			LOGGER.log(Logs.DEBUG, String.format(
+		if (LOGGER.isLoggable(Logs.INFO)) {
+			LOGGER.log(Logs.INFO, String.format(
 					"Add component %s to app %s (%s)",
 					type.getSimpleName(),
 					get(AppConfiguration.class).getProperty("App.Name"),
@@ -95,6 +96,9 @@ public abstract class App extends Observable
 		
 		// Search for events annotations
 		addListener(instance);
+		
+		// Notify the event
+		notify(instance, BeforeApplicationStarted.class, this);
 		
 		return this;
 	}
