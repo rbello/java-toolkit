@@ -1,8 +1,10 @@
 package fr.evolya.javatoolkit.app.event;
 
+import fr.evolya.javatoolkit.app.App;
+
 @FunctionalInterface
 public interface WindowCloseIntent {
 
-	public void intentWindowClosing(Object view, Object sourceEvent);
+	public void intentWindowClosing(App app, Object view, Object sourceEvent);
 
 }

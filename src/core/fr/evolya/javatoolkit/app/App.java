@@ -15,6 +15,8 @@ import fr.evolya.javatoolkit.app.event.ApplicationBuilding;
 import fr.evolya.javatoolkit.app.event.ApplicationReady;
 import fr.evolya.javatoolkit.app.event.ApplicationStarted;
 import fr.evolya.javatoolkit.app.event.ApplicationStarting;
+import fr.evolya.javatoolkit.app.event.ApplicationStopped;
+import fr.evolya.javatoolkit.app.event.ApplicationStopping;
 import fr.evolya.javatoolkit.app.event.BeforeApplicationStarted;
 import fr.evolya.javatoolkit.appstandard.bridge.ILocalApplication;
 import fr.evolya.javatoolkit.appstandard.bridge.services.ILocalService;
@@ -29,7 +31,7 @@ public abstract class App extends Observable
 	
 	public static final Logger LOGGER = Logs.getLogger("App (v2)");
 	
-	private String _state = "Stopped";
+	private Class<?> _state = ApplicationStopped.class;
 	
 	private DependencyInjectionContext cdi;
 	
@@ -112,13 +114,16 @@ public abstract class App extends Observable
 	}
 	
 	public String getState() {
-		return _state ;
+		return _state.getSimpleName();
 	}
 	
 	public synchronized void start() {
 		
-		if (!"Stopped".equals(_state)) throw new IllegalStateException("App cannot be started");
+		// Check current state
+		if (_state != ApplicationStopped.class)
+			throw new IllegalStateException("App is already started");
 		
+		// Add events that the observable have to repeat to new listeners
 		repeatForNewListeners(
 				ApplicationStarting.class,
 				ApplicationBuilding.class,
@@ -126,21 +131,40 @@ public abstract class App extends Observable
 				ApplicationReady.class
 				);
 		
-		_state = "Building";
-		notify(ApplicationBuilding.class, this);
-		
+		// Build CDI cache
+		setState(ApplicationBuilding.class);
 		cdi.build();
 		
-		_state = "Starting";
-		notify(ApplicationStarting.class, this);
-		
-		_state = "Started";
-		notify(ApplicationStarted.class, this);
-		
-		notify(ApplicationReady.class, this);
-		
-		LOGGER.log(Logs.INFO, "Application is ready !");
-		
+		// Change states
+		setState(ApplicationStarting.class);
+		setState(ApplicationStarted.class);
+		setState(ApplicationReady.class);
+
+	}
+
+	@Override
+	public void stop() {
+		if (_state == ApplicationStopped.class)
+			throw new IllegalStateException("App is already stopped");
+		setState(ApplicationStopping.class);
+		setState(ApplicationStopped.class);
+		System.exit(0);
+	}
+
+	@Override
+	public void interrupt() {
+		LOGGER.log(Logs.INFO, "Application was interrupted");
+		System.exit(-1);
+	}
+	
+	protected void setState(Class<?> state) {
+		_state = state;
+		LOGGER.log(Logs.INFO, "Application state changed: " + getState());
+		notify(state, this);
+	}
+	
+	public boolean isActive() {
+		return _state != ApplicationStopped.class && _state != ApplicationStopping.class;
 	}
 	
 	public static boolean init() {
@@ -170,11 +194,6 @@ public abstract class App extends Observable
 		return get(AppConfiguration.class).toString("%s v%s", "App.Name", "App.Version");
 	}
 
-//	public <T> T get(String id, Class<T> classe) {
-//		if (!components.containsKey(id)) return null;
-//		return (T) components.get(id).getInstance();
-//	}
-
 	public void setLogLevel(Level level) {
 		Logs.setDefaultLevel(level);
 		Logs.setGlobalLevel(level);
@@ -199,18 +218,6 @@ public abstract class App extends Observable
 	@Override
 	public ILocalService[] getPublishedServices() {
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void stop() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void interrupt() {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
