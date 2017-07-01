@@ -1,7 +1,7 @@
 package fr.evolya.javatoolkit.appstandard.events;
 
 import fr.evolya.javatoolkit.app.config.AppConfiguration;
-import fr.evolya.javatoolkit.app.config.Configurable;
+import fr.evolya.javatoolkit.appstandard.Configurable;
 import fr.evolya.javatoolkit.events.attr.EventListener;
 
 public interface ConfigListener extends EventListener {
