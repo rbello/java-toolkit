@@ -39,6 +39,7 @@ import fr.evolya.javatoolkit.events.fi.Observable;
 import fr.evolya.javatoolkit.events.fi.ObservableList;
 import fr.evolya.javatoolkit.gui.swing.ComponentDragger;
 import fr.evolya.javatoolkit.gui.swing.ComponentResizer;
+import fr.evolya.javatoolkit.gui.swing.SwingHelper;
 
 /**
  * Une JFrame avec un système de décoration un peu spécial, style Photoshop CS5.
@@ -129,7 +130,7 @@ public class DecoratedFrame extends JFrame {
 	/**
 	 * Le modèle du menu.
 	 */
-	private MenuModel modelMenu = null;
+	private MenuViewModel modelMenu = null;
 	
 	/**
 	 * Constructeur.
@@ -588,23 +589,28 @@ public class DecoratedFrame extends JFrame {
 		});
 	}
 	
-	public static class MenuModel extends ObservableList<JMenuItem> {
-		public MenuModel(Observable dispatcher) {
-			super(dispatcher);
-		}
-	}
-	
+	/**
+	 * Construit les differents modèles qui correspondent à cette vue.
+	 */
 	@BindOnEvent(ApplicationStarting.class)
 	public void buildModels(App app) {
-		modelMenu = app.add(new MenuModel(app));
-		modelMenu.on(ModelItemAdded.class).executeOnGui((model, item, index) -> getJMenuBar().add((JMenu) item));
+		modelMenu = app.add(new MenuViewModel(app));
+		modelMenu.on(ModelItemAdded.class)
+			.executeOnGui((model, item, index) -> getJMenuBar().add((JMenu) item));
 		app.notify(ModelCreated.class, modelMenu, app);
 	}
 	
-	public MenuModel getMenuModel() {
+	/**
+	 * Renvoie le modèle du menu.
+	 */
+	public MenuViewModel getMenuModel() {
 		return modelMenu;
 	}
 	
+	/**
+	 * Amener la fenêtre en cours devant les autres fenêtres ouvertes
+	 * par l'utilisateur.
+	 */
 	@BindOnEvent(ApplicationWakeup.class)
 	public void bringToFront() {
 		setVisible(true);
@@ -615,6 +621,22 @@ public class DecoratedFrame extends JFrame {
 		toFront();
 		requestFocus();
 		setAlwaysOnTop(false);
+	}
+
+	/**
+	 * Classe utilitaire correspondant au modèle du menu.
+	 */
+	public static class MenuViewModel extends ObservableList<JMenuItem> {
+		public MenuViewModel(Observable dispatcher) {
+			super(dispatcher);
+		}
+	}
+	
+	/**
+	 * Secoue la fenêtre.
+	 */
+	public void bounce() {
+		SwingHelper.makeMeBounce(this);
 	}
 	
 }
