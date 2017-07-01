@@ -17,7 +17,7 @@ import fr.evolya.javatoolkit.app.event.BeforeApplicationStarted;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.events.fi.BindOnEvent;
 
-public class SingletonAppBehavior {
+public class AppSingletonFeature {
 
 	private static ServerSocket SOCKET;
 
@@ -39,7 +39,7 @@ public class SingletonAppBehavior {
 			// Impossible d'ouvrir le socket, on teste de connecter le port.
 			try {
 				Socket socket = new Socket("127.0.0.1", (int)ipcPort);
-				App.LOGGER.log(Logs.INFO, "App is already started, wake up other instance...");
+				App.LOGGER.log(Logs.INFO, "App is already started, wake up other instance and exit");
 				socket.close();
 				System.exit(0);
 			}
@@ -52,7 +52,7 @@ public class SingletonAppBehavior {
 	private Thread thread;
 	
 	@BindOnEvent(ApplicationStarting.class)
-	public void handleServer() {
+	public void handleServer(App app) {
 		if (SOCKET == null) return;
 		App.LOGGER.log(Logs.INFO, "App is started with Singleton behavior");
 		thread = new Thread(() -> {
@@ -68,7 +68,9 @@ public class SingletonAppBehavior {
 				}
 				catch (SocketTimeoutException ex) { }
 				catch (IOException e) {
-					App.LOGGER.log(Logs.WARNING, "Failure in SingletonAppBehavior", e);
+					if (app.isActive()) {
+						App.LOGGER.log(Logs.WARNING, "Failure in SingletonAppBehavior", e);
+					}
 				}
 			}
 		});
