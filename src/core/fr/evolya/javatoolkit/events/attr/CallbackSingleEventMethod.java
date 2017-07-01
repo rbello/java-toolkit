@@ -1,5 +1,6 @@
 package fr.evolya.javatoolkit.events.attr;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import fr.evolya.javatoolkit.code.Logs;
@@ -73,7 +74,7 @@ public final class CallbackSingleEventMethod<L extends EventListener> implements
 				}
 				
 				// Invoked method arguments error
-				catch (IllegalArgumentException e) {
+				catch (IllegalArgumentException | InvocationTargetException e) {
 					System.err.println("Method broadcast exception: '" + e.getMessage() + "' for event " + event
 							+ " to " + _target.getClass().getSimpleName() + "." + _targetMethodName + "()");
 					StringBuilder sb = new StringBuilder();
