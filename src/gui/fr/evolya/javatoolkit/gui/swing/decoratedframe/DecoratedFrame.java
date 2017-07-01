@@ -32,6 +32,7 @@ import javax.swing.border.LineBorder;
 import fr.evolya.javatoolkit.app.App;
 import fr.evolya.javatoolkit.app.event.ApplicationStarting;
 import fr.evolya.javatoolkit.app.event.ApplicationWakeup;
+import fr.evolya.javatoolkit.app.event.WindowCloseIntent;
 import fr.evolya.javatoolkit.events.fi.BindOnEvent;
 import fr.evolya.javatoolkit.events.fi.ModelCreated;
 import fr.evolya.javatoolkit.events.fi.ModelEvent.ModelItemAdded;
@@ -457,7 +458,7 @@ public class DecoratedFrame extends JFrame {
 	
 	/**
 	 * Renvoie le status actuel concernant la possibilité de redimensionner
-	 * la fen�tre.
+	 * la fenêtre.
 	 */
 	@Override
 	public boolean isResizable() {
@@ -521,42 +522,42 @@ public class DecoratedFrame extends JFrame {
 	}
 	
 	/**
-	 * Renvoie le bouton pour ic�nifier la fen�tre.
+	 * Renvoie le bouton pour icônifier la fenêtre.
 	 */
 	public JButton getIconizeButton() {
 		return _iconizeButton;
 	}
 	
 	/**
-	 * Modifier l'action par d�faut du bouton pour ic�nifier la fen�tre.
+	 * Modifier l'action par défaut du bouton pour icônifier la fenêtre.
 	 */
 	public void setIconizeButtonAction(ActionListener listener) {
 		_iconizeAction = listener;
 	}
 
 	/**
-	 * Renvoie le bouton pour maximiser ou restaurer la fen�tre.
+	 * Renvoie le bouton pour maximiser ou restaurer la fenêtre.
 	 */
 	public JButton getMaximizeRestoreButton() {
 		return _maximizeRestoreButton;
 	}
 	
 	/**
-	 * Modifier l'action par d�faut du bouton pour maximiser ou restaurer la fen�tre.
+	 * Modifier l'action par défaut du bouton pour maximiser ou restaurer la fenêtre.
 	 */
 	public void setMaximizeRestoreButtonAction(ActionListener listener) {
 		_maximizeRestoreAction = listener;
 	}
 
 	/**
-	 * Renvoie le bouton pour fermer la fen�tre.
+	 * Renvoie le bouton pour fermer la fenêtre.
 	 */
 	public JButton getCloseButton() {
 		return _closeButton;
 	}
 
 	/**
-	 * Modifier l'action par d�faut du bouton close.
+	 * Modifier l'action par défaut du bouton close.
 	 */
 	public void setCloseButtonAction(ActionListener listener) {
 		_closeAction = listener;
@@ -598,6 +599,18 @@ public class DecoratedFrame extends JFrame {
 		modelMenu.on(ModelItemAdded.class)
 			.executeOnGui((model, item, index) -> getJMenuBar().add((JMenu) item));
 		app.notify(ModelCreated.class, modelMenu, app);
+	}
+	
+	/**
+	 * Envoie un intent de fermeture de fenêtre.
+	 */
+	@BindOnEvent(ApplicationStarting.class)
+	public void bindShutdown(App app) {
+		addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent evt) {
+				app.notify(WindowCloseIntent.class, app, DecoratedFrame.this, evt);
+			}
+		});
 	}
 	
 	/**
