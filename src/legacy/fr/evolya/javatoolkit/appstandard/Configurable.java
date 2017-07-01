@@ -1,5 +1,8 @@
-package fr.evolya.javatoolkit.app.config;
+package fr.evolya.javatoolkit.appstandard;
 
+import fr.evolya.javatoolkit.app.config.AppConfiguration;
+
+@Deprecated
 public interface Configurable {
 
 	/**

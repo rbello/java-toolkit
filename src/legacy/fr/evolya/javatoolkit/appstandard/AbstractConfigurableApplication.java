@@ -3,9 +3,8 @@ package fr.evolya.javatoolkit.appstandard;
 import java.io.File;
 
 import fr.evolya.javatoolkit.app.config.AppConfiguration;
-import fr.evolya.javatoolkit.app.config.Configurable;
 import fr.evolya.javatoolkit.app.config.NonPersistentConfiguration;
-import fr.evolya.javatoolkit.app.config.PropertiesFileConfiguration;
+import fr.evolya.javatoolkit.app.features.FileConfigurationFeature;
 import fr.evolya.javatoolkit.appstandard.events.ConfigListener;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.utils.Utils;
