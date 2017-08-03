@@ -14,9 +14,13 @@ import java.util.stream.Stream;
 import fr.evolya.javatoolkit.app.cdi.Instance;
 import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 import fr.evolya.javatoolkit.code.Logs;
+import fr.evolya.javatoolkit.code.annotations.DesignPattern;
 import fr.evolya.javatoolkit.code.annotations.GuiTask;
+import fr.evolya.javatoolkit.code.annotations.Pattern;
 import fr.evolya.javatoolkit.code.annotations.ToOverride;
+import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 
+@DesignPattern(type = Pattern.Observer)
 public /*abstract*/ class Observable implements IObservable {
 
 	public static final Logger LOGGER = Logs.getLogger("Events (v2)");
@@ -53,40 +57,36 @@ public /*abstract*/ class Observable implements IObservable {
 			throw new NullPointerException("Cannot add pure futur objet as listener");
 		
 		// Toutes les méthodes de l'instance
-		Arrays.stream(instance.getInstanceClass().getMethods())
-			// Uniquement celles avec l'annotation d'injection
-			.filter(method -> method.isAnnotationPresent(BindOnEvent.class))
-			// Fetch
-			.forEach((method) -> {
-				BindOnEvent a = method.getAnnotation(BindOnEvent.class);
-				Class<?> eventType = a.value();
-				String eventName = eventType.getSimpleName();
-				// Debug
-				if (LOGGER.isLoggable(Logs.DEBUG)) {
-					LOGGER.log(Logs.DEBUG, String.format(
-							"  `-> Bind event %s on method %s::%s()",
-							eventName,
-							instance.getInstanceClass().getSimpleName(),
-							method.getName()
-							));
-				}
-				// On rajoute le listener
-				Listener l = null;
-				if (instance.isFutur()) {
-					boolean gui = method.isAnnotationPresent(GuiTask.class);
-					l = new FuturListener(this, eventType, (FuturInstance) instance, method, gui);
-				}
-				else {
-					l = new Listener(this, eventType, instance, method);
-				}
-				if (method.isAnnotationPresent(EventArgClassFilter.class)) {
-					Class<?> filter = method.getAnnotation(EventArgClassFilter.class).value();
-					l = l.onlyOn(arg -> {
-						return filter.isInstance(arg);
-					});
-				}
-				addListener(l);
-			});
+		ReflectionUtils.forEachMethodsHaving(instance.getInstanceClass(), BindOnEvent.class, (method) -> {
+			BindOnEvent a = method.getAnnotation(BindOnEvent.class);
+			Class<?> eventType = a.value();
+			String eventName = eventType.getSimpleName();
+			// Debug
+			if (LOGGER.isLoggable(Logs.DEBUG)) {
+				LOGGER.log(Logs.DEBUG, String.format(
+						"  `-> Bind event %s on method %s::%s()",
+						eventName,
+						instance.getInstanceClass().getSimpleName(),
+						method.getName()
+						));
+			}
+			// On rajoute le listener
+			Listener l = null;
+			if (instance.isFutur()) {
+				boolean gui = method.isAnnotationPresent(GuiTask.class);
+				l = new FuturListener(this, eventType, (FuturInstance) instance, method, gui);
+			}
+			else {
+				l = new Listener(this, eventType, instance, method);
+			}
+			if (method.isAnnotationPresent(EventArgClassFilter.class)) {
+				Class<?> filter = method.getAnnotation(EventArgClassFilter.class).value();
+				l = l.onlyOn(arg -> {
+					return filter.isInstance(arg);
+				});
+			}
+			addListener(l);
+		});
 	}
 	
 	final void addListener(Listener<?> listener) {
@@ -171,19 +171,12 @@ public /*abstract*/ class Observable implements IObservable {
 		if (m == null) {
 			throw new NullPointerException("Method is null");
 		}
-		if (m.getParameters().length < args.length) {
-			Object[] copy = args;
-			args = new Object[m.getParameters().length];
-			for (int i = 0; i < args.length; ++i) {
-				args[i] = copy[i];
-			}
-		}
 		try {
 			Object target = item.isStaticCall() ? null : item.getTarget();
-			if (!item.isStaticCall() && target == null) 
-				throw new NullPointerException("Invoke target is null");
-			m.setAccessible(true);
-			return m.invoke(target, args);
+			if (!item.isStaticCall() && target == null)
+				throw new NullPointerException("Invoke target is null when calling "
+						+ ReflectionUtils.toString(m));
+			return ReflectionUtils.invokeMethod(target, m, args);
 		}
 		catch (IllegalArgumentException e) {
 			LOGGER.log(Logs.ERROR, "Dispatch error");
@@ -193,7 +186,7 @@ public /*abstract*/ class Observable implements IObservable {
 				LOGGER.log(Logs.INFO, "  Object class: " + item.getTarget().getClass().getName());
 				LOGGER.log(Logs.INFO, "  Declaring class: " + m.getDeclaringClass().getName());
 			}
-			LOGGER.log(Logs.INFO, "  Target method is " + item.getTarget().getClass() + "::" + m.getName() + "(" + Arrays.stream(m.getParameterTypes()).map(Class::getName).collect(Collectors.joining(", ")) + ")");
+			LOGGER.log(Logs.INFO, "  Target method is " + ReflectionUtils.toString(item.getTarget(), m));
 			LOGGER.log(Logs.INFO, "  Event arguments are: (" + Arrays.stream(args).map((o) -> o.getClass().getName()).collect(Collectors.joining(", ")) + ")");
 			e.printStackTrace();
 		}
