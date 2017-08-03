@@ -8,7 +8,12 @@ import java.util.TooManyListenersException;
 import java.util.stream.Stream;
 
 import fr.evolya.javatoolkit.code.utils.Utils;
+import fr.evolya.javatoolkit.events.fi.EventProvider;
 import fr.evolya.javatoolkit.events.fi.Observable;
+import fr.evolya.javatoolkit.iot.Arduino.OnRawDataReceived;
+import fr.evolya.javatoolkit.iot.Arduino.OnReceiveError;
+import fr.evolya.javatoolkit.iot.Arduino.OnSerialEvent;
+import fr.evolya.javatoolkit.iot.Arduino.OnStateChanged;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
@@ -16,44 +21,95 @@ import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
 import gnu.io.UnsupportedCommOperationException;
 
+@EventProvider({OnStateChanged.class, OnSerialEvent.class,
+	OnRawDataReceived.class, OnReceiveError.class})
+
 public class Arduino extends Observable
 	implements SerialPortEventListener, AutoCloseable {
 	
-	/** Milliseconds to block while waiting for port open */
-	public static int TIME_OUT = 2000;
+	/**
+	 * Milliseconds to block while waiting for port open
+	 */
+	protected int openTimeOut = 2000;
 	
-	/** Default bits per second for COM port */
-	public static int DATA_RATE = 9600;
+	/**
+	 * Default bits per second for COM port
+	 */
+	protected int dataRate = 9600;
 	
-	/** Liaison série avec l'arduino */
-	public SerialPort serialPort;
+	/**
+	 * COM port used to connect to
+	 */
+	protected CommPortIdentifier commPort;
 	
-	/** Flux de lecture sur la liaison série */
-	public BufferedReader input;
+	/**
+	 * Serial link with the arduino
+	 */
+	protected SerialPort serialPort;
 	
-	/** Flux d'écriture sur la liaison série */
-	public OutputStream output;
+	/**
+	 * Input stream
+	 */
+	protected BufferedReader input;
+	
+	/**
+	 * Output stream
+	 */
+	protected OutputStream output;
 
-	private CommPortIdentifier commPort;
-	
-	/** Message d'erreur en cas de buffer vide */
+	/**
+	 * Error message for empty string readding
+	 */
 	private static final String EmptyBufferErrorMessage = "Underlying input stream returned zero bytes";
 
 	public Arduino(CommPortIdentifier commPort) {
+		if (commPort == null) throw new NullPointerException("No COM port provided");
 		this.commPort = commPort;
 	}
 	
-	public CommPortIdentifier getCommPort() {
+	public CommPortIdentifier getComPort() {
 		return commPort;
 	}
 	
+	public SerialPort getSerialPort() {
+		return serialPort;
+	}
+	
+	public synchronized boolean isOpen() {
+		return serialPort != null;
+	}
+	
+	public int getDataRate() {
+		return dataRate;
+	}
+
+	public void setDataRate(int dataRate) {
+		this.dataRate = dataRate;
+	}
+
+	public BufferedReader getInputStream() {
+		return input;
+	}
+
+	public OutputStream getOutputStream() {
+		return output;
+	}
+	
+	public int getOpenTimeOut() {
+		return openTimeOut;
+	}
+
+	public void setOpenTimeOut(int openTimeOut) {
+		this.openTimeOut = openTimeOut;
+	}
+
 	public synchronized void open() throws PortInUseException, UnsupportedCommOperationException, IOException, TooManyListenersException {
 		try {
 			// open serial port, and use class name for the appName.
-			serialPort = (SerialPort) commPort.open(Arduino.class.getName(), TIME_OUT);
+			serialPort = (SerialPort) commPort.open(Arduino.class.getName(), openTimeOut);
 			
 			// set port parameters
-			serialPort.setSerialPortParams(DATA_RATE,
+			serialPort.setSerialPortParams(dataRate,
 					SerialPort.DATABITS_8,
 					SerialPort.STOPBITS_1,
 					SerialPort.PARITY_NONE);
@@ -72,10 +128,6 @@ public class Arduino extends Observable
 			notify(OnStateChanged.class, false, ex);
 			throw ex;
 		}
-	}
-	
-	public synchronized boolean isOpen() {
-		return serialPort != null;
 	}
 
 	public static Stream<CommPortIdentifier> getPortIdentifiers() {
@@ -99,17 +151,24 @@ public class Arduino extends Observable
 	}
 	
 	public static Arduino getFirst() {
-		return new Arduino(getPortIdentifiers().findFirst().get());
+		CommPortIdentifier id = getPortIdentifiers().findFirst().orElse(null);
+		if (id == null) return null;
+		return new Arduino(id);
 	}
 	
-	public void write(String data) {
+	public boolean write(String data) {
 		try {
-			output.write(data.getBytes());
-			output.flush();
+			writeUnsafe(data);
+			return true;
 		}
 		catch (Exception e) {
-			System.err.println(String.format("Could not write data to serial, %s : %s", e.getClass().getSimpleName(), e.getMessage()));
+			return false;
 		}
+	}
+	
+	public void writeUnsafe(String data) throws IOException {
+		output.write(data.getBytes());
+		output.flush();
 	}
 	
 	@Override
@@ -128,15 +187,14 @@ public class Arduino extends Observable
 		}
 		catch (IOException e) {
 			if (e.getMessage().equals(EmptyBufferErrorMessage)) {
-				// On laisse passer ce genre d'erreur
+				// Normal
 			}
 			else {
-				System.err.println(String.format("[Arduino] Error %s", e.toString()));
+				notify(OnReceiveError.class, e);
 			}
 		}
 		catch (Throwable e) {
-			System.err.println(String.format("[Arduino] Error %s", e.toString()));
-			//e.printStackTrace();
+			notify(OnReceiveError.class, e);
 		}
 
 	}
@@ -165,6 +223,11 @@ public class Arduino extends Observable
 	@FunctionalInterface
 	public static interface OnRawDataReceived {
 		void onRawDataReceived(String data);
+	}
+	
+	@FunctionalInterface
+	public static interface OnReceiveError {
+		void onReceiveError(Exception ex);
 	}
 
 }

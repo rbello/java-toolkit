@@ -6,8 +6,17 @@ import java.util.List;
 import java.util.Map;
 
 import fr.evolya.javatoolkit.app.cdi.Instance;
+import fr.evolya.javatoolkit.code.utils.Utils;
+import fr.evolya.javatoolkit.events.fi.EventProvider;
 import fr.evolya.javatoolkit.events.fi.IObservable;
 import fr.evolya.javatoolkit.events.fi.Listener;
+import fr.evolya.javatoolkit.iot.Arduilink.OnDataReceived;
+import fr.evolya.javatoolkit.iot.Arduilink.OnLinkEstablished;
+import fr.evolya.javatoolkit.iot.Arduilink.OnSensorConnected;
+import fr.evolya.javatoolkit.iot.Arduilink.OnUnknownPacket;
+
+@EventProvider({OnLinkEstablished.class, OnSensorConnected.class, 
+	OnDataReceived.class, OnUnknownPacket.class})
 
 public class Arduilink implements 
 	IObservable, AutoCloseable, Arduino.OnRawDataReceived {
@@ -21,12 +30,22 @@ public class Arduilink implements
 		if (uno == null)
 			throw new NullPointerException();
 		this.uno = uno;
-		// When a data is received
-		uno.when(Arduino.OnRawDataReceived.class).execute(this);
 		uno.when(OnLinkEstablished.class).execute(lnk -> {
-			System.out.println("ok");
-			uno.write("PRESENT");
+			presentSensors();
 		});
+		uno.when(Arduino.OnRawDataReceived.class).execute(this);
+	}
+	
+	public void presentSensors() {
+		uno.write("PRESENT");
+	}
+	
+	public Map<Integer, Node> getNodes() {
+		return nodes;
+	}
+	
+	public List<Sensor> getSensors() {
+		return sensors;
 	}
 
 	@Override
@@ -63,7 +82,7 @@ public class Arduilink implements
 	}
 	
 	public String getPortName() {
-		return uno.serialPort.getName();
+		return uno.commPort.getName();
 	}
 
 	public Node getNode(int nodeId) {
@@ -80,36 +99,49 @@ public class Arduilink implements
 	@Override
 	public void onRawDataReceived(String data) {
 		if (data == null) return;
-		if (!data.contains(";")) return; // TODO Log ?
-		int code = 0;
+		int opcode = 0;
 		try {
-			code = Integer.parseInt(data.substring(0, data.indexOf(';')));
+			opcode = Integer.parseInt(data.substring(0, data.indexOf(';')));
 		}
 		catch (Exception ex) {
-			// TODO
+			// Malformed opcode
 			return;
 		}
 		String[] tokens = data.split(";");
-		switch (code) {
+		switch (opcode) {
+
+		// 100 Welcome message
 		case 100:
 			Node node = new Node(tokens);
 			nodes.put(node.nodeId, node);
 			notify(OnLinkEstablished.class, node);
 			break;
+
+		// 200 Data exchange
 		case 200:
-			notify(OnDataReceived.class, new DataCommand(tokens));
+			DataCommand cmd = new DataCommand(tokens);
+			if (cmd.sensor != null) {
+				if (!Utils.equals(cmd.sensor.value, cmd.value)) {
+					cmd.sensor.value = cmd.value;
+					notify(OnDataReceived.class, cmd);
+				}
+			}
+			else notify(OnDataReceived.class, cmd);
 			break;
+
+		// 300 Sensors presentation
 		case 300:
 			Sensor sensor = new Sensor(tokens);
 			sensors.add(sensor);
 			notify(OnSensorConnected.class, sensor);
 			break;
+
 		default:
-			// TODO	
+			notify(OnUnknownPacket.class, opcode, tokens);
 		}
 	}
 	
-	public abstract class Command {
+	abstract class Command {
 		public final Arduilink link;
 		public final int nodeId;
 		public final Node node;
@@ -157,6 +189,7 @@ public class Arduilink implements
 		public final boolean verbose;
 		public final String name;
 		public final String type;
+		public String value = null;
 		public Sensor(String[] tokens) {
 			super(tokens);
 			sensorId = Integer.parseInt(tokens[2]);
@@ -195,6 +228,11 @@ public class Arduilink implements
 	@FunctionalInterface
 	public static interface OnSensorConnected {
 		void onSensorConnected(Sensor sensor);
+	}
+	
+	@FunctionalInterface
+	public static interface OnUnknownPacket {
+		void onUnknownPacket(int opcode, String[] tokens);
 	}
 	
 }
