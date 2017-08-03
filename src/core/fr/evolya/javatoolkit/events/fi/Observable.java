@@ -15,8 +15,9 @@ import fr.evolya.javatoolkit.app.cdi.Instance;
 import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.annotations.GuiTask;
+import fr.evolya.javatoolkit.code.annotations.ToOverride;
 
-public abstract class Observable {
+public /*abstract*/ class Observable implements IObservable {
 
 	public static final Logger LOGGER = Logs.getLogger("Events (v2)");
 	
@@ -39,6 +40,7 @@ public abstract class Observable {
 	 * @param eventType Le type d'event que l'on va observer.
 	 * @return Le listener.
 	 */
+	@Override
 	public final <T> Listener<T> when(Class<T> eventType) {
 		return new Listener<T>(Observable.this, eventType);
 	}
@@ -117,6 +119,7 @@ public abstract class Observable {
 		
 	}
 	
+	@Override
 	public final void notify(Instance<?> target, Class<?> eventType, Object... args) {
 		notify(eventType, args, new ArrayList<>(listeners).stream()
 			.filter((item) -> {
@@ -127,6 +130,7 @@ public abstract class Observable {
 			}));
 	}
 	
+	@Override
 	public final void notify(Class<?> eventType, Object... args) {
 		notify(eventType, args, new ArrayList<>(listeners).stream()
 			.filter((item) -> {
@@ -199,6 +203,11 @@ public abstract class Observable {
 		return Void.TYPE;
 	}
 	
+	@Override
+	public void removeAllListeners() {
+		listeners.clear();
+	}
+	
 	public final void repeatForNewListeners(Class<?>... events) {
 		for (Class<?> event : events) {
 			repeatedEvents.put(event, null);
@@ -209,12 +218,29 @@ public abstract class Observable {
 		return listeners;
 	}
 	
-	public abstract boolean isGuiDispatchThread();
+	@ToOverride
+	public /*abstract*/ boolean isGuiDispatchThread() {
+		return true;
+	}
 	
-	protected abstract void invokeAndWaitOnGuiDispatchThread(Runnable task) throws InterruptedException;
+	@ToOverride
+	protected /*abstract*/ void invokeAndWaitOnGuiDispatchThread(Runnable task) 
+			throws InterruptedException {
+		task.run();
+	}
 	
-	protected abstract <T> T invokeAndWaitOnGuiDispatchThread(Callable<T> task);
+	@ToOverride
+	protected /*abstract*/ <T> T invokeAndWaitOnGuiDispatchThread(Callable<T> task) {
+		try {
+			return task.call();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 	
-	protected abstract void invokeLaterOnGuiDispatchThread(Runnable task);
-	
+	@ToOverride
+	protected /*abstract*/ void invokeLaterOnGuiDispatchThread(Runnable task) {
+		new Thread(task).start();
+	}
+
 }

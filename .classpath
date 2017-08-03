@@ -21,5 +21,6 @@
 	<classpathentry kind="lib" path="lib/jgroups/jgroups-3.2.10.Final.jar"/>
 	<classpathentry kind="lib" path="lib/jna/jna-4.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jna/jna-platform-4.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/rxtx/RXTXcomm.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

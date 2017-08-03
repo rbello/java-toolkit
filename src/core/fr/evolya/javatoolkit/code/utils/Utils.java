@@ -10,9 +10,11 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
@@ -244,6 +246,15 @@ public final class Utils {
 	public static boolean isPrintableChar( char c ) {
 	    Character.UnicodeBlock block = Character.UnicodeBlock.of( c );
 	    return (!Character.isISOControl(c)) && c != 65535 && block != null && block != Character.UnicodeBlock.SPECIALS;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> List<T> list(Enumeration<?> enumeration, Class<T> type) {
+		List<T> list = new ArrayList<>();
+		while (enumeration.hasMoreElements()) {
+			list.add((T) enumeration.nextElement());
+		}
+		return list;
 	}
 
 }
