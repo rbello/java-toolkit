@@ -1,7 +1,9 @@
 package fr.evolya.javatoolkit.code.utils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -11,6 +13,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public final class ReflectionUtils {
 	
@@ -197,6 +201,49 @@ public final class ReflectionUtils {
 			childClass = childClass.getSuperclass();
 		}
 		return false;
+	}
+
+	public static Object invokeMethod(Object target, Method method, Object[] args)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		if (method.getParameters().length < args.length) {
+			Object[] copy = args;
+			args = new Object[method.getParameters().length];
+			for (int i = 0; i < args.length; ++i) {
+				args[i] = copy[i];
+			}
+		}
+		method.setAccessible(true);
+		return method.invoke(target, args);
+	}
+	
+	public static String toString(Method method) {
+		return toString(null, method);
+	}
+
+	public static String toString(Object target, Method method) {
+		return toString(target, method, true);
+	}
+	
+	public static String toString(Object target, Method method, boolean fullClassName) {
+		Class<?> type = (target == null) ? method.getDeclaringClass() : target.getClass();
+		StringBuilder sb = new StringBuilder();
+		sb.append(fullClassName ? type.toString() : type.getSimpleName());
+		sb.append("::");
+		sb.append(method.getName());
+		sb.append("(");
+		sb.append(Arrays.stream(method.getParameterTypes()).map(Class::getName)
+				.collect(Collectors.joining(", ")));
+		sb.append(")");
+		return sb.toString();
+	}
+
+	public static void forEachMethodsHaving(Class<?> type, Class<? extends Annotation> annotation,
+			Consumer<? super Method> consumer) {
+		Arrays.stream(type.getMethods())
+			// Uniquement celles avec l'annotation d'injection
+			.filter(method -> method.isAnnotationPresent(annotation))
+			// Fetch
+			.forEach(consumer);
 	}
 
 }
