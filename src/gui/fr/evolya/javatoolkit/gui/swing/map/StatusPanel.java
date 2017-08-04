@@ -119,8 +119,10 @@ public class StatusPanel extends JPanel {
 		return state;
 	}
 
-	public void setState(State state) {
+	public StatusPanel setState(State state) {
 		this.state = state;
+		repaint();
+		return this;
 	}
 
 	@Override
@@ -167,22 +169,26 @@ public class StatusPanel extends JPanel {
 		return cartoucheLabelCenterSmall;
 	}
 
-	public void setCartoucheInfo(String text) {
+	public StatusPanel setCartoucheInfo(String text) {
 		cartoucheLabelLeft.setText(text);
 		cartoucheLabelRight.setText(text);
+		return this;
 	}
 
-	public void setCartoucheLevel(int value) {
+	public StatusPanel setCartoucheLevel(int value) {
 		cartoucheValueLeft.setText("" + value);
 		cartoucheValueRight.setText("" + value);
+		return this;
 	}
 
-	public void setMainText(String text) {
+	public StatusPanel setMainText(String text) {
 		cartoucheLabelCenterBig.setText(text);
+		return this;
 	}
 
-	public void setInfoText(String text) {
+	public StatusPanel setInfoText(String text) {
 		cartoucheLabelCenterSmall.setText(text);
+		return this;
 	}
 
 }
