@@ -49,9 +49,11 @@
 		  <!-- copy all the jar files out to the destination directory (dest.dir) -->
 		  <copy todir="${dist.dir}">
 		    <fileset dir="${lib.dir}">
-		      <exclude name="junit*" />
-		      <include name="*.jar"/>
-		      <include name="*.zip"/>
+				<exclude name="junit*" />
+		    	<include name="*.jar"/>
+		    	<include name="*.dll"/>
+		    	<include name="*.so"/>
+		      	<include name="*.zip"/>
 		    </fileset>
 		  </copy>
 	</target>

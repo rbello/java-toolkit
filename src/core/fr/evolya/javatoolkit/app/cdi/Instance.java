@@ -2,6 +2,7 @@ package fr.evolya.javatoolkit.app.cdi;
 
 import java.lang.reflect.Constructor;
 
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.annotations.GuiTask;
 import fr.evolya.javatoolkit.code.funcint.Action;
 
@@ -84,7 +85,7 @@ public class Instance<T> {
 		}
 		
 		@Override
-		public synchronized T getInstance() {
+		public T getInstance() {
 			return getInstance(null);
 		}
 		
@@ -93,11 +94,13 @@ public class Instance<T> {
 			if (this.type == null) return null;
 			if (isFutur()) {
 				if (gui && guiDelegate != null) {
+					DependencyInjectionContext.LOGGER.log(Logs.DEBUG_FINE, "Create instance of " + getInstanceClass().getSimpleName() + " in GUI");
 					guiDelegate.call(() -> {
 						createInstance();
 					});
 				}
 				else {
+					DependencyInjectionContext.LOGGER.log(Logs.DEBUG_FINE, "Create instance of " + getInstanceClass().getSimpleName() + " in current thread (" + Thread.currentThread().getName() + ")");
 					createInstance();
 				}
 				if (this.callback != null)

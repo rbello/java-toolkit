@@ -132,8 +132,8 @@ public abstract class App extends Observable
 				);
 		
 		// Build CDI cache
-		setState(ApplicationBuilding.class);
 		cdi.build();
+		setState(ApplicationBuilding.class);
 		
 		// Change states
 		setState(ApplicationStarting.class);
