@@ -1,8 +1,6 @@
 package fr.evolya.javatoolkit.transactional;
 
-import fr.evolya.javatoolkit.events.basic.Event;
-
-public class TransactionEvent extends Event {
+public class TransactionEvent {
 	
 	public static class CommittedEvent extends TransactionEvent {
 		

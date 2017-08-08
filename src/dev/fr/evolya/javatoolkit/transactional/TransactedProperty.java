@@ -1,6 +1,6 @@
 package fr.evolya.javatoolkit.transactional;
 
-import fr.evolya.javatoolkit.events.basic.Listener;
+import fr.evolya.javatoolkit.events.basic.Listener2;
 import fr.evolya.javatoolkit.transactional.TransactionEvent.ChangedEvent;
 
 /**
@@ -71,7 +71,7 @@ public class TransactedProperty<T> {
 	 * 
 	 * @param listener
 	 */
-	public void onChanged(Listener<ChangedEvent> listener) {
+	public void onChanged(Listener2<ChangedEvent> listener) {
 		throw new IllegalAccessError();
 	}
 	

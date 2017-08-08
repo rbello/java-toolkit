@@ -1,6 +1,6 @@
 package fr.evolya.javatoolkit.events.basic;
 
-public interface Listener<E extends Event> {
+public interface Listener2<E> {
 
 	public void notifyEvent(E event);
 

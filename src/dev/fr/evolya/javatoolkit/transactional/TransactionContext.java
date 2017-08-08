@@ -1,6 +1,6 @@
 package fr.evolya.javatoolkit.transactional;
 
-import fr.evolya.javatoolkit.events.basic.Listener;
+import fr.evolya.javatoolkit.events.basic.Listener2;
 import fr.evolya.javatoolkit.transactional.TransactionEvent.CommittedEvent;
 
 /**
@@ -13,7 +13,7 @@ public class TransactionContext {
 	 * 
 	 * @param listener
 	 */
-	public void onCommitted(Listener<CommittedEvent> listener) {
+	public void onCommitted(Listener2<CommittedEvent> listener) {
 		
 	}
 	

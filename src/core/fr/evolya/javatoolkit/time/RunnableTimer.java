@@ -1,6 +1,6 @@
 package fr.evolya.javatoolkit.time;
 
-import fr.evolya.javatoolkit.events.basic.Listener;
+import fr.evolya.javatoolkit.events.basic.Listener2;
 
 public class RunnableTimer extends MonoThreadTimer {
 
@@ -13,7 +13,7 @@ public class RunnableTimer extends MonoThreadTimer {
 		setFrequency(frequency);
 		
 		// Et on inscrit un listener 
-		onElapsed(new Listener<TimerEvent> () {
+		onElapsed(new Listener2<TimerEvent> () {
 			public void notifyEvent(TimerEvent event) {
 				toRun.run();
 			}
