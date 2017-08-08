@@ -246,4 +246,11 @@ public final class ReflectionUtils {
 			.forEach(consumer);
 	}
 
+	public static Method getMethodMatching(Class<?> type, String methodName) {
+		for (Method m : type.getMethods()) {
+			if (m.getName().equals(methodName)) return m;
+		}
+		return null;
+	}
+
 }
