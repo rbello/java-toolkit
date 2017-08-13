@@ -1,4 +1,4 @@
-package fr.evolya.javatoolkit.net.discover;
+package fr.evolya.javatoolkit.code;
 
 /**
  * This class perform similar functionality to StringTokenizer class but faster.
@@ -24,7 +24,6 @@ public class Tokenizer
     public static String[] parse(String text, char delimiter, boolean trimEachToken, String left, String right)
     {
         if(text == null) return null;
-        int len = text.length();
         StringArray tokens = new StringArray();
         int pos1 = -1;
         int pos2 = -1;
@@ -86,7 +85,6 @@ public class Tokenizer
     public static String[] parse(String text, char delimiter, boolean trimEachToken, boolean ignoreEmptyToken)
     {
         if(text == null) return null;
-        int len = text.length();
         StringArray tokens = new StringArray();
         int pos1 = -1;
         int pos2 = -1;
@@ -148,11 +146,11 @@ public class Tokenizer
 
     public static void main(String[] args)
     {
-        String str = "1,\"2,\"ab\",ttt1,\"3,,a\"222\",4";
-        if(args.length > 0)
-        {
-            str = args[0];
-        }
+        //String str = "1,\"2,\"ab\",ttt1,\"3,,a\"222\",4";
+    	//if(args.length > 0)
+    	//{
+    	//    str = args[0];
+    	//}
         // String [] tokens = Tokenizer.parse(str, ',');
         //
         //// System.out.println( "Text = (" + str + ")");

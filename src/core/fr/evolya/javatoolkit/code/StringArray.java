@@ -1,4 +1,4 @@
-package fr.evolya.javatoolkit.net.discover;
+package fr.evolya.javatoolkit.code;
 
 import java.io.Serializable;
 
@@ -11,7 +11,9 @@ import java.io.Serializable;
 
 public class StringArray implements Serializable
 {
-    public static final int DEFAULT_CAPACITY = 10;
+	private static final long serialVersionUID = 1L;
+
+	public static final int DEFAULT_CAPACITY = 10;
 
     protected String[] _strings = null;
     protected int _upperBound = 0;
