@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,6 +24,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 import fr.evolya.javatoolkit.code.utils.XmlUtils;
 
@@ -36,6 +38,8 @@ import fr.evolya.javatoolkit.code.utils.XmlUtils;
  * @version 3.0.1-Beta-ev
  */
 public class XmlConfig {
+	
+	public static final Logger LOGGER = Logs.getLogger("IOC");
 
 	/**
 	 * The program version.
@@ -152,11 +156,16 @@ public class XmlConfig {
 		} catch (IOException ex) {
 			throw new XmlConfigException("Error while reading configuration", ex);
 		}
+		
+		LOGGER.log(Logs.DEBUG, "Parse file: " + src.getAbsolutePath());
 
 		HashMap<String, String> tmpProperties = new HashMap<String, String>();
 		HashMap<String, Object> tmpBeans = new HashMap<String, Object>(beans);
 		
 		handleDocument(src, doc, tmpProperties, tmpBeans);
+		
+		LOGGER.log(Logs.DEBUG, "Found " + tmpBeans.size() + " bean(s) and "
+				+ tmpProperties.size() + " propertie(s)");
 		
 		mergeMaps(tmpProperties, tmpBeans);
 
@@ -199,7 +208,16 @@ public class XmlConfig {
 	 *            the name of the bean.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getBean(String name, Class<T> clazz) {
+	public <T> T getBean(String name, Class<T> type) {
+		if (!beans.containsKey(name)) {
+			LOGGER.log(Logs.WARNING, "Bean not found: " + name);
+			return null;
+		}
+		Object bean = beans.get(name);
+		if (!type.isInstance(bean)) {
+			LOGGER.log(Logs.WARNING, "Bean with name '" + name + "' is not an instance of " + type.getName());
+			return null;
+		}
 		return (T) beans.get(name);
 	}
 	
@@ -500,7 +518,7 @@ public class XmlConfig {
 					+ clazzName + " to " + bean.getClass().getName();
 			throw new XmlConfigException(msg);
 		}
-
+		
 		// Handle bean's attributes.
 		NodeList list = elem.getChildNodes();
 		for (int i = 0; i < list.getLength(); i++) {
@@ -535,6 +553,11 @@ public class XmlConfig {
 		if (name != null && name.length() != 0) {
 			mapBeans.put(name, bean);
 		}
+		
+		if (name != null && name.length() != 0)
+			LOGGER.log(Logs.DEBUG, "Create bean: " + name + " (" + clazzName + ")");
+		else
+			LOGGER.log(Logs.DEBUG_FINE, "Create bean: " + clazzName);
 
 		return bean;
 	}

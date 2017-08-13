@@ -51,7 +51,7 @@ The XML file must respect the following format:
 			<attr name="y" type="double">1.156978</param>
 			
 			<!-- Modify attribute using setters with list argument -->
-			<list name="aList" type="Object">
+			<list name="aList" class="Object">
 				...
 			</list>
 			
