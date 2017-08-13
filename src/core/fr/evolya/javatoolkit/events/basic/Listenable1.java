@@ -6,6 +6,6 @@ public interface Listenable1<L, E, A> {
 	
 	boolean removeListener(L listener);
 	
-	void notifyEvent(E event, A... args);
+	void notifyEvent(E event, @SuppressWarnings("unchecked") A... args);
 	
 }

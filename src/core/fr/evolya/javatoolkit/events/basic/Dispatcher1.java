@@ -22,9 +22,9 @@ public abstract class Dispatcher1<L, E, A> implements Listenable1<L, E, A> {
 		return listeners.remove(listener);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void notifyEvent(E event, A... args) {
-		System.out.println("Notify " + event);
 		Method m = mapMethod(event);
 		for (L listener : listeners) {
 			try {
