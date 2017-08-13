@@ -16,6 +16,8 @@ import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.utils.StringUtils;
 import fr.evolya.javatoolkit.code.utils.Utils;
 import fr.evolya.javatoolkit.events.attr.EventSource;
+import fr.evolya.javatoolkit.net.discover.IRouteProvider.RouteResult;
+import fr.evolya.javatoolkit.net.discover.win32.Win32DeepInfo;
 import fr.evolya.javatoolkit.threading.worker.TimerOperation;
 
 public class NetworkWatcher extends AbstractThreadedService 
@@ -121,13 +123,13 @@ public class NetworkWatcher extends AbstractThreadedService
 			detectInterfaces(ifaces);
 			
 			// On parse le résultat de la commande 'route'
-			ParseRoute rt = new ParseRoute();
+			RouteResult rt = IRouteProvider.getInstance().getResult();
 			
 			// Détection d'une connexion
-			if (rt.getLocalIPAddress() != null && !isConnected()) {
+			if (rt.localAddress != null && !isConnected()) {
 				
 				// On recupère l'interface correspondant et l'IP de connexion
-				Object[] tmp = findInterfaceByIP(rt.getLocalIPAddress());
+				Object[] tmp = findInterfaceByIP(rt.localAddress);
 				TypeInterface iface = (TypeInterface) tmp[0];
 				InetAddress addr = (InetAddress) tmp[1];
 				
@@ -137,7 +139,7 @@ public class NetworkWatcher extends AbstractThreadedService
 				
 				// On donne l'adresse de la passerelle
 				try {
-					network.setGateway(InetAddress.getByName(rt.getGateway()));
+					network.setGateway(InetAddress.getByName(rt.gateway));
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
@@ -164,7 +166,7 @@ public class NetworkWatcher extends AbstractThreadedService
 				}
 				
 			}
-			else if (rt.getLocalIPAddress() == null && isConnected()) {
+			else if (rt.localAddress == null && isConnected()) {
 				
 				// On effectue la déconnexion
 				TypeNetwork old = _connected;

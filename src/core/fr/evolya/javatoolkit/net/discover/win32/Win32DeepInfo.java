@@ -1,7 +1,12 @@
-package fr.evolya.javatoolkit.net.discover;
+package fr.evolya.javatoolkit.net.discover.win32;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+
+import fr.evolya.javatoolkit.net.discover.NetworkDeepInfo;
+import fr.evolya.javatoolkit.net.discover.NetworkWatcher;
+import fr.evolya.javatoolkit.net.discover.TypeInterface;
+import fr.evolya.javatoolkit.net.discover.TypeNetwork;
 
 public class Win32DeepInfo implements NetworkDeepInfo {
 

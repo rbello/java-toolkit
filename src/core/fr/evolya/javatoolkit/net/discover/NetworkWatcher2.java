@@ -15,6 +15,8 @@ import fr.evolya.javatoolkit.app.ThreadedService;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.utils.StringUtils;
 import fr.evolya.javatoolkit.code.utils.Utils;
+import fr.evolya.javatoolkit.events.fi.EventProvider;
+import fr.evolya.javatoolkit.net.discover.IRouteProvider.RouteResult;
 import fr.evolya.javatoolkit.net.discover.events.OnInterfaceDetected;
 import fr.evolya.javatoolkit.net.discover.events.OnInterfaceDisabled;
 import fr.evolya.javatoolkit.net.discover.events.OnInterfaceEnabled;
@@ -24,6 +26,11 @@ import fr.evolya.javatoolkit.net.discover.events.OnNetworkConnected;
 import fr.evolya.javatoolkit.net.discover.events.OnNetworkDisconnected;
 import fr.evolya.javatoolkit.threading.worker.TimerOperation;
 
+@EventProvider({
+	OnInterfaceEnabled.class, OnInterfaceDisabled.class,
+	OnNetworkConnected.class, OnNetworkDisconnected.class,
+	OnInternetAvailable.class, OnInternetUnavailable.class
+})
 public class NetworkWatcher2 extends ThreadedService 
 	implements Runnable {
 
@@ -110,13 +117,13 @@ public class NetworkWatcher2 extends ThreadedService
 			detectInterfaces(ifaces);
 			
 			// On parse le résultat de la commande 'route'
-			ParseRoute rt = new ParseRoute();
+			RouteResult rt = IRouteProvider.getInstance().getResult();
 			
 			// Détection d'une connexion
-			if (rt.getLocalIPAddress() != null && !isConnected()) {
+			if (rt.localAddress != null && !isConnected()) {
 				
 				// On recupère l'interface correspondant et l'IP de connexion
-				Object[] tmp = findInterfaceByIP(rt.getLocalIPAddress());
+				Object[] tmp = findInterfaceByIP(rt.localAddress);
 				TypeInterface iface = (TypeInterface) tmp[0];
 				InetAddress addr = (InetAddress) tmp[1];
 				
@@ -126,7 +133,7 @@ public class NetworkWatcher2 extends ThreadedService
 				
 				// On donne l'adresse de la passerelle
 				try {
-					network.setGateway(InetAddress.getByName(rt.getGateway()));
+					network.setGateway(InetAddress.getByName(rt.gateway));
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
@@ -150,7 +157,7 @@ public class NetworkWatcher2 extends ThreadedService
 				}
 				
 			}
-			else if (rt.getLocalIPAddress() == null && isConnected()) {
+			else if (rt.localAddress == null && isConnected()) {
 				
 				// On effectue la déconnexion
 				TypeNetwork old = _connected;
