@@ -1,5 +1,7 @@
 package fr.evolya.javatoolkit.xmlconfig;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 
@@ -92,9 +94,19 @@ class Param {
             value = XmlConfig.handleBean(conf, (Element)list.get(0), null, mapProperties, mapBeans);
             clazz = (className == null) ? value.getClass()
                 : Class.forName(className);
-        } else {
-            String msg = "invalid type value \""
-                + typeName + "\"";
+        } 
+        else {
+        	clazz = Class.forName(typeName);
+        	value = null;
+        	String valueName = param.getFirstChild().getNodeValue().trim();
+    		for (Field field : clazz.getDeclaredFields()) {
+    			if (!Modifier.isStatic(field.getModifiers())) continue;
+    			if (!field.getName().equals(valueName)) continue;
+    			value = field.get(null);
+    			clazz = field.getType();
+    			return;
+    		}
+			String msg = "invalid type value \"" + typeName + "\"";
             throw new XmlConfigException(msg);
         }
     }
