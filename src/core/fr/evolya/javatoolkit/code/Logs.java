@@ -288,5 +288,8 @@ public class Logs {
 			handler.setLevel(level);
 		}
 	}
+	
+	@Deprecated
+	public static class IncaLogger extends Logs { }
 
 }
