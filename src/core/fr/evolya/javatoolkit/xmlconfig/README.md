@@ -50,6 +50,13 @@ The XML file must respect the following format:
 			<attr name="x" type="double">0.153801</param>
 			<attr name="y" type="double">1.156978</param>
 			
+			<!-- Infer type of attribute -->
+			<attr name="width">600</param>
+			<attr name="height">800</param>
+			
+			<!-- Access static fields (and enumerations) -->
+			<attr name="color" type="java.awt.Color">RED</param>
+			
 			<!-- Modify attribute using setters with list argument -->
 			<list name="aList" class="Object">
 				...

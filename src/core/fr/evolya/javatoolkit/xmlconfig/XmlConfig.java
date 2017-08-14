@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -771,6 +772,11 @@ public class XmlConfig {
 	protected static Object initializeBean(XmlConfig conf, Class<?> clazz, Node node,
 			Map<String, String> mapProperties, Map<String, Object> mapBeans) throws Exception {
 
+		if (Modifier.isAbstract(clazz.getModifiers())) {
+			throw new XmlConfigException("Unable to create instance of abstract class "
+					+ clazz.getName());
+		}
+		
 		List<Node> params = XmlUtils.getChildrenByTagName((Element) node, "param");
 		Class<?>[] p_classes = new Class[params.size()];
 		Object[] p_values = new Object[params.size()];

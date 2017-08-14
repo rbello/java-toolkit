@@ -2,6 +2,7 @@ package fr.evolya.javatoolkit.code.utils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -27,6 +28,8 @@ public final class ReflectionUtils {
 		for (Method m : targetObject.getClass().getMethods()) {
 			if (m.getName().equals(method.getName())) return m;
 		}
+		// TODO Ameliorer le log
+		// Class X has no method X
 		throw new UnsupportedOperationException("Unable to bind method");
 	}
 	
@@ -249,6 +252,26 @@ public final class ReflectionUtils {
 	public static Method getMethodMatching(Class<?> type, String methodName) {
 		for (Method m : type.getMethods()) {
 			if (m.getName().equals(methodName)) return m;
+		}
+		return null;
+	}
+
+	public static Field getFieldMatching(Class<?> type, String fieldName)
+			throws NoSuchFieldException {
+		while (type != null) {
+			try {
+				return type.getDeclaredField(fieldName);
+			}
+			catch (NoSuchFieldException ex) { }
+			type = type.getSuperclass();
+		}
+		throw new NoSuchFieldException(fieldName);
+	}
+
+	public static Method getMethodMatchingIgnoreCase(Class<?> type, String methodName) {
+		methodName = methodName.toUpperCase();
+		for (Method m : type.getMethods()) {
+			if (m.getName().toUpperCase().equals(methodName)) return m;
 		}
 		return null;
 	}
