@@ -24,10 +24,10 @@ class Param {
 
     private Object value = null;
 
-    private Class<?> clazz = null;
+    private Class<?> type = null;
     
     public Param(Class<?> type) {
-    	this.clazz = type;
+    	this.type = type;
     	this.value = null;
     }
 
@@ -92,12 +92,12 @@ class Param {
             else {
                 throw new XmlConfigException(src, "Invalid %s value \"%s\"", "boolean", valueStr);
             }
-            clazz = boolean.class;
+            type = boolean.class;
             break;
             
         case "byte": case "java.lang.Byte":
             value = new Byte(valueStr);
-            clazz = byte.class;
+            type = byte.class;
             break;
             
         case "char": case "java.lang.Character":
@@ -105,56 +105,56 @@ class Param {
             	throw new XmlConfigException(src, "Invalid %s value \"%s\"", "char", valueStr);
             }
             value = new Character(valueStr.charAt(0));
-            clazz = char.class;
+            type = char.class;
             break;
             
         case "double": case "Double": case "java.lang.Double":
             value = new Double(valueStr);
-            clazz = double.class;
+            type = double.class;
             break;
             
         case "float": case "Float": case "java.lang.Float":
             value = new Float(valueStr);
-            clazz = float.class;
+            type = float.class;
             break;
             
         case "int": case "Integer": case "java.lang.Integer":
             value = new Integer(valueStr);
-            clazz = int.class;
+            type = int.class;
             break;
             
         case "long": case "Long": case "java.lang.Long":
             value = new Long(valueStr);
-            clazz = long.class;
+            type = long.class;
             break;
             
         case "short": case "Short": case "java.lang.Short":
             value = new Short(valueStr);
-            clazz = short.class;
+            type = short.class;
             break;
             
         case "string": case "String": case "java.lang.String":
             value = new String(valueStr);
-            clazz = String.class;
+            type = String.class;
             break;
             
         case "bean":
             List<Node> list = XmlUtils.getChildrenByTagName(param, "bean");
             value = conf.handleBean(src, (Element)list.get(0));
-            clazz = value.getClass();
+            type = value.getClass();
             break;
         
         default:
         	// Access to static fields and enumerations
         	try {
-	        	clazz = Class.forName(typeName);
+	        	type = Class.forName(typeName);
 	        	value = null;
 	        	String valueName = param.getFirstChild().getNodeValue().trim();
-	    		for (Field field : clazz.getDeclaredFields()) {
+	    		for (Field field : type.getDeclaredFields()) {
 	    			if (!Modifier.isStatic(field.getModifiers())) continue;
 	    			if (!field.getName().equals(valueName)) continue;
 	    			value = field.get(null);
-	    			clazz = field.getType();
+	    			type = field.getType();
 	    			return;
 	    		}
         	}
@@ -171,7 +171,7 @@ class Param {
     }
 
     public Class<?> getType() {
-        return clazz;
+        return type;
     }
 
 }
