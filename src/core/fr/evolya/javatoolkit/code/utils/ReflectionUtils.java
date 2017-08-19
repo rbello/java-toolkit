@@ -275,5 +275,32 @@ public final class ReflectionUtils {
 		}
 		return null;
 	}
+	
+	/**
+	 * Generate a setter method name for the specified attribute name.
+	 */
+	public static String getSetterMethodName(String attr) {
+		return getMethodeName("set", attr);
+	}
 
+	/**
+	 * Generate a getter method name for the specified attribute name.
+	 */
+	public static String getGetterMethodName(String attr) {
+		return getMethodeName("get", attr);
+	}
+
+	/**
+	 * Generate a setter method name for the specified attribute name.
+	 */
+	public static String getAdderMethodName(String attr) {
+		return getMethodeName("add", attr);
+	}
+
+	private static String getMethodeName(String prefix, String name) {
+		StringBuilder sb = new StringBuilder(prefix);
+		sb.append(Character.toUpperCase(name.charAt(0)));
+		sb.append(name.substring(1));
+		return sb.toString();
+	}
 }

@@ -2,13 +2,11 @@ package fr.evolya.javatoolkit.xmlconfig;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -17,7 +15,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,16 +34,11 @@ import fr.evolya.javatoolkit.code.utils.XmlUtils;
  * @author Jeon Jiwon
  * @author R. Bello
  * 
- * @version 3.0.1-Beta-ev
+ * @version 2.0
  */
 public class XmlConfig {
 	
 	public static final Logger LOGGER = Logs.getLogger("IOC");
-
-	/**
-	 * The program version.
-	 */
-	public static final String VERSION = "3.0.1-Beta-ev";
 
 	/**
 	 * This attribute contains the current beans.
@@ -57,24 +50,14 @@ public class XmlConfig {
 	 */
 	protected Map<String, String> properties = null;
 
-	/**
-	 * The document builder.
-	 */
-	protected DocumentBuilder db;
-
-	/**
-	 * Replace ${name} type variables?
-	 */
-	protected boolean replaceVariables = false;
+	private boolean replaceVariables;
 
 	/**
 	 * Create an empty configuration.
 	 */
 	public XmlConfig() {
-		
 		beans 		= Collections.synchronizedMap(new HashMap<String, Object>());
 		properties 	= Collections.synchronizedMap(new HashMap<String, String>());
-		
 	}
 
 	/**
@@ -88,10 +71,8 @@ public class XmlConfig {
 	 * @see #addConfiguration(java.io.InputStream)
 	 */
 	public XmlConfig(InputStream in) throws XmlConfigException, IOException {
-		
 		this();
 		addConfiguration(in);
-		
 	}
 
 	/**
@@ -103,10 +84,8 @@ public class XmlConfig {
 	 * @see #addConfiguration(java.io.File)
 	 */
 	public XmlConfig(File file) throws XmlConfigException, IOException {
-		
 		this();
 		addConfiguration(file);
-		
 	}
 
 	// ==================================================================== //
@@ -116,7 +95,6 @@ public class XmlConfig {
 	 * @throws XmlConfigException 
 	 */
 	public void addConfiguration(File file) throws IOException, XmlConfigException {
-		
 		addConfiguration(file, new FileInputStream(file));
 	}
 
@@ -125,9 +103,7 @@ public class XmlConfig {
 	 * @throws XmlConfigException 
 	 */
 	public void addConfiguration(InputStream in) throws IOException, XmlConfigException {
-		
 		addConfiguration(null, in);
-		
 	}
 	
 	/**
@@ -136,52 +112,39 @@ public class XmlConfig {
 	protected synchronized void addConfiguration(File src, InputStream in)
 		throws XmlConfigException, IOException {
 		
-		if (db == null) {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			dbf.setIgnoringComments(true);
-			dbf.setIgnoringElementContentWhitespace(true);
-			dbf.setCoalescing(true);
-
-			try {
-				db = dbf.newDocumentBuilder();
-			} catch (Throwable t) {
-				throw new XmlConfigException("Could not create parser", t);
-			}
+		// Create document builder factory
+		DocumentBuilder db;
+		try {
+			db = XmlUtils.createDocumentBuilder();
+		}
+		catch (ParserConfigurationException ex) {
+			throw new XmlConfigException("Could not create XML parser", ex);
 		}
 
+		// Read and parse document
 		Document doc;
 		try {
 			doc = db.parse(in);
-		} catch (SAXException ex) {
-			throw new XmlConfigException("Could not parse configuration", ex);
-		} catch (IOException ex) {
-			throw new XmlConfigException("Error while reading configuration", ex);
+		}
+		catch (IOException ex) {
+			throw new XmlConfigException(src, "Error while reading configuration. Check the given file is readdable.", ex);
+		}
+		catch (SAXException ex) {
+			throw new XmlConfigException(src, "Could not parse configuration file. Check the file has a well-formed XML format.", ex);
 		}
 		
-		LOGGER.log(Logs.DEBUG, "Parse file: " + src.getAbsolutePath());
-
-		HashMap<String, String> tmpProperties = new HashMap<String, String>();
-		HashMap<String, Object> tmpBeans = new HashMap<String, Object>(beans);
+		// Log
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, "Parse file: " + src.getAbsolutePath());
+		}
 		
-		handleDocument(src, doc, tmpProperties, tmpBeans);
+		// Handle document
+		handleConf(src, doc.getDocumentElement());
 		
-		LOGGER.log(Logs.DEBUG, "Found " + tmpBeans.size() + " bean(s) and "
-				+ tmpProperties.size() + " propertie(s)");
-		
-		mergeMaps(tmpProperties, tmpBeans);
-
 	}
+
 	
-	protected void mergeMaps(Map<String, String> mapProperties, Map<String, Object> mapBeans) {
-		
-		properties.putAll(mapProperties);
-		mapProperties.clear();
-		
-		beans.putAll(mapBeans);
-		mapBeans.clear();
-		
-	}
-
+	
 	/**
 	 * Get a string property.
 	 * 
@@ -238,389 +201,159 @@ public class XmlConfig {
 
 	// ==================================================================== //
 
-	/**
-	 * Handle the JDOM document.
-	 * 
-	 * @param src
-	 * 			the orginal file source, or null if the source is directly a stream
-	 * 
-	 * @param mapProperties
-	 * 			the map of properties to fill
-	 * 		
-	 * @param mapBeans
-	 * 			the map of beans to fill
-	 */
-	protected void handleDocument(File src, Document doc, HashMap<String, String> mapProperties,
-			HashMap<String, Object> mapBeans) throws XmlConfigException {
-		
-		handleConf(src, doc.getDocumentElement(), mapProperties, mapBeans);
-	}
-
-	/**
-	 * Handle &lt;conf&gt; elements.
-	 * 
-	 * @param src 
-	 * 			  the orginal file source, or null if the source is directly a stream
-	 * 
-	 * @param conf
-	 *            the conf element
-	 *            
-	 * @param mapBeans 
-	 * 			  the map of beans to fill
-	 * 
-	 * @param mapProperties 
-	 * 			  the map of properties to fill
-	 */
-	protected void handleConf(File src, Element conf, HashMap<String, String> mapProperties,
-			HashMap<String, Object> mapBeans) throws XmlConfigException {
-		
-		try {
-			
-			handleConf0(src, conf, mapProperties, mapBeans);
-			
-		} catch (Throwable t) {
-			throw new XmlConfigException("Error during configuration, in " + src, t);
-		}
-
-	}
-
-	/**
-	 * Handle &lt;conf&gt; elements.
-	 * 
-	 * @param src 
-	 * 			  the orginal file source, or null if the source is directly a stream
-	 * 
-	 * @param conf
-	 *            the conf element
-	 *            
-	 * @param mapBeans 
-	 * 			  the map of beans to fill
-	 * 
-	 * @param mapProperties 
-	 * 			  the map of properties to fill
-	 */
-	protected void handleConf0(File src, Element conf, HashMap<String, String> mapProperties,
-			HashMap<String, Object> mapBeans) throws Exception {
-
-		boolean oldReplaceVariables = replaceVariables;
+	protected void handleConf(File src, Element rootElement) throws XmlConfigException {
 
 		// See if the element contains the replacevars attribute.
-		String str = getAttributeValue(conf, "replacevars", mapProperties);
-		if (str == null || str.equals("inherit")) {
-			// Do nothing.
-		} else if (str.equals("true")) {
-			replaceVariables = true;
-		} else if (str.equals("false")) {
-			replaceVariables = false;
-		} else {
-			throw new XmlConfigException("Unknown variable replacement policy \"" + str + "\", in " + src);
-		}
-
-		NodeList list = conf.getChildNodes();
-		for (int i = 0; i < list.getLength(); i++) {
-			Node child = list.item(i);
-
-			if (child instanceof Element) {
-
-				// <include>url</include>
-				// <include>file:path</include>
-				if (child.getNodeName().equals("include")) {
-					handleInclude(src, (Element) child, mapProperties, mapBeans);
+		replaceVariables = XmlUtils.getBooleanAttribute(rootElement, "replacevars", true);
+		
+		// Fetch child nodes
+		XmlUtils.<XmlConfigException>forEachChildNodes(rootElement, (child) -> {
+			switch (child.getNodeName()) {
+			// <include>path</include>
+			case "include": handleInclude(src, child); break;
+			// <bean name="Logical name" class="path.Class">
+			case "bean": handleBean(src, child, null); break;
+			// <property name="Propety name">value</property>
+			case "property":
+				String name = getAttributeValue(child, "name");
+				String value = getTextContent(child);
+				if (XmlUtils.getBooleanAttribute(child, "system", false)) {
+					System.setProperty(name, value);
 				}
-				
-				// <bean name="Logical name" class="path.Class">
-				else if (child.getNodeName().equals("bean")) {
-					handleBean(this, (Element) child, null, mapProperties, mapBeans);
-				}
-				
-				// <property name="Propety name">value</property>
-				else if (child.getNodeName().equals("property")) {
-					
-					String name = getAttributeValue(child, "name", mapProperties);
-					String value = getTextContent(child, mapProperties);
-					boolean system = false;
-
-					// If <property> element has a system-attribute and it's
-					// value equals "true"
-					String tmp = getAttributeValue(child, "system", mapProperties);
-					if (tmp == null) {
-						system = false;
-					} else if (tmp.equalsIgnoreCase("true")) {
-						system = true;
-					} else if (tmp.equalsIgnoreCase("false")) {
-						system = false;
-					} else {
-						throw new XmlConfigException("Unknown system-attribute value \"" + tmp
-								+ "\", in " + src);
-					}
-
-					if (system) {
-						System.setProperty(name, value);
-					} else {
-						mapProperties.put(name, value);
-					}
-
-				}
-				
 				else {
-					throw new XmlConfigException("Unknown element <" + child.getNodeName()
-							+ "> inside <conf> element, in " + src);
+					properties.put(name, value);
 				}
+				break;
+			default:
+				throw new XmlConfigException(src, "Unknown element <%s> inside <conf> element", child.getNodeName());
 			}
-		}
-
-		replaceVariables = oldReplaceVariables;
+		});
 	}
 
-	/**
-	 * Handle &lt;include&gt; elements.
-	 * 
-	 * @param mapBeans 
-	 * 				the map of beans to fill
-	 * 
-	 * @param mapProperties 
-	 * 				the map of properties to fill
-	 */
-	protected void handleInclude(File src, Element elem, HashMap<String, String> mapProperties,
-			HashMap<String, Object> mapBeans) throws Exception {
-
-		String source = getTextContent(elem, mapProperties);
-		
+	protected void handleInclude(File src, Element elem)
+			throws XmlConfigException, IOException {
+		String source = getTextContent(elem);
 		if (source.trim().isEmpty()) {
-			throw new XmlConfigException("Include target must be in the text content " +
-					"of the <include> element, in " + src);
+			throw new XmlConfigException(src, "Include target must be in the text content " +
+					"of the <include> element");
 		}
-		
-		Document doc = null;
-		
-		if (source.substring(0, 5).equals("file:")) {
-			File file = new File(source.substring(5, source.length()));
-			try {
-				
-				doc = db.parse(new FileInputStream(file));
-				
-				src = file;
-				
-			} catch (FileNotFoundException ex) {
-				throw new XmlConfigException("Include target file not found : " + source
-						+ ", in " + src, ex);
-			} catch (Throwable t) {
-				throw new XmlConfigException("Unable to include target file : " + source
-						+ ", in " + src, t);
-			}
-		}
-		
-		else {
-
-			URL url = null;
-			try {
-				url = new URL(source);
-			} catch (Throwable t) {
-				url = XmlConfig.class.getResource(source);
-			}
-			
-			if (url == null) {
-				throw new XmlConfigException("Include target URL not found : " + source
-						+ ", in " + src);
-			}
-	
-			try {
-				doc = db.parse(url.openStream());
-			} catch (Throwable t) {
-				throw new XmlConfigException("Unable to include URL : " + source + ", in " + src, t);
-			}
-			
-		}
-		
-		handleDocument(src, doc, mapProperties, mapBeans);
-		
+		addConfiguration(new File(source));
 	}
 
-	/**
-	 * Handle &lt;bean&gt; elements.
-	 * 
-	 * @param beans
-	 * 			  the used configuration
-	 * 
-	 * @param elem
-	 *            the bean element
-	 *            
-	 * @param beanClass 
-	 * 			  the bean class (if in a list declaration)
-	 * 
-	 * @param mapBeans
-	 * 			the map of beans to fill
-	 * 
-	 * @param mapProperties 
-	 * 			the map of properties to fill
-	 */
-	protected static Object handleBean(XmlConfig config, Element elem, Class<?> beanClass,
-			Map<String, String> mapProperties, Map<String, Object> mapBeans) throws Exception {
+	protected Object handleBean(File src, Element beanNode, Class<?> beanClass)
+			throws XmlConfigException {
 
 		// If the bean has a logical name then see if a previously configured
 		// instance is available.
-		Object bean = null;
-		String name = config.getAttributeValue(elem, "name", mapProperties);
-		if (name != null) {
-			// TODO: This might cause problems during reconfiguration.
-			bean = config.beans.get(name);
-			if (bean == null) {
-				bean = mapBeans.get(name);
+		Object beanInstance = null;
+		String beanName = getAttributeValue(beanNode, "name");
+		if (beanName != null) {
+			beanInstance = beans.get(beanName);
+			if (beanInstance != null) {
+				beanClass = beanInstance.getClass();
 			}
-		}
-
-		// Get the defined constructor (if any).
-		List<Node> constructors = XmlUtils.getChildrenByTagName(elem, "constructor");
-		if (constructors.size() > 1) {
-			throw new XmlConfigException("Multiple constructors defined for "
-					+ name);
 		}
 
 		// If there is no previously configured instance available and
 		// the class attribute is specified then create a new object.
-		Class<?> clazz = null;
-		String clazzName = config.getAttributeValue(elem, "class", mapProperties);
-		
-		if (clazzName == null && beanClass != null) {
-			clazzName = beanClass.getName();
-		}
-		
-		if (bean == null) {
-			if (clazzName != null && clazzName.length() != 0) {
-				clazz = Class.forName(clazzName);
-				
-				if (clazz.isInterface()) {
-					throw new XmlConfigException("Interface defined for bean class (bean "
-							+ name + ", interface " + clazz.getName() + ")");
-				}
-				
-				if (constructors.size() > 0) {
-					bean = initializeBean(config, clazz, constructors.get(0), mapProperties, mapBeans);
-				} else {
-					try {
-						bean = clazz.newInstance();
-					} catch (Throwable t) {
-						throw new XmlConfigException("Unable to make a new instance of " +
-								"class " + clazz.getName() + " (bean " + name + ")", t);
-					}
-				}
-			} else {
-				String msg;
-				if (name != null) {
-					msg = "No class given to a new bean (" + name + ")";
-				} else {
-					msg = "No class given to an unnamed bean";
-				}
-				throw new XmlConfigException(msg);
+		if (beanClass == null) {
+			String className = getAttributeValue(beanNode, "class");
+			if (className == null) {
+				throw new XmlConfigException(src, "Element <bean> must have a 'class' attribute");
 			}
-		} else if (clazzName != null && clazzName.length() != 0
-				&& clazzName.equals(bean.getClass().getName()) == false) {
-			String msg = "Bean's (" + name + ") class has changed from "
-					+ clazzName + " to " + bean.getClass().getName();
-			throw new XmlConfigException(msg);
-		}
-		
-		// Handle bean's attributes.
-		NodeList list = elem.getChildNodes();
-		for (int i = 0; i < list.getLength(); i++) {
-			Node child = list.item(i);
-			if (child instanceof Element) {
-				
-				if (child.getNodeName().equals("attr")) {
-					handleAttr(config, bean, child, mapProperties, mapBeans);
-				}
-				
-				else if (child.getNodeName().equals("call")) {
-					handleCall(config, bean, child, mapProperties, mapBeans);
-				}
-				
-				else if (child.getNodeName().equals("list")) {
-					handleList(config, bean, name, child, mapProperties, mapBeans);
-				}
-				
-				else if (child.getNodeName().equals("constructor")) {
-					// Already processed.
-				}
-				
-				else {
-					String msg = "Unknown element <" + child.getNodeName()
-							+ "> in <bean>";
-					throw new XmlConfigException(msg);
-				}
+			try {
+				beanClass = Class.forName(className);
+			}
+			catch (ClassNotFoundException e) {
+				throw new XmlConfigException(src, e, "Unable to create <bean> with a not found class: %s", className);
 			}
 		}
+		if (beanInstance == null) {
+			beanInstance = createBeanInstance(src, beanClass, beanName, beanNode);
+		}
+		
+		// Fetch childs of bean's node
+		XmlUtils.<XmlConfigException>forEachChildNodes(beanNode, (child) -> {
+			switch (child.getNodeName()) {
+			case "attr": handleAttr(src, beanInstance, beanName, child); break;
+			case "call": handleCall(src, beanInstance, beanName, child); break;
+			case "list": handleList(src, beanInstance, beanName, child); break;
+			case "constructor": break; // Already processed
+			default:
+				throw new XmlConfigException(src, "Unknown element <%s> in <bean>", child.getNodeName());
+			}
+		});
 
 		// Save the bean if a logical name was given.
-		if (name != null && name.length() != 0) {
-			mapBeans.put(name, bean);
+		if (beanName != null && !beanName.isEmpty()) {
+			beans.put(beanName, beanInstance);
+			LOGGER.log(Logs.DEBUG, "Create bean: " + beanName + " (" + beanClass.getName() + ")");
 		}
-		
-		if (name != null && name.length() != 0)
-			LOGGER.log(Logs.DEBUG, "Create bean: " + name + " (" + clazzName + ")");
-		else
-			LOGGER.log(Logs.DEBUG_FINE, "Create bean: " + clazzName);
+		else {
+			LOGGER.log(Logs.DEBUG_FINE, "Create bean: " + beanClass.getName());
+		}
 
-		return bean;
+		return beanInstance;
 	}
 
-	/**
-	 * Handle &lt;attr&gt; elements.
-	 * 
-	 * @param conf
-	 * 			  the used configuration
-	 * 
-	 * @param bean
-	 *            the object that contains the attribute
-	 *            
-	 * @param attr
-	 *            the attr element
-	 *            
-	 * @param mapBeans 
-	 * 				the map of beans to fill
-	 * 
-	 * @param mapProperties 
-	 * 				the map of properties to fill
+	private <T> T createBeanInstance(File src, Class<T> type, String name, Element node)
+			throws XmlConfigException {
+		// Check if given type is an interface
+		if (type.isInterface()) {
+			throw new XmlConfigException(src,
+					"An interface was defined as bean class (bean %s, interface %s)",
+					name, type.getName());
+		}
+		// Get the defined constructor (if any).
+		List<Node> constructors = XmlUtils.getChildrenByTagName(node, "constructor");
+		if (constructors.size() > 1) {
+			throw new XmlConfigException(src, "Multiple constructors defined for bean '%s'", name);
+		}
+		try {
+			// Initialize with a constructor
+			if (constructors.size() > 0) {
+				return initializeBean(type, constructors.get(0));
+			}
+			// Initialize without constructor
+			return type.newInstance();
+		}
+		catch (Throwable t) {
+			throw new XmlConfigException(src, t, "Unable to create a new instance of " +
+					"class %s (bean %s)", type.getName(), name);
+		}
+//	} else {
+//		String msg;
+//		if (name != null) {
+//			msg = "No class given to a new bean (" + name + ")";
+//		} else {
+//			msg = "No class given to an unnamed bean";
+//		}
+//		throw new XmlConfigException(msg);
+//	}
+//} else if (clazzName != null && clazzName.length() != 0
+//		&& clazzName.equals(bean.getClass().getName()) == false) {
+//	String msg = "Bean's (" + name + ") class has changed from "
+//			+ clazzName + " to " + bean.getClass().getName();
+//	throw new XmlConfigException(msg);
+//}
+	}
 
-	 */
-	protected static void handleAttr(XmlConfig conf, Object bean, Node node,
-			Map<String, String> mapProperties, Map<String, Object> mapBeans) throws Exception {
-
-		Attr attr = new Attr(conf, node, mapProperties, mapBeans);
-
-		// Get the right method and invoke it.
-		Class<?> b_class = bean.getClass();
-		String m_name = getSetterMethodName(attr.getName());
-		Class<?>[] p_classes = new Class[] { attr.getClazz() };
-		Method method = ReflectionUtils.getMethodMatching(b_class, m_name, p_classes);
+	protected void handleAttr(File src, Object bean, String beanName, Node node)
+			throws XmlConfigException {
+		// Create attribute
+		Attr attr = new Attr(this, src, node, bean);
+		
+		Method method = attr.getSetterMethod();
+		
 		if (method == null) {
-			throw new XmlConfigException("Class " + b_class + " does "
+			throw new XmlConfigException(src, "Class " + b_class + " does "
 					+ "not contain method " + ReflectionUtils.getMethodSignature(m_name, p_classes));
 		}
-
 		method.invoke(bean, new Object[] { attr.getValue() });
 	}
 
-	/**
-	 * Handle &lt;call&gt; elements.
-	 *
-	 * @param conf
-	 * 			  the used configuration
-	 * 
-	 * @param bean
-	 *            the object that contains the method
-	 *            
-	 * @param call
-	 *            the call element
-	 *            
-	 * @param mapBeans 
-	 * 				the map of beans to fill
-	 * 
-	 * @param mapProperties 
-	 * 				the map of properties to fill
-	 */
-	protected static void handleCall(XmlConfig conf, Object bean, Node call,
-			Map<String, String> mapProperties, Map<String, Object> mapBeans)
-		throws Exception {
+	protected static void handleCall(File src, Object bean, String beanName, Node call)
+		throws XmlConfigException {
 
 		String m_name = conf.getAttributeValue(call, "name", mapProperties);
 		if (m_name == null) {
@@ -648,30 +381,9 @@ public class XmlConfig {
 		
 	}
 
-	/**
-	 * Handle &lt;list&gt; elements.
-	 * 
-	 * @param conf
-	 * 			  the used configuration
-	 * 
-	 * @param bean
-	 *            the object that contains the list
-	 *            
-	 * @param beanName
-	 * 			  the name of the current bean
-	 *            
-	 * @param list
-	 *            the list element
-	 *            
-	 * @param mapBeans 
-	 * 				the map of beans to fill
-	 * 
-	 * @param mapProperties 
-	 * 				the map of properties to fill 
-	 */
 	@SuppressWarnings("unchecked")
-	protected static void handleList(XmlConfig conf, Object bean, String beanName, Node list,
-			Map<String, String> mapProperties, Map<String, Object> mapBeans) throws Exception {
+	protected static void handleList(File src, Object bean, String beanName, Node list)
+			throws XmlConfigException {
 		
 		String l_name = conf.getAttributeValue(list, "name", mapProperties);
 		if (l_name == null) {
@@ -763,13 +475,7 @@ public class XmlConfig {
 
 	// ==================================================================== //
 
-	/**
-	 * Initialize a bean with a specified constructor.
-	 * 
-	 * @revision Inca Framework : static
-	 */
-	protected static Object initializeBean(XmlConfig conf, Class<?> clazz, Node node,
-			Map<String, String> mapProperties, Map<String, Object> mapBeans) throws Exception {
+	protected <T> T initializeBean(Class<T> clazz, Node node) throws XmlConfigException {
 
 		if (Modifier.isAbstract(clazz.getModifiers())) {
 			throw new XmlConfigException("Unable to create instance of abstract class "
@@ -800,7 +506,7 @@ public class XmlConfig {
 	/**
 	 * Replace ${name} type variables from the string.
 	 */
-	protected String replaceVariables(String orig,  Map<String, String> mapProperties) {
+	protected String replaceVariables(String orig) {
 
 		if (replaceVariables == false || orig == null) {
 			return orig;
@@ -816,7 +522,7 @@ public class XmlConfig {
 			if ((end = orig.indexOf("}", index)) != -1) {
 				String key = orig.substring(start + 2, end);
 				index = end + 1;
-				String val = mapProperties.get(key);
+				String val = properties.get(key);
 				if (val != null) {
 					sb.append(val);
 				}
@@ -824,21 +530,19 @@ public class XmlConfig {
 				break;
 			}
 		}
-
 		if (index < orig.length()) {
 			sb.append(orig.substring(index, orig.length()));
 		}
-
 		return sb.toString();
 	}
 
 	/**
 	 * Get the text content of the specified element as a String.
 	 */
-	protected String getTextContent(Node elem, Map<String, String> mapProperties) {
+	protected String getTextContent(Node elem) {
 		Node n = elem.getFirstChild();
 		if (n == null) return "";
-		return replaceVariables(n.getNodeValue().trim(), mapProperties);
+		return replaceVariables(n.getNodeValue().trim());
 	}
 
 	/**
@@ -847,53 +551,10 @@ public class XmlConfig {
 	 * @param name
 	 *            the name of the attribute.
 	 */
-	protected String getAttributeValue(Node elem, String name, Map<String, String> mapProperties) {
+	protected String getAttributeValue(Node elem, String name) {
 		Node node = elem.getAttributes().getNamedItem(name);
-		if (node != null) {
-			return replaceVariables(node.getNodeValue(), mapProperties);
-		} else {
-			return null;
-		}
+		if (node == null) return null;
+		return replaceVariables(node.getNodeValue());
 	}
 
-	/**
-	 * Generate a setter method name for the specified attribute name.
-	 * 
-	 * @revision Inca Framework : static
-	 * @revision Inca Framework : StringBuilder au lieu du StringBuffer
-	 */
-	protected static String getSetterMethodName(String attr) {
-		StringBuilder sb = new StringBuilder("set");
-		sb.append(Character.toUpperCase(attr.charAt(0)));
-		sb.append(attr.substring(1));
-		return sb.toString();
-	}
-	
-	/**
-	 * Generate a getter method name for the specified attribute name.
-	 * 
-	 * @revision Inca Framework : method added
-	 */
-	protected static String getGetterMethodName(String attr) {
-		StringBuilder sb = new StringBuilder("get");
-		sb.append(Character.toUpperCase(attr.charAt(0)));
-		sb.append(attr.substring(1));
-		return sb.toString();
-	}
-
-	/**
-	 * Generate a setter method name for the specified attribute name.
-	 * 
-	 * @revision Inca Framework : static
-	 * @revision Inca Framework : StringBuilder au lieu du StringBuffer
-	 */
-	protected static String getAdderMethodName(String attr) {
-		StringBuilder sb = new StringBuilder("add");
-		sb.append(Character.toUpperCase(attr.charAt(0)));
-		sb.append(attr.substring(1));
-		return sb.toString();
-	}
-
-	
-	
 }

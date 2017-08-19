@@ -1,8 +1,11 @@
 package fr.evolya.javatoolkit.xmlconfig;
 
-import java.util.Map;
+import java.io.File;
+import java.lang.reflect.Method;
 
 import org.w3c.dom.Node;
+
+import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 
 /**
  * An object representing an attribute.
@@ -10,41 +13,36 @@ import org.w3c.dom.Node;
  * @author Antti S. Brax
  * @author R. Bello
  * 
- * @version 1.1
+ * @version 2.0
  */
 class Attr extends Param {
 
-    private String name = null;
+    protected String name = null;
+	private Object bean;
 
-    /**
-     * @param param an attr or param element.
-     */
-    public Attr(XmlConfig conf, Node attr, Map<String, String> mapProperties,
-    		Map<String, Object> mapBeans) 
-        throws Exception, XmlConfigException, ClassNotFoundException {
-
-        super(conf, attr, mapProperties, mapBeans);
-
-        name = conf.getAttributeValue(attr, "name", mapProperties);
+    public Attr(XmlConfig conf, File src, Node attrNode, Object beanInstance) 
+        throws XmlConfigException {
+        super(conf, src, attrNode);
+        bean = beanInstance;
+        name = conf.getAttributeValue(attrNode, "name");
         if (name == null) {
-            throw new XmlConfigException("attr element must have a name "
-                                         + "attribute");
+            throw new XmlConfigException(src, "<attr> element must have a 'name' attribute");
         }
-
     }
 
-    /**
-     * Set the value of name.
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * Get the value of name.
-     */
     public String getName() {
         return name;
     }
+    
+    public Object getBean() {
+    	return bean;
+    }
+
+	public Method getSetterMethod() {
+		// Get the right method and invoke it.
+		String m_name = ReflectionUtils.getSetterMethodName(name);
+		Class<?>[] p_classes = new Class[] { getClazz() };
+		return ReflectionUtils.getMethodMatching(bean.getClass(), m_name, p_classes);
+	}
 
 }

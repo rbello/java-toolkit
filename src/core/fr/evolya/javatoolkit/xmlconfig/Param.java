@@ -1,10 +1,10 @@
 package fr.evolya.javatoolkit.xmlconfig;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
-import java.util.Map;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -18,37 +18,36 @@ import fr.evolya.javatoolkit.code.utils.XmlUtils;
  * @author Antti S. Brax
  * @author R. Bello
  * 
- * @version 1.1
+ * @version 2.0
  */
 class Param {
 
     private Object value = null;
 
     private Class<?> clazz = null;
+    
+    public Param(Class<?> type) {
+    	this.clazz = type;
+    	this.value = null;
+    }
 
-    // ==================================================================== //
+    public Param(XmlConfig conf, File src, Node param) throws XmlConfigException {
 
-    /**
-     * @param param an attr or param element.
-     */
-    public Param(XmlConfig conf, Node param, Map<String, String> mapProperties,
-    		Map<String, Object> mapBeans) throws Exception, XmlConfigException, ClassNotFoundException {
-
-        String typeName = conf.getAttributeValue(param, "type", mapProperties);
-        String fieldName = conf.getAttributeValue(param, "name", mapProperties);
-        String valueStr = conf.getTextContent(param, mapProperties);
+        String typeName = conf.getAttributeValue(param, "type");
+        String fieldName = conf.getAttributeValue(param, "name");
+        String valueStr = conf.getTextContent(param);
         
         if (typeName == null) {
         	// Infer type from parent
-        	String beanTypeName = conf.getAttributeValue(param.getParentNode(), "class", mapProperties);
+        	String beanTypeName = conf.getAttributeValue(param.getParentNode(), "class");
         	if (beanTypeName == null) {
-        		String beanName = conf.getAttributeValue(param.getParentNode(), "name", mapProperties);
+        		String beanName = conf.getAttributeValue(param.getParentNode(), "name");
         		if (beanName != null) {
-        			beanTypeName = mapBeans.get(beanName).getClass().getName();
+        			beanTypeName = conf.getBean(beanName).getClass().getName();
         		}
         	}
         	if (beanTypeName == null) {
-                throw new XmlConfigException("param and attr elements should have 'type' attribute");
+                throw new XmlConfigException(src, "param and attr elements should have 'type' attribute");
             }
         	// Get param type from bean's attribute
         	try {
@@ -65,7 +64,7 @@ class Param {
         		}
         	}
         	if (typeName == null) {
-        		throw new XmlConfigException("Unable to infer type of field " + beanTypeName 
+        		throw new XmlConfigException(src, "Unable to infer type of field " + beanTypeName 
         				+ "." + fieldName);
         	}
         }
@@ -80,7 +79,7 @@ class Param {
                 value = new Boolean(false);
             } 
             else {
-                throw new XmlConfigException(String.format("invalid %s value \"%s\"", "boolean", valueStr));
+                throw new XmlConfigException(src, "Invalid %s value \"%s\"", "boolean", valueStr);
             }
             clazz = boolean.class;
             break;
@@ -92,7 +91,7 @@ class Param {
             
         case "char": case "java.lang.Character":
             if (valueStr.length() != 1) {
-            	throw new XmlConfigException(String.format("invalid %s value \"%s\"", "char", valueStr));
+            	throw new XmlConfigException(src, "Invalid %s value \"%s\"", "char", valueStr);
             }
             value = new Character(valueStr.charAt(0));
             clazz = char.class;
@@ -131,7 +130,7 @@ class Param {
         case "bean":
             Element elem = (Element)param;
             List<Node> list = XmlUtils.getChildrenByTagName(elem, "bean");
-            value = XmlConfig.handleBean(conf, (Element)list.get(0), null, mapProperties, mapBeans);
+            value = conf.handleBean(src, (Element)list.get(0), null);
             clazz = value.getClass();
             break;
         
@@ -146,37 +145,20 @@ class Param {
     			clazz = field.getType();
     			return;
     		}
-			String msg = "invalid type value \"" + typeName + "\"";
-            throw new XmlConfigException(msg);
+    		// TODO Préciser que l'on se situe dans un param pour le log de l'exception ?
+            throw new XmlConfigException(src, "invalid type value '%s'", typeName);
         }
     }
 
-    // ==================================================================== //
+//    public void setValue(Object value) {
+//        this.value = value;
+//    }
 
-    /**
-     * Set the value of value.
-     */
-    public void setValue(Object value) {
-        this.value = value;
-    }
-
-    /**
-     * Get the value of value.
-     */
     public Object getValue() {
         return value;
     }
 
-    /**
-     * Set the value of class.
-     */
-    public void setClazz(Class<?> clazz) {
-        this.clazz = clazz;
-    }
-
-    /**
-     * Get the value of class.
-     */
+    // TODO renommer en getType
     public Class<?> getClazz() {
         return clazz;
     }
