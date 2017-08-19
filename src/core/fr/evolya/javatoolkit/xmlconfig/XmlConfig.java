@@ -680,8 +680,7 @@ public class XmlConfig {
 		
 		String l_classname = conf.getAttributeValue(list, "class", mapProperties);
 		if (l_classname == null) {
-			throw new XmlConfigException("No class attribute in <list name=\""
-					+ l_name + "\">");
+        	throw new XmlConfigException("No class attribute in <list name=\"" + l_name + "\">");
 		}
 		Class<?> l_class = Class.forName(l_classname);
 		Class<?> b_class = bean.getClass();
@@ -757,7 +756,7 @@ public class XmlConfig {
 			return;
 			
 		}
-		
+		if (beanName == null) beanName = l_classname;
 		throw new XmlConfigException("No added/getter/setter method for <list name=\""
 					+ l_name + "\"> in bean '" + beanName + "'");
 	}
