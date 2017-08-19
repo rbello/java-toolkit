@@ -146,7 +146,7 @@ public class DependencyInjectionContext {
 				
 				if (LOGGER.isLoggable(Logs.DEBUG)) {
 					LOGGER.log(Logs.DEBUG, String.format(
-							"  `-> Inject depencendy %s on field %s::%s (%s)",
+							"  `-> Inject dependency %s on field %s::%s (%s)",
 							type.getSimpleName(),
 							instance.getInstanceClass().getSimpleName(),
 							field.getName(),
@@ -213,6 +213,16 @@ public class DependencyInjectionContext {
 					+ "::" + field.getName();
 		}
 		
+	}
+
+	public void inject(Class<?> targetType, String attributeName, Class<?> typeToInject) {
+		try {
+			Field field = ReflectionUtils.getFieldMatching(targetType, attributeName);
+			injections.add(new Injection(getComponent(targetType), field, typeToInject));
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 }
