@@ -33,8 +33,7 @@ The XML file must respect the following format:
 		<property name="otherProperty">Replace var: ${oneProperty}</property>
 		
 		<!-- Include other configuration file -->
-		<include>file:./other-config-file.xml</include>
-		<include>http://test.com/file.xml</include>
+		<include>./other-config-file.xml</include>
 		
 		<!-- Bean declaration -->
 		<bean name="MyBean" class="fr.evolya.MyClass">
@@ -47,8 +46,8 @@ The XML file must respect the following format:
 			</constructor>
 			
 			<!-- Modify attributes using setters -->
+			<attr name="y" type="java.lang.Double">1.156978</param>
 			<attr name="x" type="double">0.153801</param>
-			<attr name="y" type="double">1.156978</param>
 			
 			<!-- Infer type of attribute -->
 			<attr name="width">600</param>
@@ -57,8 +56,14 @@ The XML file must respect the following format:
 			<!-- Access static fields (and enumerations) -->
 			<attr name="color" type="java.awt.Color">RED</param>
 			
-			<!-- Modify attribute using setters with list argument -->
-			<list name="aList" class="Object">
+			<!-- Modify attribute of type list argument -->
+			<list name="aList" class="fr.evolya.MyOtherClass">
+				<bean>...</bean>
+			</list>
+			
+			<!-- Create a list of -->
+			<list name="anotherList" class="java.lang.String">
+				<value>A string</value>
 				...
 			</list>
 			
