@@ -10,7 +10,7 @@ import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 /**
  * Searching the ADDER method (use the add method)
  */
-public class ListAdderMethod implements IHandler {
+public class ListAdderMethod implements IListHandler {
 
 	@Override
 	public String getMethodName(String attributeName) {
@@ -31,9 +31,7 @@ public class ListAdderMethod implements IHandler {
 	@Override
 	public void invoke(XmlConfig cfg, Method method, File src, Object beanInstance,
 			Element childNode, Class<?> listElementClass) throws Exception {
-		Object[] methodParams = new Object[] { 
-				// TODO Gérer autre chose que les beans (ex: liste de String)
-				cfg.handleBean(src, childNode, listElementClass) };
+		Object[] methodParams = new Object[] { cfg.handleListItem(src, childNode, listElementClass) };
 		method.invoke(beanInstance, methodParams);
 	}
 

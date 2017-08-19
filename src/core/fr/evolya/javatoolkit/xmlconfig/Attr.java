@@ -3,7 +3,7 @@ package fr.evolya.javatoolkit.xmlconfig;
 import java.io.File;
 import java.lang.reflect.Method;
 
-import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 
 import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 
@@ -20,7 +20,7 @@ class Attr extends Param {
     protected String name = null;
 	private Object bean;
 
-    public Attr(XmlConfig conf, File src, Node attrNode, Object beanInstance) 
+    public Attr(XmlConfig conf, File src, Element attrNode, Object beanInstance) 
         throws XmlConfigException {
         super(conf, src, attrNode);
         bean = beanInstance;
@@ -40,13 +40,13 @@ class Attr extends Param {
 
 	public Method getSetterMethod() {
 		String methodName = ReflectionUtils.getSetterMethodName(name);
-		Class<?>[] argumentsTypes = new Class[] { getClazz() };
+		Class<?>[] argumentsTypes = new Class[] { getType() };
 		return ReflectionUtils.getMethodMatching(bean.getClass(), methodName, argumentsTypes);
 	}
 	
 	public String getSetterMethodName() {
 		String methodName = ReflectionUtils.getSetterMethodName(name);
-		Class<?>[] argumentsTypes = new Class[] { getClazz() };
+		Class<?>[] argumentsTypes = new Class[] { getType() };
 		return ReflectionUtils.getMethodSignature(methodName, argumentsTypes);
 	}
 

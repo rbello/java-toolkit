@@ -31,7 +31,7 @@ class Param {
     	this.value = null;
     }
 
-    public Param(XmlConfig conf, File src, Node param) throws XmlConfigException {
+    public Param(XmlConfig conf, File src, Element param) throws XmlConfigException {
 
         String typeName = conf.getAttributeValue(param, "type");
         String valueStr = conf.getTextContent(param);
@@ -62,11 +62,17 @@ class Param {
         	}
         	// Get param type from bean' setter method
         	if (typeName == null) {
-        		Method m = ReflectionUtils.getMethodMatchingIgnoreCase(Class.forName(beanTypeName), 
-        				"set" + fieldName);
-        		if (m != null) {
-        			typeName = m.getParameterTypes()[0].getName();
-        		}
+				try {
+					Method m = ReflectionUtils.getMethodMatchingIgnoreCase(
+							Class.forName(beanTypeName),
+							ReflectionUtils.getSetterMethodName(fieldName)
+					);
+					if (m != null) {
+	        			typeName = m.getParameterTypes()[0].getName();
+	        		}
+				} catch (ClassNotFoundException e) {
+					// Should not be thrown
+				}
         	}
         	if (typeName == null) {
         		throw new XmlConfigException(src, "Unable to infer type of field " + beanTypeName 
@@ -133,38 +139,38 @@ class Param {
             break;
             
         case "bean":
-            Element elem = (Element)param;
-            List<Node> list = XmlUtils.getChildrenByTagName(elem, "bean");
-            value = conf.handleBean(src, (Element)list.get(0), null);
+            List<Node> list = XmlUtils.getChildrenByTagName(param, "bean");
+            value = conf.handleBean(src, (Element)list.get(0));
             clazz = value.getClass();
             break;
         
         default:
-        	clazz = Class.forName(typeName);
-        	value = null;
-        	String valueName = param.getFirstChild().getNodeValue().trim();
-    		for (Field field : clazz.getDeclaredFields()) {
-    			if (!Modifier.isStatic(field.getModifiers())) continue;
-    			if (!field.getName().equals(valueName)) continue;
-    			value = field.get(null);
-    			clazz = field.getType();
-    			return;
-    		}
+        	// Access to static fields and enumerations
+        	try {
+	        	clazz = Class.forName(typeName);
+	        	value = null;
+	        	String valueName = param.getFirstChild().getNodeValue().trim();
+	    		for (Field field : clazz.getDeclaredFields()) {
+	    			if (!Modifier.isStatic(field.getModifiers())) continue;
+	    			if (!field.getName().equals(valueName)) continue;
+	    			value = field.get(null);
+	    			clazz = field.getType();
+	    			return;
+	    		}
+        	}
+        	catch (Exception ex) {
+        		throw new XmlConfigException(src, ex, "invalid type value '%s'", typeName);
+        	}
     		// TODO Préciser que l'on se situe dans un param pour le log de l'exception ?
-            throw new XmlConfigException(src, "invalid type value '%s'", typeName);
+        	throw new XmlConfigException(src, "invalid type value '%s'", typeName);
         }
     }
-
-//    public void setValue(Object value) {
-//        this.value = value;
-//    }
 
     public Object getValue() {
         return value;
     }
 
-    // TODO renommer en getType
-    public Class<?> getClazz() {
+    public Class<?> getType() {
         return clazz;
     }
 

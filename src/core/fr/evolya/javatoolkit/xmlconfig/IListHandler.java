@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 
 import org.w3c.dom.Element;
 
-public interface IHandler {
+public interface IListHandler {
 
 	String getMethodName(String attributeName);
 

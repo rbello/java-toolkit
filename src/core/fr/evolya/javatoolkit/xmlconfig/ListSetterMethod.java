@@ -1,20 +1,18 @@
 package fr.evolya.javatoolkit.xmlconfig;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.w3c.dom.Element;
 
-import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 
 /**
  * Searching the GETTER method (get the list, then use the list's add method)
  */
-public class ListSetterMethod implements IHandler {
+public class ListSetterMethod implements IListHandler {
 
 	private List<Object> list;
 
@@ -40,8 +38,7 @@ public class ListSetterMethod implements IHandler {
 	@Override
 	public void invoke(XmlConfig cfg, Method method, File src, Object beanInstance,
 			Element childNode, Class<?> listElementClass) throws Exception {
-		// TODO Gérer autre chose que les beans (ex: liste de String)
-		list.add(cfg.handleBean(src, childNode, listElementClass));
+		list.add(cfg.handleListItem(src, childNode, listElementClass));
 	}
 
 }

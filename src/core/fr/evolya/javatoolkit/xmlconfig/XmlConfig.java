@@ -48,7 +48,10 @@ public class XmlConfig {
 	 */
 	protected Map<String, String> properties = null;
 
-	private boolean replaceVariables;
+	/**
+	 * Replace ${vars} ?
+	 */
+	private boolean replaceVariables = true;
 
 	/**
 	 * Create an empty configuration.
@@ -141,34 +144,14 @@ public class XmlConfig {
 		
 	}
 
-	
-	
-	/**
-	 * Get a string property.
-	 * 
-	 * @param name
-	 *            the name of the property.
-	 */
 	public String getProperty(String name) {
 		return properties.get(name);
 	}
 	
-	/**
-	 * Get a named bean.
-	 * 
-	 * @param name
-	 *            the name of the bean.
-	 */
 	public Object getBean(String name) {
 		return beans.get(name);
 	}
 	
-	/**
-	 * Get a named bean.
-	 * 
-	 * @param name
-	 *            the name of the bean.
-	 */
 	@SuppressWarnings("unchecked")
 	public <T> T getBean(String name, Class<T> type) {
 		if (!beans.containsKey(name)) {
@@ -183,16 +166,10 @@ public class XmlConfig {
 		return (T) beans.get(name);
 	}
 	
-	/**
-	 * Return the number of properties stored in the current configuration.
-	 */
 	public int getPropertiesCount() {
 		return properties.size();
 	}
 
-	/**
-	 * Return the number of named beans stored in the current configuration.
-	 */
 	public int getBeansCount() {
 		return beans.size();
 	}
@@ -216,7 +193,7 @@ public class XmlConfig {
 				}
 				break;
 			// <bean name="Logical name" class="path.Class">
-			case "bean": handleBean(src, child, null); break;
+			case "bean": handleBean(src, child); break;
 			// <property name="Propety name">value</property>
 			case "property":
 				String name = getAttributeValue(child, "name");
@@ -244,8 +221,14 @@ public class XmlConfig {
 		addConfiguration(new File(source));
 	}
 
-	protected Object handleBean(File src, Element beanNode, Class<?> beanClass)
+	protected Object handleBean(File src, Element beanNode)
 			throws XmlConfigException {
+		
+		if (!"bean".equals(beanNode.getTagName())) {
+			throw new XmlConfigException(src, "Not a <bean> element");
+		}
+		
+		Class<?> beanClass = null;
 
 		// If the bean has a logical name then see if a previously configured
 		// instance is available.
@@ -263,13 +246,15 @@ public class XmlConfig {
 		if (beanClass == null) {
 			String className = getAttributeValue(beanNode, "class");
 			if (className == null) {
-				throw new XmlConfigException(src, "Element <bean> must have a 'class' attribute");
+				throw new XmlConfigException(src, "Element <bean name='%s'> must have a 'class' attribute",
+						beanName);
 			}
 			try {
 				beanClass = Class.forName(className);
 			}
 			catch (ClassNotFoundException e) {
-				throw new XmlConfigException(src, e, "Unable to create <bean> with a not found class: %s", className);
+				throw new XmlConfigException(src, e, "Class not found '%s' to create <bean name='%s'>",
+						className, beanName);
 			}
 		}
 		if (beanInstance == null) {
@@ -286,65 +271,54 @@ public class XmlConfig {
 			case "list": handleList(src, beanInstanceCopy, beanName, child); break;
 			case "constructor": break; // Already processed
 			default:
-				throw new XmlConfigException(src, "Unknown element <%s> in <bean>", child.getNodeName());
+				throw new XmlConfigException(src, "Unknown element <%s> in <bean name='%s'>",
+						child.getNodeName(), beanName);
 			}
 		});
 
 		// Save the bean if a logical name was given.
 		if (beanName != null && !beanName.isEmpty()) {
 			beans.put(beanName, beanInstance);
-			LOGGER.log(Logs.DEBUG, "Create bean: " + beanName + " (" + beanClass.getName() + ")");
+			if (LOGGER.isLoggable(Logs.DEBUG)) {
+				LOGGER.log(Logs.DEBUG, "Create bean: " + beanName + " (" + beanClass.getName() + ")");
+			}
 		}
-		else {
+		else if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
 			LOGGER.log(Logs.DEBUG_FINE, "Create bean: " + beanClass.getName());
 		}
 
 		return beanInstance;
 	}
 
-	private <T> T createBeanInstance(File src, Class<T> type, String name, Element node)
+	private <T> T createBeanInstance(File src, Class<T> beanClass, String beanName, Element node)
 			throws XmlConfigException {
 		// Check if given type is an interface
-		if (type.isInterface()) {
+		if (beanClass.isInterface()) {
 			throw new XmlConfigException(src,
-					"An interface was defined as bean class (bean %s, interface %s)",
-					name, type.getName());
+					"An interface was defined as bean class (bean '%s', interface '%s')",
+					beanName, beanClass.getName());
 		}
 		// Get the defined constructor (if any).
 		List<Node> constructors = XmlUtils.getChildrenByTagName(node, "constructor");
 		if (constructors.size() > 1) {
-			throw new XmlConfigException(src, "Multiple constructors defined for bean '%s'", name);
+			throw new XmlConfigException(src, "Multiple constructors defined for bean '%s'"
+					+ " class '%s'", beanName, beanClass.getName());
 		}
 		try {
 			// Initialize with a constructor
 			if (constructors.size() > 0) {
-				return initializeBean(src, type, constructors.get(0));
+				return initializeBean(src, beanClass, (Element) constructors.get(0), beanName);
 			}
 			// Initialize without constructor
-			return type.newInstance();
+			return beanClass.newInstance();
 		}
 		catch (Throwable t) {
 			throw new XmlConfigException(src, t, "Unable to create a new instance of " +
-					"class %s (bean %s)", type.getName(), name);
+					"class '%s' in bean '%s'", beanClass.getName(), beanName);
 		}
-//	} else {
-//		String msg;
-//		if (name != null) {
-//			msg = "No class given to a new bean (" + name + ")";
-//		} else {
-//			msg = "No class given to an unnamed bean";
-//		}
-//		throw new XmlConfigException(msg);
-//	}
-//} else if (clazzName != null && clazzName.length() != 0
-//		&& clazzName.equals(bean.getClass().getName()) == false) {
-//	String msg = "Bean's (" + name + ") class has changed from "
-//			+ clazzName + " to " + bean.getClass().getName();
-//	throw new XmlConfigException(msg);
-//}
 	}
 
-	protected void handleAttr(File src, Object bean, String beanName, Node node)
+	protected void handleAttr(File src, Object bean, String beanName, Element node)
 			throws XmlConfigException {
 		// Create attribute
 		Attr attr = new Attr(this, src, node, bean);
@@ -352,15 +326,15 @@ public class XmlConfig {
 		Method method = attr.getSetterMethod();
 		
 		if (method == null) {
-			throw new XmlConfigException(src, "Class %s does not contain method %s",
-					bean.getClass().getName(), attr.getSetterMethodName());
+			throw new XmlConfigException(src, "Setter method '%s::%s' doesn't exists in bean '%s' for <attr name='%s'>",
+					bean.getClass().getName(), attr.getSetterMethodName(), beanName, attr.getName());
 		}
 		try {
 			method.invoke(bean, new Object[] { attr.getValue() });
 		}
 		catch (Exception ex) {
-			throw new XmlConfigException(src, ex, "Error while invoking %s::%s",
-					bean.getClass().getName(), attr.getSetterMethodName());
+			throw new XmlConfigException(src, ex, "Error while invoking setter '%s::%s' in bean '%s' for <attr name='%s'>",
+					bean.getClass().getName(), attr.getSetterMethodName(), beanName, attr.getName());
 		}
 	}
 
@@ -378,14 +352,14 @@ public class XmlConfig {
 		Class<?>[] paramsClasses = new Class[paramsNodes.size()];
 		Object[] paramsValues = new Object[paramsNodes.size()];
 		for (int i = 0; i < paramsNodes.size(); i++) {
-			Param param = new Param(this, src, paramsNodes.get(i));
-			paramsClasses[i] = param.getClazz();
+			Param param = new Param(this, src, (Element)paramsNodes.get(i));
+			paramsClasses[i] = param.getType();
 			paramsValues[i] = param.getValue();
 		}
 
 		Method method = ReflectionUtils.getMethodMatching(beanClass, methodName, paramsClasses);
 		if (method == null) {
-			throw new XmlConfigException(src, "Class %s does not contain method %s",
+			throw new XmlConfigException(src, "Class '%s' does not contain method '%s' in <call>",
 					beanClass.getName(), ReflectionUtils.getMethodSignature(methodName, paramsClasses));
 		}
 
@@ -393,7 +367,7 @@ public class XmlConfig {
 			method.invoke(bean, paramsValues);
 		}
 		catch (Exception ex) {
-			throw new XmlConfigException(src, ex, "Error while invoking %s::%s",
+			throw new XmlConfigException(src, ex, "Error while invoking '%s::%s' in <call>",
 					beanClass.getName(), ReflectionUtils.getMethodSignature(methodName, paramsClasses));
 		}
 		
@@ -426,11 +400,11 @@ public class XmlConfig {
 		}
 		Class<?> beanClass = bean.getClass();
 		
-		IHandler[] handlers = new IHandler[] {
+		IListHandler[] handlers = new IListHandler[] {
 				new ListAdderMethod(), new ListGetterMethod(), new ListSetterMethod()
 		};
 		
-		for (IHandler handler : handlers) {
+		for (IListHandler handler : handlers) {
 		
 			try {
 				
@@ -468,33 +442,60 @@ public class XmlConfig {
 		throw new XmlConfigException(src, "No adder/getter/setter method for <list name='%s' class='%s'> in bean '%s'",
 				listAttributeName, beanName);
 	}
+	
+	public Object handleListItem(File src, Element node, Class<?> listElementClass) throws XmlConfigException {
+		switch (node.getTagName()) {
+		case "bean": return handleBean(src, node);
+		case "value":
+			String value = getTextContent(node);
+			Constructor<?> constructor = null;
+			try {
+				constructor = listElementClass.getConstructor(String.class);
+			}
+			catch (Exception ex) {
+				throw new XmlConfigException(src, ex, "The type '%s' doesn't provide a "
+						+ "constructor(String) to create <value>%s</value>",
+						listElementClass.getName(), value);
+			}
+			try {
+				return constructor.newInstance(value);
+			}
+			catch (Exception ex) {
+				throw new XmlConfigException(src, ex, "Failed to create object '%s' in <value>%s</value>",
+						listElementClass.getName(), value);
+			}
+		default:
+			throw new XmlConfigException(src, "Unknown element <%s> in <list>", node.getTagName());
+		}
+	}
 
 	// ==================================================================== //
 
-	protected <T> T initializeBean(File src, Class<T> clazz, Node node) throws XmlConfigException {
+	@SuppressWarnings("unchecked")
+	protected <T> T initializeBean(File src, Class<T> beanClass, Element beanNode, String beanName)
+			throws XmlConfigException {
 
-		if (Modifier.isAbstract(clazz.getModifiers())) {
-			throw new XmlConfigException(src, "Unable to create instance of abstract class '%s'",
-					clazz.getName());
+		if (Modifier.isAbstract(beanClass.getModifiers())) {
+			throw new XmlConfigException(src, "Unable to create instance of abstract class '%s'"
+					+ "in <bean name='%s'>", beanClass.getName(), beanName);
 		}
 		
-		List<Node> params = XmlUtils.getChildrenByTagName((Element) node, "param");
-		Class<?>[] p_classes = new Class[params.size()];
-		Object[] p_values = new Object[params.size()];
+		List<Node> params = XmlUtils.getChildrenByTagName(beanNode, "param");
+		Class<?>[] paramsClasses = new Class[params.size()];
+		Object[] paramsValues = new Object[params.size()];
 		for (int i = 0; i < params.size(); i++) {
-			Param param = new Param(this, src, (Node) params.get(i));
-			p_classes[i] = param.getClazz();
-			p_values[i] = param.getValue();
+			Param param = new Param(this, src, (Element) params.get(i));
+			paramsClasses[i] = param.getType();
+			paramsValues[i] = param.getValue();
 		}
 
 		try {
-			Constructor<?> constructor = clazz.getDeclaredConstructor(p_classes);
-			return (T) constructor.newInstance(p_values);
+			Constructor<?> constructor = beanClass.getDeclaredConstructor(paramsClasses);
+			return (T) constructor.newInstance(paramsValues);
 		}
 		catch (Throwable t) {
-			throw new XmlConfigException("Failed to invoke method "
-					+ clazz.getName() + "."
-					+ ReflectionUtils.getMethodSignature("<init>", p_classes), t);
+			throw new XmlConfigException(src, t, "Failed to invoke constructor '%s::%s' in <bean name='%s'>",
+					beanClass.getName(), ReflectionUtils.getMethodSignature("<init>", paramsClasses), beanName);
 		}
 	}
 
@@ -531,21 +532,12 @@ public class XmlConfig {
 		return sb.toString();
 	}
 
-	/**
-	 * Get the text content of the specified element as a String.
-	 */
 	protected String getTextContent(Node elem) {
 		Node n = elem.getFirstChild();
 		if (n == null) return "";
 		return replaceVariables(n.getNodeValue().trim());
 	}
 
-	/**
-	 * Get the name of an attribute.
-	 * 
-	 * @param name
-	 *            the name of the attribute.
-	 */
 	protected String getAttributeValue(Node elem, String name) {
 		Node node = elem.getAttributes().getNamedItem(name);
 		if (node == null) return null;

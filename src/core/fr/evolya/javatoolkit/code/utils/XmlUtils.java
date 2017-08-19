@@ -63,7 +63,9 @@ public final class XmlUtils {
 	}
 
 	public static boolean getBooleanAttribute(Element node, String attributeName, boolean defaultValue) {
-		switch (getAttributeValue(node, "replacevars").toLowerCase()) {
+		String value = getAttributeValue(node, attributeName);
+		if (value == null) return defaultValue;
+		switch (value.toLowerCase()) {
 		case "true": return true;
 		case "false": return false;
 		default: return defaultValue;

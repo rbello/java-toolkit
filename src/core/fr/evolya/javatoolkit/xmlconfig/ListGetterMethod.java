@@ -12,7 +12,7 @@ import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 /**
  * Searching the GETTER method (get the list, then use the list's add method)
  */
-public class ListGetterMethod implements IHandler {
+public class ListGetterMethod implements IListHandler {
 
 	private List<Object> list;
 
@@ -26,6 +26,7 @@ public class ListGetterMethod implements IHandler {
 		return new Class[] { };
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean checkMethod(File src, Method method, Class<?> beanClass, Object beanInstance,
 			String listAttributeName, Class<?> listElementClass) throws Exception {
@@ -47,8 +48,7 @@ public class ListGetterMethod implements IHandler {
 	@Override
 	public void invoke(XmlConfig cfg, Method method, File src, Object beanInstance,
 			Element childNode, Class<?> listElementClass) throws Exception {
-		// TODO Gérer autre chose que les beans (ex: liste de String)
-		list.add(cfg.handleBean(src, childNode, listElementClass));
+		list.add(cfg.handleListItem(src, childNode, listElementClass));
 	}
 
 }
