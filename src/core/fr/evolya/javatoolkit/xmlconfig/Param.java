@@ -34,8 +34,8 @@ class Param {
     public Param(XmlConfig conf, File src, Node param) throws XmlConfigException {
 
         String typeName = conf.getAttributeValue(param, "type");
-        String fieldName = conf.getAttributeValue(param, "name");
         String valueStr = conf.getTextContent(param);
+        String fieldName = conf.getAttributeValue(param, "name");
         
         if (typeName == null) {
         	// Infer type from parent
@@ -54,7 +54,12 @@ class Param {
         		Field field = ReflectionUtils.getFieldMatching(Class.forName(beanTypeName), fieldName);
 	        	typeName = field.getType().getName();
         	}
-        	catch (NoSuchFieldException ex) { }
+        	catch (ClassNotFoundException e) {
+        		throw new XmlConfigException(src, "param and attr elements should have 'type' attribute");
+        	}
+        	catch (NoSuchFieldException ex) {
+        		
+        	}
         	// Get param type from bean' setter method
         	if (typeName == null) {
         		Method m = ReflectionUtils.getMethodMatchingIgnoreCase(Class.forName(beanTypeName), 

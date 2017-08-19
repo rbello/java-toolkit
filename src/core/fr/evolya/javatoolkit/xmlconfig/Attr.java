@@ -39,10 +39,15 @@ class Attr extends Param {
     }
 
 	public Method getSetterMethod() {
-		// Get the right method and invoke it.
-		String m_name = ReflectionUtils.getSetterMethodName(name);
-		Class<?>[] p_classes = new Class[] { getClazz() };
-		return ReflectionUtils.getMethodMatching(bean.getClass(), m_name, p_classes);
+		String methodName = ReflectionUtils.getSetterMethodName(name);
+		Class<?>[] argumentsTypes = new Class[] { getClazz() };
+		return ReflectionUtils.getMethodMatching(bean.getClass(), methodName, argumentsTypes);
+	}
+	
+	public String getSetterMethodName() {
+		String methodName = ReflectionUtils.getSetterMethodName(name);
+		Class<?>[] argumentsTypes = new Class[] { getClazz() };
+		return ReflectionUtils.getMethodSignature(methodName, argumentsTypes);
 	}
 
 }

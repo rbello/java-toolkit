@@ -9,7 +9,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -20,7 +19,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import fr.evolya.javatoolkit.code.Logs;
@@ -210,7 +208,13 @@ public class XmlConfig {
 		XmlUtils.<XmlConfigException>forEachChildNodes(rootElement, (child) -> {
 			switch (child.getNodeName()) {
 			// <include>path</include>
-			case "include": handleInclude(src, child); break;
+			case "include": 
+				try {
+					handleInclude(src, child);
+				} catch (IOException e) {
+					throw new XmlConfigException(src, e, "Unable to include: %s", getTextContent(child));
+				}
+				break;
 			// <bean name="Logical name" class="path.Class">
 			case "bean": handleBean(src, child, null); break;
 			// <property name="Propety name">value</property>
@@ -272,12 +276,14 @@ public class XmlConfig {
 			beanInstance = createBeanInstance(src, beanClass, beanName, beanNode);
 		}
 		
+		final Object beanInstanceCopy = beanInstance;
+		
 		// Fetch childs of bean's node
 		XmlUtils.<XmlConfigException>forEachChildNodes(beanNode, (child) -> {
 			switch (child.getNodeName()) {
-			case "attr": handleAttr(src, beanInstance, beanName, child); break;
-			case "call": handleCall(src, beanInstance, beanName, child); break;
-			case "list": handleList(src, beanInstance, beanName, child); break;
+			case "attr": handleAttr(src, beanInstanceCopy, beanName, child); break;
+			case "call": handleCall(src, beanInstanceCopy, beanName, child); break;
+			case "list": handleList(src, beanInstanceCopy, beanName, child); break;
 			case "constructor": break; // Already processed
 			default:
 				throw new XmlConfigException(src, "Unknown element <%s> in <bean>", child.getNodeName());
@@ -312,7 +318,7 @@ public class XmlConfig {
 		try {
 			// Initialize with a constructor
 			if (constructors.size() > 0) {
-				return initializeBean(type, constructors.get(0));
+				return initializeBean(src, type, constructors.get(0));
 			}
 			// Initialize without constructor
 			return type.newInstance();
@@ -346,157 +352,146 @@ public class XmlConfig {
 		Method method = attr.getSetterMethod();
 		
 		if (method == null) {
-			throw new XmlConfigException(src, "Class " + b_class + " does "
-					+ "not contain method " + ReflectionUtils.getMethodSignature(m_name, p_classes));
+			throw new XmlConfigException(src, "Class %s does not contain method %s",
+					bean.getClass().getName(), attr.getSetterMethodName());
 		}
-		method.invoke(bean, new Object[] { attr.getValue() });
+		try {
+			method.invoke(bean, new Object[] { attr.getValue() });
+		}
+		catch (Exception ex) {
+			throw new XmlConfigException(src, ex, "Error while invoking %s::%s",
+					bean.getClass().getName(), attr.getSetterMethodName());
+		}
 	}
 
-	protected static void handleCall(File src, Object bean, String beanName, Node call)
+	protected void handleCall(File src, Object bean, String beanName, Node call)
 		throws XmlConfigException {
 
-		String m_name = conf.getAttributeValue(call, "name", mapProperties);
-		if (m_name == null) {
-			throw new XmlConfigException("No name attribute in <call>");
+		String methodName = getAttributeValue(call, "name");
+		if (methodName == null) {
+			throw new XmlConfigException(src, "Missing 'name' attribute in <call>");
 		}
 
-		Class<?> b_class = bean.getClass();
-		List<Node> params = XmlUtils.getChildrenByTagName((Element) call, "param");
+		Class<?> beanClass = bean.getClass();
+		List<Node> paramsNodes = XmlUtils.getChildrenByTagName((Element) call, "param");
 
-		Class<?>[] p_classes = new Class[params.size()];
-		Object[] p_values = new Object[params.size()];
-		for (int i = 0; i < params.size(); i++) {
-			Param param = new Param(conf, (Node) params.get(i), mapProperties, mapBeans);
-			p_classes[i] = param.getClazz();
-			p_values[i] = param.getValue();
+		Class<?>[] paramsClasses = new Class[paramsNodes.size()];
+		Object[] paramsValues = new Object[paramsNodes.size()];
+		for (int i = 0; i < paramsNodes.size(); i++) {
+			Param param = new Param(this, src, paramsNodes.get(i));
+			paramsClasses[i] = param.getClazz();
+			paramsValues[i] = param.getValue();
 		}
 
-		Method method = ReflectionUtils.getMethodMatching(b_class, m_name, p_classes);
+		Method method = ReflectionUtils.getMethodMatching(beanClass, methodName, paramsClasses);
 		if (method == null) {
-			throw new XmlConfigException("Class " + b_class.getName() + " does "
-					+ "not contain method " + ReflectionUtils.getMethodSignature(m_name, p_classes));
+			throw new XmlConfigException(src, "Class %s does not contain method %s",
+					beanClass.getName(), ReflectionUtils.getMethodSignature(methodName, paramsClasses));
 		}
 
-		method.invoke(bean, p_values);
+		try {
+			method.invoke(bean, paramsValues);
+		}
+		catch (Exception ex) {
+			throw new XmlConfigException(src, ex, "Error while invoking %s::%s",
+					beanClass.getName(), ReflectionUtils.getMethodSignature(methodName, paramsClasses));
+		}
 		
 	}
 
-	@SuppressWarnings("unchecked")
-	protected static void handleList(File src, Object bean, String beanName, Node list)
+	protected void handleList(File src, Object bean, String beanName, Element list)
 			throws XmlConfigException {
 		
-		String l_name = conf.getAttributeValue(list, "name", mapProperties);
-		if (l_name == null) {
-			throw new XmlConfigException("No name attribute in <list>");
+		if (beanName == null) beanName = bean.getClass().getSimpleName();
+		
+		String listAttributeName = getAttributeValue(list, "name");
+		if (listAttributeName == null) {
+			throw new XmlConfigException(src, "Missing 'name' attribute for <list> in bean '%s'",
+					beanName);
 		}
 		
-		String l_classname = conf.getAttributeValue(list, "class", mapProperties);
-		if (l_classname == null) {
-        	throw new XmlConfigException("No class attribute in <list name=\"" + l_name + "\">");
+		String listClassName = getAttributeValue(list, "class");
+		if (listClassName == null) {
+        	throw new XmlConfigException(src, "Missing 'class' attribute for <list name='%s'> in bean '%s'",
+        			listAttributeName, beanName);
 		}
-		Class<?> l_class = Class.forName(l_classname);
-		Class<?> b_class = bean.getClass();
 		
-		NodeList nodeList = list.getChildNodes();
+		Class<?> listElementClass;
+		try {
+			listElementClass = Class.forName(listClassName);
+		}
+		catch (ClassNotFoundException e) {
+			throw new XmlConfigException(src, "Class not found '%s' for <list name='%s'> in bean '%s'",
+					listClassName, listAttributeName, beanName);
+		}
+		Class<?> beanClass = bean.getClass();
 		
-		/// Searching the ADDED method (use the add method)
+		IHandler[] handlers = new IHandler[] {
+				new ListAdderMethod(), new ListGetterMethod(), new ListSetterMethod()
+		};
 		
-		String m_name = getAdderMethodName(l_name);
+		for (IHandler handler : handlers) {
 		
-		Class<?>[] p_classes = new Class[] { l_class };
-		Object m_param[] = new Object[1];
-		m_param = new Object[1];
-		Method method = ReflectionUtils.getMethodMatching(b_class, m_name, p_classes);
-		
-		if (method != null) {
+			try {
+				
+				// Get the right method
+				Method method = ReflectionUtils.getMethodMatching(
+						beanClass,
+						handler.getMethodName(listAttributeName),
+						handler.getMethodParams(beanClass, listElementClass));
+				
+				// No method found, try something else
+				if (method == null)
+					continue;
 			
-			for (int i = 0; i < nodeList.getLength(); i++) {
-				Node child = nodeList.item(i);
-				if (child instanceof Element) {
-					m_param[0] = handleBean(conf, (Element) child, null, mapProperties, mapBeans);
-					method.invoke(bean, m_param);
-				}
+				// Check if method is available
+				if (!handler.checkMethod(src, method, beanClass, bean, listAttributeName,
+						listElementClass))
+					continue;
+				
+				// Fetch child nodes
+				XmlUtils.forEachChildNodes(list, (child) -> {
+					handler.invoke(this, method, src, bean, child, listElementClass);
+				});
+			
 			}
-			return;
+			catch (Exception ex) {
+				throw new XmlConfigException(src, ex, "Unable to create <list name='%s' class='%s'> in bean '%s'",
+						listAttributeName, listClassName, beanName);
+			}
 			
+			// It's done
+			return;
 		}
 
-		/// Searching the GETTER method (get the list, then use the list's add method)
 		
-		m_name = getGetterMethodName(l_name);
-		p_classes = new Class[] { };
-		method = ReflectionUtils.getMethodMatching(b_class, m_name, p_classes);
-		
-		if (method != null) {
-			if (method.getReturnType().equals(List.class)) {
-				
-				List<Object> b_list = (List<Object>) method.invoke(bean, new Object[0]);
-				
-				if (b_list != null) {
-					for (int i = 0; i < nodeList.getLength(); i++) {
-						Node child = nodeList.item(i);
-						if (child instanceof Element) {
-							b_list.add(handleBean(conf, (Element) child, l_class, mapProperties, mapBeans));
-						}
-						
-					}
-					return;
-				}
-				// else let the setter method search to create a list
-			}
-			// else nevermind, the getter method should be for other things
-		}
-
-		/// Searching the SETTER method (set a new list, then use the list's add method)
-		
-		m_name = getSetterMethodName(l_name);
-		p_classes = new Class[] { List.class };
-		method = ReflectionUtils.getMethodMatching(b_class, m_name, p_classes);
-		if (method != null) {
-			
-			List<Object> b_list = new LinkedList<Object>();
-			
-			for (int i = 0; i < nodeList.getLength(); i++) {
-				Node child = nodeList.item(i);
-				if (child instanceof Element) {
-					b_list.add(handleBean(conf, (Element) child, l_class, mapProperties, mapBeans));
-				}
-				
-			}
-			
-			method.invoke(bean, new Object[] { b_list });
-			return;
-			
-		}
-		if (beanName == null) beanName = l_classname;
-		throw new XmlConfigException("No added/getter/setter method for <list name=\""
-					+ l_name + "\"> in bean '" + beanName + "'");
+		throw new XmlConfigException(src, "No adder/getter/setter method for <list name='%s' class='%s'> in bean '%s'",
+				listAttributeName, beanName);
 	}
 
 	// ==================================================================== //
 
-	protected <T> T initializeBean(Class<T> clazz, Node node) throws XmlConfigException {
+	protected <T> T initializeBean(File src, Class<T> clazz, Node node) throws XmlConfigException {
 
 		if (Modifier.isAbstract(clazz.getModifiers())) {
-			throw new XmlConfigException("Unable to create instance of abstract class "
-					+ clazz.getName());
+			throw new XmlConfigException(src, "Unable to create instance of abstract class '%s'",
+					clazz.getName());
 		}
 		
 		List<Node> params = XmlUtils.getChildrenByTagName((Element) node, "param");
 		Class<?>[] p_classes = new Class[params.size()];
 		Object[] p_values = new Object[params.size()];
 		for (int i = 0; i < params.size(); i++) {
-			Param param = new Param(conf, (Node) params.get(i), mapProperties, mapBeans);
+			Param param = new Param(this, src, (Node) params.get(i));
 			p_classes[i] = param.getClazz();
 			p_values[i] = param.getValue();
 		}
 
-		Constructor<?> constructor = null;
-		constructor = clazz.getDeclaredConstructor(p_classes);
-
 		try {
-			return constructor.newInstance(p_values);
-		} catch (Throwable t) {
+			Constructor<?> constructor = clazz.getDeclaredConstructor(p_classes);
+			return (T) constructor.newInstance(p_values);
+		}
+		catch (Throwable t) {
 			throw new XmlConfigException("Failed to invoke method "
 					+ clazz.getName() + "."
 					+ ReflectionUtils.getMethodSignature("<init>", p_classes), t);
