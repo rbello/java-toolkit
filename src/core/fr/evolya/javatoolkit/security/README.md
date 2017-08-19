@@ -20,7 +20,7 @@ HOTP generator = new HOTP("LJHL5P65A5QCJ7GB");
 generator.setTTL(30000); // Key are valid 30 secondes
 
 // Generate current code
-int currentCode = ga.now();
+int currentCode = generator.now();
 ```
 
 ## Credits
