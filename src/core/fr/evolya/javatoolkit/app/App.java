@@ -83,19 +83,18 @@ public abstract class App extends Observable
 	
 	public App add(Class<?> type, Instance instance) {
 		
-		// Register object in CDI context
-		cdi.register(type, instance);
-		
 		// Log
 		if (LOGGER.isLoggable(Logs.INFO)) {
 			LOGGER.log(Logs.INFO, String.format(
-					"Add component %s to app %s (%s)",
+					"Add component %s (%s)",
 					type.getSimpleName(),
-					get(AppConfiguration.class).getProperty("App.Name"),
 					instance.isFutur() ? "futur" : "instance"
 					));
 		}
 		
+		// Register object in CDI context
+		cdi.register(type, instance);
+
 		// Search for events annotations
 		addListener(instance);
 		
@@ -167,19 +166,29 @@ public abstract class App extends Observable
 		return _state != ApplicationStopped.class && _state != ApplicationStopping.class;
 	}
 	
-	public static boolean init() {
+	public static int init() {
 		return init(new String[0]);
 	}
 	
-	public static boolean init(String[] args) {
+	public static int init(String[] args) {
 		
 		// Debug mode
-		final boolean debugMode = args != null && args.length > 0 &&
-				args[0].toLowerCase().equals("debug=1");
-		
+		int debugMode = 0;
+		Level logLevel = Logs.INFO;
+		if (args != null && args.length > 0) {
+			if (args[0].toLowerCase().equals("debug=1")) {
+				debugMode = 1;
+				logLevel = Logs.DEBUG;
+			}
+			if (args[0].toLowerCase().equals("debug=2")) {
+				debugMode = 2;
+				logLevel = Logs.ALL;
+			}
+		}
+				
 		// Ajustement du niveau de log
-		Logs.setDefaultLevel(debugMode ? Logs.INFO : Logs.NONE);
-		Logs.setGlobalLevel(debugMode ? Logs.INFO : Logs.NONE);
+		Logs.setDefaultLevel(logLevel);
+		Logs.setGlobalLevel(logLevel);
 		
     	// Initialisations pour Swing
     	SwingHelper.initLookAndFeel();
@@ -206,8 +215,7 @@ public abstract class App extends Observable
 	
 	@Override
 	public String getApplicationID() {
-		// TODO Auto-generated method stub
-		return null;
+		return getApplicationName();
 	}
 
 	@Override
@@ -247,6 +255,10 @@ public abstract class App extends Observable
 	@Override
 	public List<Listener<?>> getListeners() {
 		return super.getListeners();
+	}
+
+	public void inject(Class<?> targetType, String attributeName, Class<?> typeToInject) {
+		cdi.inject(targetType, attributeName, typeToInject);
 	}
 	
 }
