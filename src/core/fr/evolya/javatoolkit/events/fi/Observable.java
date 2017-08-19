@@ -21,14 +21,14 @@ import fr.evolya.javatoolkit.code.annotations.ToOverride;
 import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 
 @DesignPattern(type = Pattern.Observer)
-public /*abstract*/ class Observable implements IObservable {
+public class Observable implements IObservable {
 
 	public static final Logger LOGGER = Logs.getLogger("Events (v2)");
 	
 	/**
 	 * Liste des listeners.
 	 */
-	private final List<Listener<?>> listeners = new ArrayList<>();
+	protected final List<Listener<?>> listeners = new ArrayList<>();
 	
 	/**
 	 * Liste des événement qui doivent être répétés si un listener
@@ -36,7 +36,7 @@ public /*abstract*/ class Observable implements IObservable {
 	 * Le boolean indique si l'événement est déjà apparu et doit
 	 * donc être répété.
 	 */
-	private final Map<Class<?>, Object[]> repeatedEvents = new HashMap<>();
+	protected final Map<Class<?>, Object[]> repeatedEvents = new HashMap<>();
 
 	/**
 	 * Fabrique un listener.
@@ -140,7 +140,7 @@ public /*abstract*/ class Observable implements IObservable {
 			}));
 	}
 	
-	private void notify(Class<?> eventType, Object[] args, Stream<Listener<?>> steam) {
+	protected void notify(Class<?> eventType, Object[] args, Stream<Listener<?>> steam) {
 		
 		// Debug
 		final boolean debug = LOGGER.isLoggable(Logs.DEBUG_FINE);
@@ -212,27 +212,44 @@ public /*abstract*/ class Observable implements IObservable {
 	}
 	
 	@ToOverride
-	public /*abstract*/ boolean isGuiDispatchThread() {
+	public boolean isGuiDispatchThread() {
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, "Default method Observable::isGuiDispatchThread()"
+					+ " need to be overriden to work properly.");
+		}
 		return true;
 	}
 	
 	@ToOverride
-	protected /*abstract*/ void invokeAndWaitOnGuiDispatchThread(Runnable task) 
+	protected void invokeAndWaitOnGuiDispatchThread(Runnable task) 
 			throws InterruptedException {
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, "Default method Observable::invokeAndWaitOnGuiDispatchThread(Runnable)"
+					+ " need to be overriden to work properly.");
+		}
 		task.run();
 	}
 	
 	@ToOverride
-	protected /*abstract*/ <T> T invokeAndWaitOnGuiDispatchThread(Callable<T> task) {
+	protected <T> T invokeAndWaitOnGuiDispatchThread(Callable<T> task) {
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, "Default method Observable::invokeAndWaitOnGuiDispatchThread(Callable)"
+					+ " need to be overriden to work properly.");
+		}
 		try {
 			return task.call();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 	
 	@ToOverride
-	protected /*abstract*/ void invokeLaterOnGuiDispatchThread(Runnable task) {
+	protected void invokeLaterOnGuiDispatchThread(Runnable task) {
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, "Default method Observable::invokeLaterOnGuiDispatchThread(Runnable)"
+					+ " need to be overriden to work properly.");
+		}
 		new Thread(task).start();
 	}
 
