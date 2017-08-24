@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import fr.evolya.javatoolkit.app.cdi.Instance;
-import fr.evolya.javatoolkit.code.utils.Utils;
 import fr.evolya.javatoolkit.events.fi.EventProvider;
 import fr.evolya.javatoolkit.events.fi.IObservable;
 import fr.evolya.javatoolkit.events.fi.Listener;
@@ -34,6 +33,13 @@ public class Arduilink implements
 			presentSensors();
 		});
 		uno.when(Arduino.OnRawDataReceived.class).execute(this);
+		uno.when(Arduino.OnDisconnected.class).execute((port, ex) -> {
+			synchronized (Arduilink.class) {
+				// TODO Send events
+				sensors.clear(); // OnSensorDisconnected
+				nodes.clear(); // OnLinkBroken
+			}
+		});
 	}
 	
 	public void presentSensors() {
@@ -121,10 +127,10 @@ public class Arduilink implements
 		case 200:
 			DataCommand cmd = new DataCommand(tokens);
 			if (cmd.sensor != null) {
-				if (!Utils.equals(cmd.sensor.value, cmd.value)) {
+//				if (!Utils.equals(cmd.sensor.value, cmd.value)) {
 					cmd.sensor.value = cmd.value;
 					notify(OnDataReceived.class, cmd);
-				}
+//				}
 			}
 			else notify(OnDataReceived.class, cmd);
 			break;
@@ -221,6 +227,11 @@ public class Arduilink implements
 	}
 	
 	@FunctionalInterface
+	public static interface OnLinkBroken {
+		void onLinkBroken(Node node);
+	}
+	
+	@FunctionalInterface
 	public static interface OnDataReceived {
 		void onLinkEstablished(DataCommand data);
 	}
@@ -228,6 +239,11 @@ public class Arduilink implements
 	@FunctionalInterface
 	public static interface OnSensorConnected {
 		void onSensorConnected(Sensor sensor);
+	}
+	
+	@FunctionalInterface
+	public static interface OnSensorDisconnected {
+		void onSensorDisconnected(Sensor sensor);
 	}
 	
 	@FunctionalInterface

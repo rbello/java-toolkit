@@ -10,10 +10,11 @@ import java.util.stream.Stream;
 import fr.evolya.javatoolkit.code.utils.Utils;
 import fr.evolya.javatoolkit.events.fi.EventProvider;
 import fr.evolya.javatoolkit.events.fi.Observable;
+import fr.evolya.javatoolkit.iot.Arduino.OnConnected;
+import fr.evolya.javatoolkit.iot.Arduino.OnDisconnected;
 import fr.evolya.javatoolkit.iot.Arduino.OnRawDataReceived;
 import fr.evolya.javatoolkit.iot.Arduino.OnReceiveError;
 import fr.evolya.javatoolkit.iot.Arduino.OnSerialEvent;
-import fr.evolya.javatoolkit.iot.Arduino.OnStateChanged;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
@@ -21,11 +22,25 @@ import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
 import gnu.io.UnsupportedCommOperationException;
 
-@EventProvider({OnStateChanged.class, OnSerialEvent.class,
-	OnRawDataReceived.class, OnReceiveError.class})
+@EventProvider({
+	// When an arduino was connected
+	OnConnected.class,
+	// When the current arduino is disconnected
+	OnDisconnected.class,
+	// When a data was received
+	OnRawDataReceived.class,
+	// When other serial events occures
+	OnSerialEvent.class,
+	// When I/O error was received between open and close
+	OnReceiveError.class
+})
 
+/**
+ *  Link to an Arduino.
+ *  Works with RXTX library, be sure to install it before use.
+ */
 public class Arduino extends Observable
-	implements SerialPortEventListener, AutoCloseable {
+	implements SerialPortEventListener, AutoCloseable, Runnable {
 	
 	/**
 	 * Milliseconds to block while waiting for port open
@@ -58,13 +73,37 @@ public class Arduino extends Observable
 	protected OutputStream output;
 
 	/**
+	 * Last exception thrown
+	 */
+	private Throwable lastException = null;
+
+	/**
+	 * Link maintainer thread
+	 */
+	private Thread thread;
+
+	/**
+	 * Is arduino currently connected
+	 */
+	private boolean connected = false;
+	
+	/**
 	 * Error message for empty string readding
 	 */
 	private static final String EmptyBufferErrorMessage = "Underlying input stream returned zero bytes";
 
+	public Arduino() {
+		this(null);
+	}
+	
 	public Arduino(CommPortIdentifier commPort) {
-		if (commPort == null) throw new NullPointerException("No COM port provided");
 		this.commPort = commPort;
+		this.thread = new Thread(this);
+	}
+	
+	public void start() {
+//		notify(OnDisconnected.class, commPort, null);
+		this.thread.start();
 	}
 	
 	public CommPortIdentifier getComPort() {
@@ -103,7 +142,8 @@ public class Arduino extends Observable
 		this.openTimeOut = openTimeOut;
 	}
 
-	public synchronized void open() throws PortInUseException, UnsupportedCommOperationException, IOException, TooManyListenersException {
+	public synchronized void open() throws PortInUseException, UnsupportedCommOperationException,
+		IOException, TooManyListenersException {
 		try {
 			// open serial port, and use class name for the appName.
 			serialPort = (SerialPort) commPort.open(Arduino.class.getName(), openTimeOut);
@@ -118,23 +158,34 @@ public class Arduino extends Observable
 			input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
 			output = serialPort.getOutputStream();
 			
-			notify(OnStateChanged.class, true, null);
-			
 			serialPort.addEventListener(this);
+			
+			connected  = true;
+			
+			notify(OnConnected.class, commPort);
+
 			serialPort.notifyOnDataAvailable(true);
+			
 		}
 		catch (PortInUseException | UnsupportedCommOperationException | IOException | TooManyListenersException ex) {
 			serialPort = null;
-			notify(OnStateChanged.class, false, ex);
+			input = null;
+			output = null;
+			connected = false;
 			throw ex;
 		}
 	}
 
 	public static Stream<CommPortIdentifier> getPortIdentifiers() {
-		return Utils
-				.list(CommPortIdentifier.getPortIdentifiers(), CommPortIdentifier.class)
-				.stream()
-				.filter(port -> port.getPortType() == CommPortIdentifier.PORT_SERIAL);
+		try {
+			return Utils
+					.list(CommPortIdentifier.getPortIdentifiers(), CommPortIdentifier.class)
+					.stream()
+					.filter(port -> port.getPortType() == CommPortIdentifier.PORT_SERIAL);
+		}
+		catch (UnsatisfiedLinkError e) {
+			throw new RuntimeException("RXTX library is not installed: no rxtxSerial DLL or SO in java.library.path", e);
+		}
 	}
 	
 	public static Arduino getByName(String portName) {
@@ -151,9 +202,11 @@ public class Arduino extends Observable
 	}
 	
 	public static Arduino getFirst() {
-		CommPortIdentifier id = getPortIdentifiers().findFirst().orElse(null);
-		if (id == null) return null;
-		return new Arduino(id);
+		return getByPort(getFirstPortAvailable());
+	}
+	
+	protected static CommPortIdentifier getFirstPortAvailable() {
+		return getPortIdentifiers().findFirst().orElse(null);
 	}
 	
 	public boolean write(String data) {
@@ -185,18 +238,36 @@ public class Arduino extends Observable
 			String inputLine = input.readLine();
 			notify(OnRawDataReceived.class, inputLine);
 		}
-		catch (IOException e) {
+		catch (Throwable e) {
 			if (e.getMessage().equals(EmptyBufferErrorMessage)) {
 				// Normal
 			}
 			else {
+				// Deux exceptions identiques d'affilée
+				if (lastException != null && lastException.getClass() == e.getClass()
+						&& lastException.getMessage().equals(e.getMessage())) {
+					
+					closeAndContinue();
+					return;
+				}
+				lastException = e;
 				notify(OnReceiveError.class, e);
 			}
 		}
-		catch (Throwable e) {
-			notify(OnReceiveError.class, e);
-		}
 
+	}
+
+	private void closeAndContinue() {
+		try {
+			close();
+		}
+		catch (Exception e1) {
+			// TODO
+			System.err.println("EXCEPTION WHILE CLOSING ARDUINO");
+			e1.printStackTrace();
+		}
+		thread = new Thread(this);
+		thread.start();
 	}
 
 	@Override
@@ -205,14 +276,23 @@ public class Arduino extends Observable
 			serialPort.removeEventListener();
 			serialPort.close();
 			serialPort = null;
-			notify(OnStateChanged.class, false, null);
 		}
-		removeAllListeners();
+		notify(OnDisconnected.class, commPort, null);
+		commPort = null;
+		input = null;
+		output = null;
+		connected = false;
+//		removeAllListeners();
 	}
 	
 	@FunctionalInterface
-	public static interface OnStateChanged {
-		void onStateChanged(boolean open, Exception ex);
+	public static interface OnConnected {
+		void onConnected(CommPortIdentifier port);
+	}
+	
+	@FunctionalInterface
+	public static interface OnDisconnected {
+		void onDisconnected(CommPortIdentifier port, Exception error);
 	}
 	
 	@FunctionalInterface
@@ -228,6 +308,54 @@ public class Arduino extends Observable
 	@FunctionalInterface
 	public static interface OnReceiveError {
 		void onReceiveError(Exception ex);
+	}
+
+	@Override
+	public void run() {
+		
+		while (!Thread.interrupted()) {
+	
+			// Not connected, try to connect
+			if (!isConnected()) {
+				//System.out.println("Try to connect arduino...");
+				commPort = getFirstPortAvailable();
+				// Not found
+				if (commPort == null) {
+					int sleep = 5;
+					//System.out.println("Nothing, try in " + sleep + " seconds...");
+					try {
+						Thread.sleep(sleep * 1000);
+						continue;
+					}
+					catch (InterruptedException e) {
+						Thread.interrupted();
+						return;
+					}
+				}
+				// Port found
+				else {
+					try {
+						open();
+						// Exit thread
+						thread = null;
+						return;
+					}
+					catch (Throwable ex) {
+						//System.out.println("Error, unable to connect");
+					}
+				}
+			}
+		
+		}
+		
+	}
+
+	public boolean isConnected() {
+		return connected;
+	}
+
+	public boolean isBound() {
+		return commPort != null;
 	}
 
 }
