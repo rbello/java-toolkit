@@ -137,6 +137,15 @@ public class DependencyInjectionContext {
 				// Futur injection
 				if (instance.isFutur() || !isComponentRegistered(type)) {
 					injections.add(new Injection(instance, field, type));
+					if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+						LOGGER.log(Logs.DEBUG_FINE, String.format(
+								"  `-> Create dependency injection of object '%s' on field %s::%s (%s)",
+								type.getSimpleName(),
+								instance.getInstanceClass().getSimpleName(),
+								field.getName(),
+								done ? "done" : "futur"
+								));
+					}
 				}
 				// Present injection
 				else {
@@ -144,15 +153,6 @@ public class DependencyInjectionContext {
 					done = true;
 				}
 				
-				if (LOGGER.isLoggable(Logs.DEBUG)) {
-					LOGGER.log(Logs.DEBUG, String.format(
-							"  `-> Inject dependency %s on field %s::%s (%s)",
-							type.getSimpleName(),
-							instance.getInstanceClass().getSimpleName(),
-							field.getName(),
-							done ? "done" : "futur"
-							));
-				}
 			});
 	}
 
@@ -192,7 +192,7 @@ public class DependencyInjectionContext {
 		}
 		
 		public void inject(Object instance) {
-			LOGGER.log(Logs.DEBUG_FINE, "Inject " + instance.getClass().getSimpleName() + " into " + this);
+			LOGGER.log(Logs.DEBUG_FINE, "  `-> Inject " + instance.getClass().getSimpleName() + " into " + this);
 			field.setAccessible(true);
 			try {
 				field.set(this.instance.getInstance(guiDelegate), instance);
@@ -219,6 +219,15 @@ public class DependencyInjectionContext {
 		try {
 			Field field = ReflectionUtils.getFieldMatching(targetType, attributeName);
 			injections.add(new Injection(getComponent(targetType), field, typeToInject));
+			if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+				LOGGER.log(Logs.DEBUG_FINE, String.format(
+						"  `-> Create dependency injection of object '%s' on field %s::%s (%s)",
+						typeToInject.getSimpleName(),
+						targetType.getSimpleName(),
+						attributeName,
+						"futur"
+						));
+			}
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
