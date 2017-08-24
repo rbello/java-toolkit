@@ -34,8 +34,13 @@ public abstract class App extends Observable
 	private Class<?> _state = ApplicationStopped.class;
 	
 	private DependencyInjectionContext cdi;
+
+	private static App INSTANCE = null;
 	
 	public App() {
+		
+		// Create helper accesssor
+		INSTANCE  = this;
 		
 		// Create CDI context
 		cdi = new DependencyInjectionContext((task) -> {
@@ -259,6 +264,10 @@ public abstract class App extends Observable
 
 	public void inject(Class<?> targetType, String attributeName, Class<?> typeToInject) {
 		cdi.inject(targetType, attributeName, typeToInject);
+	}
+
+	public static App instance() {
+		return INSTANCE;
 	}
 	
 }
