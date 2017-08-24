@@ -167,7 +167,7 @@ public class Observable implements IObservable {
 			});
 	}
 
-	protected final Object execute(Class<?> clazz, Method m, Listener<?> item, Object[] args) {
+	protected final Object execute(Class<?> event, Method m, Listener<?> item, Object[] args) {
 		if (m == null) {
 			throw new NullPointerException("Method is null");
 		}
@@ -181,13 +181,17 @@ public class Observable implements IObservable {
 		catch (IllegalArgumentException e) {
 			LOGGER.log(Logs.ERROR, "Dispatch error");
 			LOGGER.log(Logs.INFO, "  Listener: " + item);
-			LOGGER.log(Logs.INFO, "  Event " + clazz.getSimpleName() + " : " + e.getMessage());
+			LOGGER.log(Logs.INFO, "  Event " + event.getSimpleName() + " : " + e.getMessage());
 			if (e.getMessage().equals("object is not an instance of declaring class")) {
 				LOGGER.log(Logs.INFO, "  Object class: " + item.getTarget().getClass().getName());
 				LOGGER.log(Logs.INFO, "  Declaring class: " + m.getDeclaringClass().getName());
 			}
 			LOGGER.log(Logs.INFO, "  Target method is " + ReflectionUtils.toString(item.getTarget(), m));
-			LOGGER.log(Logs.INFO, "  Event arguments are: (" + Arrays.stream(args).map((o) -> o.getClass().getName()).collect(Collectors.joining(", ")) + ")");
+			LOGGER.log(Logs.INFO, "  Event arguments are: (" + Arrays.stream(args).map((o) -> {
+				if (o == null) return "?";
+				return o.getClass().getName();
+			}
+			).collect(Collectors.joining(", ")) + ")");
 			e.printStackTrace();
 		}
 		catch (Exception e) {
