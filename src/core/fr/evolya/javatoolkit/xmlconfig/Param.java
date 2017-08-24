@@ -34,8 +34,8 @@ class Param {
     public Param(XmlConfig conf, File src, Element param) throws XmlConfigException {
 
         String typeName = conf.getAttributeValue(param, "type");
-        String valueStr = conf.getTextContent(param);
         String fieldName = conf.getAttributeValue(param, "name");
+        String valueStr = conf.getTextContent(param);
         
         if (typeName == null) {
         	// Infer type from parent
@@ -47,7 +47,7 @@ class Param {
         		}
         	}
         	if (beanTypeName == null) {
-                throw new XmlConfigException(src, "param and attr elements should have 'type' attribute");
+                throw new XmlConfigException(src, "<param> and <attr> elements should have 'type' attribute");
             }
         	// Get param type from bean's attribute
         	try {
@@ -55,10 +55,10 @@ class Param {
 	        	typeName = field.getType().getName();
         	}
         	catch (ClassNotFoundException e) {
-        		throw new XmlConfigException(src, "param and attr elements should have 'type' attribute");
+        		throw new XmlConfigException(src, e, "Class not found '%s' for <param name='%s'>",
+        				beanTypeName, fieldName);
         	}
         	catch (NoSuchFieldException ex) {
-        		
         	}
         	// Get param type from bean' setter method
         	if (typeName == null) {
@@ -75,8 +75,8 @@ class Param {
 				}
         	}
         	if (typeName == null) {
-        		throw new XmlConfigException(src, "Unable to infer type of field " + beanTypeName 
-        				+ "." + fieldName);
+        		throw new XmlConfigException(src, "Unable to find accessible field or setter in '%s' for <param name='%s'>",
+        				beanTypeName, fieldName);
         	}
         }
         
