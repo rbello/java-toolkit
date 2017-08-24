@@ -82,7 +82,8 @@ public class DependencyInjectionContext {
 	}
 
 	private void whenInstanceCreated(Instance<?> instance, boolean lazyCreation) {
-		LOGGER.log(Logs.DEBUG_FINE, "Instance created: " + instance.getInstanceClass());
+		LOGGER.log(Logs.DEBUG_FINE, "Instance created: " + instance.getInstanceClass()
+				+ " (" + (lazyCreation ? "lazy creation" : "already created") + ")");
 		
 		// Les injections de cette instance
 		injections.stream()
@@ -149,7 +150,8 @@ public class DependencyInjectionContext {
 				}
 				// Present injection
 				else {
-					new Injection(instance, field, type).inject(getComponent(type));
+					new Injection(instance, field, type)
+						.inject(getComponent(type).getInstance());
 					done = true;
 				}
 				

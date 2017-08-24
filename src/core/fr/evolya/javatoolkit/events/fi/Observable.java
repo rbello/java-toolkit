@@ -62,8 +62,8 @@ public class Observable implements IObservable {
 			Class<?> eventType = a.value();
 			String eventName = eventType.getSimpleName();
 			// Debug
-			if (LOGGER.isLoggable(Logs.DEBUG)) {
-				LOGGER.log(Logs.DEBUG, String.format(
+			if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+				LOGGER.log(Logs.DEBUG_FINE, String.format(
 						"  `-> Bind event %s on method %s::%s()",
 						eventName,
 						instance.getInstanceClass().getSimpleName(),
@@ -105,11 +105,11 @@ public class Observable implements IObservable {
 			Object[] args = repeatedEvents.get(listener.getEventType());
 			if (args != null) {
 				// Log
-				if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+				if (LOGGER.isLoggable(Logs.DEBUG)) {
 					String argsm = "";
 					for (int i = 0; i < args.length; ++i)
 						argsm += (i > 0 ? ", " : "") + (args[i] == null ? "null" : args[i].toString());
-					LOGGER.log(Logs.DEBUG_FINE, "  Repeat event " + listener.getEventType().getSimpleName() + " [" + argsm + "]"
+					LOGGER.log(Logs.DEBUG, "Repeat event " + listener.getEventType().getSimpleName() + " [" + argsm + "]"
 							+ " to " + listener.toString());
 				}
 				// Notify listener
@@ -143,12 +143,11 @@ public class Observable implements IObservable {
 	protected void notify(Class<?> eventType, Object[] args, Stream<Listener<?>> steam) {
 		
 		// Debug
-		final boolean debug = LOGGER.isLoggable(Logs.DEBUG_FINE);
-		if (debug) {
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
 			String argsm = "";
 			for (int i = 0; i < args.length; ++i)
 				argsm += (i > 0 ? ", " : "") + (args[i] == null ? "null" : args[i].toString());
-			LOGGER.log(Logs.DEBUG_FINE, "Notify event " + eventType.getSimpleName() + " [" + argsm + "]");
+			LOGGER.log(Logs.DEBUG, "Notify event " + eventType.getSimpleName() + " [" + argsm + "]");
 		}
 		
 		// Mark as repeated
@@ -159,7 +158,7 @@ public class Observable implements IObservable {
 		// Broadcast
 		steam.forEach((item) -> {
 				// Debug
-				if (debug) {
+				if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
 					LOGGER.log(Logs.DEBUG_FINE, "  `-> To handler " + item);
 				}
 				// On execute le listener
