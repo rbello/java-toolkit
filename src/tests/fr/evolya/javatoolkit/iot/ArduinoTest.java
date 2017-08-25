@@ -1,5 +1,7 @@
 package fr.evolya.javatoolkit.iot;
 
+import fr.evolya.javatoolkit.iot.arduino.Arduino;
+
 public class ArduinoTest {
 
 	public static void main(String[] args) {

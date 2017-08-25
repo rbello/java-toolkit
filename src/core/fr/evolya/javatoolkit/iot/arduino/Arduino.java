@@ -1,4 +1,4 @@
-package fr.evolya.javatoolkit.iot;
+package fr.evolya.javatoolkit.iot.arduino;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,11 +10,11 @@ import java.util.stream.Stream;
 import fr.evolya.javatoolkit.code.utils.Utils;
 import fr.evolya.javatoolkit.events.fi.EventProvider;
 import fr.evolya.javatoolkit.events.fi.Observable;
-import fr.evolya.javatoolkit.iot.Arduino.OnConnected;
-import fr.evolya.javatoolkit.iot.Arduino.OnDisconnected;
-import fr.evolya.javatoolkit.iot.Arduino.OnRawDataReceived;
-import fr.evolya.javatoolkit.iot.Arduino.OnReceiveError;
-import fr.evolya.javatoolkit.iot.Arduino.OnSerialEvent;
+import fr.evolya.javatoolkit.iot.arduino.ArduinoEvents.OnConnected;
+import fr.evolya.javatoolkit.iot.arduino.ArduinoEvents.OnDisconnected;
+import fr.evolya.javatoolkit.iot.arduino.ArduinoEvents.OnRawDataReceived;
+import fr.evolya.javatoolkit.iot.arduino.ArduinoEvents.OnReceiveError;
+import fr.evolya.javatoolkit.iot.arduino.ArduinoEvents.OnSerialEvent;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
@@ -102,7 +102,6 @@ public class Arduino extends Observable
 	}
 	
 	public void start() {
-//		notify(OnDisconnected.class, commPort, null);
 		this.thread.start();
 	}
 	
@@ -282,34 +281,9 @@ public class Arduino extends Observable
 		input = null;
 		output = null;
 		connected = false;
-//		removeAllListeners();
+//		removeAllListeners(); TODO Pose des pb lors de la réouverture du lien
 	}
 	
-	@FunctionalInterface
-	public static interface OnConnected {
-		void onConnected(CommPortIdentifier port);
-	}
-	
-	@FunctionalInterface
-	public static interface OnDisconnected {
-		void onDisconnected(CommPortIdentifier port, Exception error);
-	}
-	
-	@FunctionalInterface
-	public static interface OnSerialEvent {
-		void onSerialEvent(SerialPortEvent event);
-	}
-	
-	@FunctionalInterface
-	public static interface OnRawDataReceived {
-		void onRawDataReceived(String data);
-	}
-	
-	@FunctionalInterface
-	public static interface OnReceiveError {
-		void onReceiveError(Exception ex);
-	}
-
 	@Override
 	public void run() {
 		
