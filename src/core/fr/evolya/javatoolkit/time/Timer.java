@@ -2,7 +2,9 @@ package fr.evolya.javatoolkit.time;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import fr.evolya.javatoolkit.code.funcint.Action;
 import fr.evolya.javatoolkit.events.basic.Listener2;
@@ -139,11 +141,11 @@ public abstract class Timer {
 		
 	}
 	
-	private static Thread countdown = null;
+	private static Map<String, Thread> currents = new HashMap<>();
 
-	public static void startCountdown(int seconds, Action<Integer> callback) {
-		stopCountdown();
-		countdown = new Thread(() -> {
+	public static void startCountdown(String target, int seconds, Action<Integer> callback) {
+		stopCountdown(target);
+		Thread countdown = new Thread(() -> {
 			int remaining = seconds;
 			do {
 				callback.call(remaining--);
@@ -156,13 +158,25 @@ public abstract class Timer {
 			}
 			while (!Thread.interrupted() && remaining >= 0);
 		});
+		synchronized (currents) {
+			currents.put(target, countdown);
+		}
 		countdown.start();
 	}
 
-	public static void stopCountdown() {
-		if (countdown != null) {
-			countdown.interrupt();
-			countdown = null;
+	public static void stopCountdown(String id) {
+		Thread thread = null;
+		synchronized (currents) {
+			thread = currents.remove(id);
+		}
+		if (thread != null) {
+			thread.interrupt();
+		}
+	}
+
+	public static boolean isCountdown(String id) {
+		synchronized (currents) {
+			return currents.containsKey(id);
 		}
 	}
 	
