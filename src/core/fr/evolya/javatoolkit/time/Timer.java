@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import fr.evolya.javatoolkit.code.funcint.Action;
 import fr.evolya.javatoolkit.events.basic.Listener2;
 
 /**
@@ -136,6 +137,33 @@ public abstract class Timer {
 			return _date;
 		}
 		
+	}
+	
+	private static Thread countdown = null;
+
+	public static void startCountdown(int seconds, Action<Integer> callback) {
+		stopCountdown();
+		countdown = new Thread(() -> {
+			int remaining = seconds;
+			do {
+				callback.call(remaining--);
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					Thread.interrupted();
+					return;
+				}
+			}
+			while (!Thread.interrupted() && remaining >= 0);
+		});
+		countdown.start();
+	}
+
+	public static void stopCountdown() {
+		if (countdown != null) {
+			countdown.interrupt();
+			countdown = null;
+		}
 	}
 	
 }
