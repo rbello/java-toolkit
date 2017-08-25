@@ -52,6 +52,8 @@ public class Observable implements IObservable {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public final void addListener(Instance instance) {
 		
+		if (instance == null) throw new NullPointerException();
+		
 		// L'instance donnée est future mais ne possède même pas de classe
 		if (instance.getInstanceClass() == null)
 			throw new NullPointerException("Cannot add pure futur objet as listener");

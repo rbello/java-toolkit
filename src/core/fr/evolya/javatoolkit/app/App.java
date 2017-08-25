@@ -86,7 +86,7 @@ public abstract class App extends Observable
 		return add(type, instance);
 	}
 	
-	public App add(Class<?> type, Instance instance) {
+	protected App add(Class<?> type, Instance instance) {
 		
 		// Log
 		if (LOGGER.isLoggable(Logs.INFO)) {
@@ -268,6 +268,11 @@ public abstract class App extends Observable
 
 	public static App instance() {
 		return INSTANCE;
+	}
+
+	public void magic(Object object) {
+		cdi.searchInjections(object);
+		addListener(new Instance(object));
 	}
 	
 }

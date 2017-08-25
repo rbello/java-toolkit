@@ -110,7 +110,14 @@ public class DependencyInjectionContext {
 			});
 	}
 
-	private void searchInjections(Instance<?> instance) {
+	public <T> void searchInjections(final T object) {
+		if (object == null) throw new NullPointerException();
+		searchInjections(new Instance<T>(object));
+	}
+	
+	public void searchInjections(final Instance<?> instance) {
+		
+		if (instance == null) throw new NullPointerException();
 		
 		// L'instance donnée est future mais ne possède même pas de classe
 		if (instance.getInstanceClass() == null)
@@ -133,8 +140,6 @@ public class DependencyInjectionContext {
 					throw new UnsupportedOperationException("Cannot inject instance directly");
 				}
 				
-				boolean done = false;
-
 				// Futur injection
 				if (instance.isFutur() || !isComponentRegistered(type)) {
 					injections.add(new Injection(instance, field, type));
@@ -144,7 +149,7 @@ public class DependencyInjectionContext {
 								type.getSimpleName(),
 								instance.getInstanceClass().getSimpleName(),
 								field.getName(),
-								done ? "done" : "futur"
+								"futur"
 								));
 					}
 				}
@@ -152,7 +157,6 @@ public class DependencyInjectionContext {
 				else {
 					new Injection(instance, field, type)
 						.inject(getComponent(type).getInstance());
-					done = true;
 				}
 				
 			});
