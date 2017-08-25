@@ -143,8 +143,8 @@ public abstract class Timer {
 	
 	private static Map<String, Thread> currents = new HashMap<>();
 
-	public static void startCountdown(String target, int seconds, Action<Integer> callback) {
-		stopCountdown(target);
+	public static void startCountdown(String id, int seconds, Action<Integer> callback) {
+		stop(id);
 		Thread countdown = new Thread(() -> {
 			int remaining = seconds;
 			do {
@@ -159,12 +159,12 @@ public abstract class Timer {
 			while (!Thread.interrupted() && remaining >= 0);
 		});
 		synchronized (currents) {
-			currents.put(target, countdown);
+			currents.put(id, countdown);
 		}
 		countdown.start();
 	}
 
-	public static void stopCountdown(String id) {
+	public static void stop(String id) {
 		Thread thread = null;
 		synchronized (currents) {
 			thread = currents.remove(id);
@@ -174,9 +174,30 @@ public abstract class Timer {
 		}
 	}
 
-	public static boolean isCountdown(String id) {
+	public static boolean isActive(String id) {
 		synchronized (currents) {
 			return currents.containsKey(id);
+		}
+	}
+
+	public static void startRepeat(String target, int millis, Action<Long> callback) {
+		if (isActive(target)) return;
+		Thread repeat = new Thread(() -> {
+			long i = 0;
+			do {
+				callback.call(i++);
+				try {
+					Thread.sleep(millis);
+				} catch (InterruptedException e) {
+					Thread.interrupted();
+					return;
+				}
+			}
+			while (!Thread.interrupted());
+		});
+		synchronized (currents) {
+			currents.put(target, repeat);
+			repeat.start();
 		}
 	}
 	

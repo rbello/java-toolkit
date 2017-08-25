@@ -263,4 +263,11 @@ public final class Utils {
 		return a.equals(b);
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> T getCasted(Object object, Class<T> type) {
+		if (object != null && type.isInstance(object)) 
+			return (T) object;
+		return null;
+	}
+
 }
