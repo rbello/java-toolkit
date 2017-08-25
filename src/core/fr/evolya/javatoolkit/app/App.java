@@ -23,7 +23,6 @@ import fr.evolya.javatoolkit.appstandard.bridge.services.ILocalService;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.events.fi.Listener;
 import fr.evolya.javatoolkit.events.fi.Observable;
-import fr.evolya.javatoolkit.gui.swing.SwingHelper;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class App extends Observable
@@ -31,13 +30,22 @@ public abstract class App extends Observable
 	
 	public static final Logger LOGGER = Logs.getLogger("App (v2)");
 	
-	private Class<?> _state = ApplicationStopped.class;
-	
-	private DependencyInjectionContext cdi;
-
 	private static App INSTANCE = null;
 	
+	private final DependencyInjectionContext cdi;
+
+	private final int debugLevel;
+
+	private Class<?> _state = ApplicationStopped.class;
+	
 	public App() {
+		this(new String[0]);
+	}
+	
+	public App(String[] args) {
+		
+		// Init debug level
+		this.debugLevel = initDebugLevel(args);
 		
 		// Create helper accesssor
 		INSTANCE  = this;
@@ -171,35 +179,35 @@ public abstract class App extends Observable
 		return _state != ApplicationStopped.class && _state != ApplicationStopping.class;
 	}
 	
-	public static int init() {
-		return init(new String[0]);
-	}
-	
-	public static int init(String[] args) {
+	protected int initDebugLevel(String[] args) {
 		
 		// Debug mode
 		int debugMode = 0;
 		Level logLevel = Logs.INFO;
+		
+		// Arguments handling
 		if (args != null && args.length > 0) {
-			if (args[0].toLowerCase().equals("debug=1")) {
-				debugMode = 1;
-				logLevel = Logs.DEBUG;
-			}
-			if (args[0].toLowerCase().equals("debug=2")) {
-				debugMode = 2;
-				logLevel = Logs.ALL;
+			for (String arg : args) {
+				if (!arg.startsWith("debug=")) continue;
+				try {
+					debugMode = new Integer(arg.substring(6));
+					break;
+				}
+				catch (Throwable t) {
+					LOGGER.log(Logs.WARNING, "Invalid debug argument");
+				}
 			}
 		}
-				
+
 		// Ajustement du niveau de log
+		if (debugMode > 0) {
+			if (debugMode >= 2) logLevel = Logs.DEBUG_FINE;
+			else if (debugMode >= 1) logLevel = Logs.DEBUG;
+			LOGGER.log(Logs.INFO, "Debug mode: " + debugMode + " (" + logLevel + ")");
+		}
 		Logs.setDefaultLevel(logLevel);
 		Logs.setGlobalLevel(logLevel);
 		
-    	// Initialisations pour Swing
-    	SwingHelper.initLookAndFeel();
-    	SwingHelper.initSwingAnimations();
-    	SwingHelper.adjustGlobalFontSize(13);
-    	
     	return debugMode;
 	}
 	
@@ -273,6 +281,10 @@ public abstract class App extends Observable
 	public void magic(Object object) {
 		cdi.searchInjections(object);
 		addListener(new Instance(object));
+	}
+
+	public int getDebugLevel() {
+		return debugLevel;
 	}
 	
 }

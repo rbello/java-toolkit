@@ -8,6 +8,14 @@ import fr.evolya.javatoolkit.app.App;
 import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 
 public class SwingApp extends App {
+	
+	public SwingApp() {
+		super();
+	}
+
+	public SwingApp(String[] args) {
+		super(args);
+	}
 
 	@Override
 	public boolean isGuiDispatchThread() {
@@ -66,5 +74,19 @@ public class SwingApp extends App {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	@Override
+	protected int initDebugLevel(String[] args) {
+		
+		int level = super.initDebugLevel(args);
 
+		// Initialisations pour Swing 
+    	SwingHelper.initLookAndFeel();
+    	SwingHelper.initSwingAnimations();
+    	SwingHelper.adjustGlobalFontSize(13);
+    	
+    	return level;
+    	
+	}
+	
 }
