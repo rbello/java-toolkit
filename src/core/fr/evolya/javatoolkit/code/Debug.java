@@ -1,5 +1,6 @@
 package fr.evolya.javatoolkit.code;
 
+import java.util.List;
 import java.util.Map;
 
 public final class Debug {
@@ -7,7 +8,7 @@ public final class Debug {
 	public static final void print(Map<?, ?> map) {
 		System.out.println(map.getClass().getSimpleName() + " (" + map.size() + ")");
 		for (Object key : map.keySet()) {
-			System.out.print(key.toString() + " => ");
+			System.out.print("- " + key.toString() + " => ");
 			Object value = map.get(key);
 			if (value == null) {
 				System.out.println("null");
@@ -35,6 +36,25 @@ public final class Debug {
 			Object value = array[i];
 			System.out.print(value == null ? "null" : value.toString());
 			if (!inline) System.out.println();
+		}
+	}
+
+	public static void print(List<?> list) {
+		System.out.println(list.getClass().getSimpleName() + " (" + list.size() + ")");
+		int i = 0;
+		for (Object value : list) {
+			System.out.print("- " + (i++) + ": ");
+			if (value == null) {
+				System.out.println("null");
+				continue;
+			}
+			if (value.getClass().isArray()) {
+				System.out.print("Array[");
+				print((Object[]) value, true);
+				System.out.println("]");
+				continue;
+			}
+			System.out.println(value.toString());
 		}
 	}
 
