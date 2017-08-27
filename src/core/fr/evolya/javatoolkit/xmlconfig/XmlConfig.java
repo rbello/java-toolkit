@@ -84,7 +84,7 @@ public class XmlConfig {
 	 * 
 	 * @see #addConfiguration(java.io.File)
 	 */
-	public XmlConfig(File file) throws XmlConfigException, IOException {
+	public XmlConfig(File file) throws IOException, XmlConfigException {
 		this();
 		addConfiguration(file);
 	}
@@ -103,7 +103,7 @@ public class XmlConfig {
 	 * Add configuration from the specified input stream.
 	 * @throws XmlConfigException 
 	 */
-	public void addConfiguration(InputStream in) throws IOException, XmlConfigException {
+	public void addConfiguration(InputStream in) throws XmlConfigException {
 		addConfiguration(null, in);
 	}
 	
@@ -111,7 +111,7 @@ public class XmlConfig {
 	 * Add configuration from the specified input stream.
 	 */
 	protected synchronized void addConfiguration(File src, InputStream in)
-		throws XmlConfigException, IOException {
+		throws XmlConfigException {
 		
 		// Create document builder factory
 		DocumentBuilder db;
@@ -537,6 +537,10 @@ public class XmlConfig {
 		Node node = elem.getAttributes().getNamedItem(name);
 		if (node == null) return null;
 		return replaceVariables(node.getNodeValue());
+	}
+
+	public boolean hasBean(String beanName) {
+		return beans.containsKey(beanName);
 	}
 
 }

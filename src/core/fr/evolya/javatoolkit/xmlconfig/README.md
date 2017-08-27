@@ -58,7 +58,8 @@ The XML file must respect the following format:
 			
 			<!-- Modify attribute of type list argument -->
 			<list name="aList" class="fr.evolya.MyOtherClass">
-				<bean>...</bean>
+				<!-- You can configure bean's attributes like this too -->
+				<bean attributeName="attributeValue">...</bean>
 			</list>
 			
 			<!-- Create a list of -->
