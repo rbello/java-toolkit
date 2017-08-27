@@ -1,13 +1,16 @@
 package fr.evolya.javatoolkit.code.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -51,17 +54,6 @@ public final class XmlUtils {
 		return dbf.newDocumentBuilder();
 	}
 
-	public static <E extends Exception> void forEachChildNodes(Element node, Consumer<Element, E> consumer)
-		throws E {
-		NodeList list = node.getChildNodes();
-		for (int i = 0; i < list.getLength(); i++) {
-			Node child = list.item(i);
-			if (child instanceof Element) {
-				consumer.accept((Element) child);
-			}
-		}
-	}
-
 	public static boolean getBooleanAttribute(Element node, String attributeName, boolean defaultValue) {
 		String value = getAttributeValue(node, attributeName);
 		if (value == null) return defaultValue;
@@ -77,5 +69,29 @@ public final class XmlUtils {
 		if (node == null) return null;
 		return node.getNodeValue();
 	}
+
+	public static <E extends Exception> void forEachAttributesExcept(Element node, 
+			Consumer<Attr, E> consumer, String... exceptedAttrNames) throws E {
+		List<String> except = Arrays.asList(exceptedAttrNames);
+		NamedNodeMap attrs = node.getAttributes();
+		for (int i = 0, l = attrs.getLength(); i < l; i++) {
+			Node attr = attrs.item(i);
+			if (attr == null) continue;
+			if (except.contains(attr.getNodeName())) continue;
+			consumer.accept((Attr)attr);
+		}
+	}
 	
+	public static <E extends Exception> void forEachChildNodes(Element node,
+			Consumer<Element, E> consumer)
+			throws E {
+		NodeList list = node.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			Node child = list.item(i);
+			if (child instanceof Element) {
+				consumer.accept((Element) child);
+			}
+		}
+	}
+
 }
