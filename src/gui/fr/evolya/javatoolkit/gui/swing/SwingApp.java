@@ -75,18 +75,4 @@ public class SwingApp extends App {
 		}
 	}
 	
-	@Override
-	protected int initDebugLevel(String[] args) {
-		
-		int level = super.initDebugLevel(args);
-
-		// Initialisations pour Swing 
-    	SwingHelper.initLookAndFeel();
-    	SwingHelper.initSwingAnimations();
-    	SwingHelper.adjustGlobalFontSize(13);
-    	
-    	return level;
-    	
-	}
-	
 }
