@@ -271,17 +271,34 @@ public class Arduino extends Observable
 
 	@Override
 	public synchronized void close() throws Exception {
+		Exception ex = null;
 		if (serialPort != null) {
-			serialPort.removeEventListener();
-			serialPort.close();
-			serialPort = null;
+			notify(OnDisconnected.class, commPort, null);
+			try {
+				serialPort.removeEventListener();
+				input.close();
+				output.close();
+				serialPort.close();
+			}
+			catch (Exception e) {
+				ex = e;
+			}
 		}
-		notify(OnDisconnected.class, commPort, null);
 		commPort = null;
 		input = null;
 		output = null;
 		connected = false;
-//		removeAllListeners(); TODO Pose des pb lors de la réouverture du lien
+		serialPort = null;
+		if (ex != null) throw ex;
+	}
+	
+	public void dispose() {
+		try {
+			close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		removeAllListeners();
 	}
 	
 	@Override
