@@ -303,4 +303,46 @@ public final class ReflectionUtils {
 		sb.append(name.substring(1));
 		return sb.toString();
 	}
+
+	public static void describe(Object object) {
+		if (object == null) {
+			System.out.println("Describe: null");
+			return;
+		}
+		Class<?> type = object.getClass();
+		System.out.println("Object class: " + type);
+		while (true) {
+			for (Class<?> iface : type.getInterfaces()) {
+				System.out.println("implements " + iface);
+			}
+			type = type.getSuperclass();
+			if (type == null) break;
+			System.out.println("extends " + type);
+		}
+	}
+	
+	public static Class<?> getFieldTypeByAttributeOrGetter(String className, String fieldName)
+    		throws ClassNotFoundException, NoSuchFieldException {
+    	return getFieldTypeByAttributeOrGetter(Class.forName(className), fieldName);
+    }
+	
+	public static Class<?> getFieldTypeByAttributeOrGetter(Class<?> type, String fieldName)
+    		throws NoSuchFieldException {
+    	
+    	String typeName = null;
+    	// Get param type from bean' setter method
+    	if (typeName == null) {
+			Method m = ReflectionUtils.getMethodMatchingIgnoreCase(
+					type, ReflectionUtils.getSetterMethodName(fieldName)
+			);
+			if (m != null) {
+    			return m.getParameterTypes()[0];
+    		}
+    	}
+    	// Get param type from bean's attribute
+		Field field = ReflectionUtils.getFieldMatching(type, fieldName);
+    	return field.getType();
+
+    }
+	
 }
