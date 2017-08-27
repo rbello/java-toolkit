@@ -47,9 +47,6 @@ public abstract class App extends Observable
 		// Init debug level
 		this.debugLevel = initDebugLevel(args);
 		
-		// Create helper accesssor
-		INSTANCE  = this;
-		
 		// Create CDI context
 		cdi = new DependencyInjectionContext((task) -> {
 			try {
@@ -60,6 +57,10 @@ public abstract class App extends Observable
 				e.printStackTrace();
 			}
 		});
+		
+		// Log
+		LOGGER.log(Logs.INFO, "");
+		LOGGER.log(Logs.INFO, "APPLICATION CREATION");
 		
 		// Register this class into CDI
 		cdi.register(App.class, new Instance<>(this));
@@ -74,8 +75,12 @@ public abstract class App extends Observable
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 		    public void run() {
 		    	// TODO
+		    	System.out.println("TODO App.addShutdownHook()");
 		    }
 		 });
+
+		// Create helper accessor
+		INSTANCE = this;
 		
 	}
 	
@@ -131,26 +136,34 @@ public abstract class App extends Observable
 	
 	public synchronized void start() {
 		
-		// Check current state
-		if (_state != ApplicationStopped.class)
-			throw new IllegalStateException("App is already started");
+		try {
 		
-		// Add events that the observable have to repeat to new listeners
-		repeatForNewListeners(
-				ApplicationStarting.class,
-				ApplicationBuilding.class,
-				ApplicationStarted.class,
-				ApplicationReady.class
-				);
-		
-		// Build CDI cache
-		cdi.build();
-		setState(ApplicationBuilding.class);
-		
-		// Change states
-		setState(ApplicationStarting.class);
-		setState(ApplicationStarted.class);
-		setState(ApplicationReady.class);
+			// Check current state
+			if (_state != ApplicationStopped.class)
+				throw new IllegalStateException("App is already started");
+			
+			// Add events that the observable have to repeat to new listeners
+			repeatForNewListeners(
+					ApplicationStarting.class,
+					ApplicationBuilding.class,
+					ApplicationStarted.class,
+					ApplicationReady.class
+					);
+			
+			// Build CDI cache
+			cdi.build();
+			setState(ApplicationBuilding.class);
+			
+			// Change states
+			setState(ApplicationStarting.class);
+			setState(ApplicationStarted.class);
+			setState(ApplicationReady.class);
+			
+		}
+		catch (Throwable t) {
+			LOGGER.log(Logs.ERROR, "Unable to start application: " + t.getClass().getSimpleName()
+					+ " - " + t.getMessage(), t);
+		}
 
 	}
 
@@ -171,7 +184,8 @@ public abstract class App extends Observable
 	
 	protected void setState(Class<?> state) {
 		_state = state;
-		LOGGER.log(Logs.INFO, "Application state changed: " + getState());
+		LOGGER.log(Logs.INFO, "");
+		LOGGER.log(Logs.INFO, "APPLICATION STATE CHANGED: " + getState());
 		notify(state, this);
 	}
 	
@@ -205,8 +219,8 @@ public abstract class App extends Observable
 			else if (debugMode >= 1) logLevel = Logs.DEBUG;
 			LOGGER.log(Logs.INFO, "Debug mode: " + debugMode + " (" + logLevel + ")");
 		}
-		Logs.setDefaultLevel(logLevel);
-		Logs.setGlobalLevel(logLevel);
+
+		setLogLevel(logLevel);
 		
     	return debugMode;
 	}
@@ -217,7 +231,6 @@ public abstract class App extends Observable
 	}
 
 	public void setLogLevel(Level level) {
-		Logs.setDefaultLevel(level);
 		Logs.setGlobalLevel(level);
 	}
 	
@@ -285,6 +298,17 @@ public abstract class App extends Observable
 
 	public int getDebugLevel() {
 		return debugLevel;
+	}
+
+	public static boolean setLogFileOutput(String path, Level loglevel) {
+		try {
+			Logs.addFileOutputHandler(path, loglevel);
+			return true;
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 	
 }
