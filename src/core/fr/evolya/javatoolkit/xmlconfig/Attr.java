@@ -20,6 +20,9 @@ class Attr extends Param {
     protected String name = null;
 	private Object bean;
 
+	/**
+	 * Constructor for a node <attr>
+	 */
     public Attr(XmlConfig conf, File src, Element attrNode, Object beanInstance) 
         throws XmlConfigException {
         super(conf, src, attrNode);
@@ -30,7 +33,17 @@ class Attr extends Param {
         }
     }
 
-    public String getName() {
+    /**
+     * Constructor for <bean attributeName="attributeValue">
+     */
+    public Attr(XmlConfig conf, File src, org.w3c.dom.Attr node, Object beanInstance) 
+    		throws XmlConfigException {
+		super(conf, src, node, beanInstance);
+		bean = beanInstance;
+		name = node.getNodeName();
+	}
+
+	public String getName() {
         return name;
     }
     
@@ -48,6 +61,22 @@ class Attr extends Param {
 		String methodName = ReflectionUtils.getSetterMethodName(name);
 		Class<?>[] argumentsTypes = new Class[] { getType() };
 		return ReflectionUtils.getMethodSignature(methodName, argumentsTypes);
+	}
+
+	public void invoke(File src, String beanName, String descriptor) throws XmlConfigException {
+		Method method = getSetterMethod();
+		
+		if (method == null) {
+			throw new XmlConfigException(src, "Setter method '%s::%s' doesn't exists in bean '%s' for " + descriptor,
+					bean.getClass().getName(), getSetterMethodName(), beanName, getName());
+		}
+		try {
+			method.invoke(bean, new Object[] { getValue() });
+		}
+		catch (Exception ex) {
+			throw new XmlConfigException(src, ex, "Error while invoking setter '%s::%s' in bean '%s' for " + descriptor,
+					bean.getClass().getName(), getSetterMethodName(), beanName, getName());
+		}
 	}
 
 }

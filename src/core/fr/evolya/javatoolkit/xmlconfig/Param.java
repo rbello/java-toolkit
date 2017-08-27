@@ -2,7 +2,6 @@ package fr.evolya.javatoolkit.xmlconfig;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
@@ -38,7 +37,7 @@ class Param {
         String valueStr = conf.getTextContent(param);
         
         if (typeName == null) {
-        	// Infer type from parent
+        	// Get parent bean type name
         	String beanTypeName = conf.getAttributeValue(param.getParentNode(), "class");
         	if (beanTypeName == null) {
         		String beanName = conf.getAttributeValue(param.getParentNode(), "name");
@@ -49,36 +48,50 @@ class Param {
         	if (beanTypeName == null) {
                 throw new XmlConfigException(src, "<param> and <attr> elements should have 'type' attribute");
             }
-        	// Get param type from bean's attribute
+        	// Get type of data (using setter or attribute to infer it)
         	try {
-        		Field field = ReflectionUtils.getFieldMatching(Class.forName(beanTypeName), fieldName);
-	        	typeName = field.getType().getName();
+        		Class<?> type = ReflectionUtils.getFieldTypeByAttributeOrGetter(
+        				beanTypeName, fieldName);
+        		typeName = type.getName();
         	}
         	catch (ClassNotFoundException e) {
         		throw new XmlConfigException(src, e, "Class not found '%s' for <param name='%s'>",
         				beanTypeName, fieldName);
         	}
-        	catch (NoSuchFieldException ex) {
-        	}
-        	// Get param type from bean' setter method
-        	if (typeName == null) {
-				try {
-					Method m = ReflectionUtils.getMethodMatchingIgnoreCase(
-							Class.forName(beanTypeName),
-							ReflectionUtils.getSetterMethodName(fieldName)
-					);
-					if (m != null) {
-	        			typeName = m.getParameterTypes()[0].getName();
-	        		}
-				} catch (ClassNotFoundException e) {
-					// Should not be thrown
-				}
-        	}
-        	if (typeName == null) {
-        		throw new XmlConfigException(src, "Unable to find accessible field or setter in '%s' for <param name='%s'>",
+        	catch (NoSuchFieldException e) {
+        		throw new XmlConfigException(src, "Unable to find accessible field or setter in '%s' for node <param name='%s'>",
         				beanTypeName, fieldName);
-        	}
+			}
         }
+        
+        // Parse the value
+        parseStringValue(conf, src, typeName, valueStr, param);
+        
+    }
+    
+    protected Param(XmlConfig conf, File src, org.w3c.dom.Attr node, Object beanInstance)
+    		throws XmlConfigException {
+    	
+		try {
+			
+			String typeName = ReflectionUtils.getFieldTypeByAttributeOrGetter(
+					beanInstance.getClass(), node.getNodeName()).getName();
+			
+			parseStringValue(conf, src, typeName, node.getNodeValue(), null);
+			
+		}
+		catch (NoSuchFieldException e) {
+			throw new XmlConfigException(src, "Unable to find accessible field or setter in '%s' for attribute <bean %s='...'>",
+					beanInstance.getClass().getName(), node.getNodeName());
+		}
+    	
+    }
+    
+    /**
+     * @param param Is nullable
+     */
+    protected void parseStringValue(XmlConfig conf, File src, String typeName, String valueStr, Element param)
+    		throws XmlConfigException {
         
         switch (typeName) {
         
@@ -146,6 +159,7 @@ class Param {
         
         default:
         	// Access to static fields and enumerations
+        	// Ex: <attr name="color">RED</attr>
         	try {
 	        	type = Class.forName(typeName);
 	        	value = null;

@@ -261,7 +261,14 @@ public class XmlConfig {
 			beanInstance = createBeanInstance(src, beanClass, beanName, beanNode);
 		}
 		
+		
 		final Object beanInstanceCopy = beanInstance;
+
+		// Fetch attributes other than 'class' or 'name'
+		XmlUtils.forEachAttributesExcept(beanNode, (node) -> {
+			Attr attr = new Attr(this, src, node, beanInstanceCopy);
+			attr.invoke(src, beanName, "<bean %s='...'>");
+		}, "class", "name");
 		
 		// Fetch childs of bean's node
 		XmlUtils.<XmlConfigException>forEachChildNodes(beanNode, (child) -> {
@@ -322,20 +329,8 @@ public class XmlConfig {
 			throws XmlConfigException {
 		// Create attribute
 		Attr attr = new Attr(this, src, node, bean);
-		
-		Method method = attr.getSetterMethod();
-		
-		if (method == null) {
-			throw new XmlConfigException(src, "Setter method '%s::%s' doesn't exists in bean '%s' for <attr name='%s'>",
-					bean.getClass().getName(), attr.getSetterMethodName(), beanName, attr.getName());
-		}
-		try {
-			method.invoke(bean, new Object[] { attr.getValue() });
-		}
-		catch (Exception ex) {
-			throw new XmlConfigException(src, ex, "Error while invoking setter '%s::%s' in bean '%s' for <attr name='%s'>",
-					bean.getClass().getName(), attr.getSetterMethodName(), beanName, attr.getName());
-		}
+		// Invoke it
+		attr.invoke(src, beanName, "<attr name='%s'>");
 	}
 
 	protected void handleCall(File src, Object bean, String beanName, Node call)
