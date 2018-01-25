@@ -11,6 +11,10 @@ public class Model implements Runnable {
 
 	@Inject public App app;
 	
+	public Date getTimeValue() {
+		return this.timeValue;
+	}
+
 	@Override
 	public void run() {
 		while (!Thread.interrupted()) {
@@ -25,11 +29,12 @@ public class Model implements Runnable {
 			}
 		}
 	}
-	
-	public Date getTimeValue() {
-		return this.timeValue;
+
+	public void stop() {
+		Thread.currentThread().interrupt();
 	}
 	
+	@FunctionalInterface
 	public static interface ModelChanged {
 		public void onTimeChanged(Date dt);
 	}

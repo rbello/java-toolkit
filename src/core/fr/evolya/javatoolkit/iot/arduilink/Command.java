@@ -11,7 +11,7 @@ public abstract class Command {
 		nodeId = Integer.parseInt(tokens[1]);
 		node = link.getNode(nodeId);
 		if (node == null && Integer.parseInt(tokens[0]) != 100)
-			throw new NullPointerException("Command has no node: " + String.join(" ", tokens));
+			throw new NullPointerException("Node not found: "+  nodeId);
 	}
 	
 }

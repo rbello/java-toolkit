@@ -141,8 +141,7 @@ public class Arduino extends Observable
 		this.openTimeOut = openTimeOut;
 	}
 
-	public synchronized void open() throws PortInUseException, UnsupportedCommOperationException,
-		IOException, TooManyListenersException {
+	public synchronized void open() throws ArduinoException {
 		try {
 			// open serial port, and use class name for the appName.
 			serialPort = (SerialPort) commPort.open(Arduino.class.getName(), openTimeOut);
@@ -171,7 +170,7 @@ public class Arduino extends Observable
 			input = null;
 			output = null;
 			connected = false;
-			throw ex;
+			throw new ArduinoException(ex);
 		}
 	}
 
@@ -341,12 +340,26 @@ public class Arduino extends Observable
 		
 	}
 
+	/**
+	 * Returns TRUE is the Arduino is currently connected.
+	 */
 	public boolean isConnected() {
 		return connected;
 	}
 
+	
+	/**
+	 * Returns TRUE if this Arduino has a bound COM port. 
+	 */
 	public boolean isBound() {
 		return commPort != null;
+	}
+	
+	public static class ArduinoException extends Exception {
+		private static final long serialVersionUID = 8331013725124493915L;
+		public ArduinoException(Exception ex) {
+			super(ex.getClass().getSimpleName() + ": " + ex.getMessage(), ex);
+		}
 	}
 
 }

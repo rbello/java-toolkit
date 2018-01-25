@@ -68,6 +68,10 @@ public class Arduilink implements
 	public List<Sensor> getSensors() {
 		return sensors;
 	}
+	
+	public <T> Listener<T> on(Class<T> eventType) {
+		return when(eventType);
+	}
 
 	@Override
 	public <T> Listener<T> when(Class<T> eventType) {

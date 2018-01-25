@@ -5,6 +5,7 @@ import java.util.Date;
 
 import fr.evolya.javatoolkit.app.App;
 import fr.evolya.javatoolkit.app.event.ApplicationReady;
+import fr.evolya.javatoolkit.app.event.ApplicationStopping;
 import fr.evolya.javatoolkit.code.annotations.GuiTask;
 import fr.evolya.javatoolkit.code.annotations.Inject;
 import fr.evolya.javatoolkit.core.app.swing.Model.ModelChanged;
@@ -31,6 +32,13 @@ public class Controller {
 	@GuiTask
 	public void onModelChanged(Date date) {
 		view.getLabel().setText(dateFormat.format(date));
+	}
+	
+	@BindOnEvent(ApplicationStopping.class)
+	@GuiTask
+	public void onStop() {
+		model.stop();
+		view.setVisible(false);
 	}
 	
 }

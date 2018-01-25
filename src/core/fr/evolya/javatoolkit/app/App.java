@@ -59,6 +59,9 @@ public abstract class App extends Observable
 		});
 		
 		// Log
+		if (this.debugLevel > 0) {
+			LOGGER.log(Logs.INFO, "Library path: " + System.getProperty("java.library.path"));
+		}
 		LOGGER.log(Logs.INFO, "");
 		LOGGER.log(Logs.INFO, "APPLICATION CREATION");
 		
