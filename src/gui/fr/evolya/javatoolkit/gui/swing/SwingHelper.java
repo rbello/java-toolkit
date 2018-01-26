@@ -139,8 +139,10 @@ public class SwingHelper {
                         adjustGlobalFontSize(size);
                     }
                 });
-                return;
-            } catch (Exception e) {}
+            } catch (Exception ex) {
+            	throw new RuntimeException(ex);
+            }
+            return;
         }
         
         // On parcours les styles de l'UI manager

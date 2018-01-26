@@ -43,6 +43,10 @@ public class ImageScanner {
 			        	callback.onFailure("empty input stream");
 			        	return;
 			        }
+			        if (str.isEmpty()) {
+			        	callback.onFailure("no device available");
+			        	return;
+			        }
 			        //System.out.println(str);
 			        String[] tokens = str.split("' is a ");
 			        callback.onSuccess(new KeyValue<>(tokens[0].substring(8), tokens[1]));
@@ -64,6 +68,7 @@ public class ImageScanner {
 							"--format", format,
 							"--resolution", ""+dpi,
 							"--mode", colorMode
+							//,"--progress"
 							);
 					builder.redirectOutput(target);
 					Process ps = builder.start();
