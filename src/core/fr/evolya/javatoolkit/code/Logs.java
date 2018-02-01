@@ -49,7 +49,6 @@ import fr.evolya.javatoolkit.code.annotations.TODO;
  * @author rbello
  * 
  */
-@TODO("Eviter que les methodes getLogger ne fassent le boulot à chaque fois")
 public class Logs {
 
 	public static final Level NONE			 = Level.OFF;

@@ -1,11 +1,15 @@
 package fr.evolya.javatoolkit.gui.swing;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 
 import fr.evolya.javatoolkit.app.App;
+import fr.evolya.javatoolkit.app.cdi.Instance;
 import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
+import fr.evolya.javatoolkit.code.Logs;
 
 public class SwingApp extends App {
 	
@@ -34,6 +38,28 @@ public class SwingApp extends App {
 	@Override
 	public void invokeLaterOnGuiDispatchThread(Runnable task) {
 		EventQueue.invokeLater(task);
+	}
+	
+	@Override
+	protected void exploreViewComponents(Instance<?> instance) {
+		if (!instance.isFutur() && instance.isInstanceOf(Container.class)) {
+			if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+				LOGGER.log(Logs.DEBUG_FINE, " `-> Deep explore view with specific Swing procedure: " 
+						+ instance.getInstanceClass().getSimpleName());
+			}
+			exploreViewComponents((Container) instance.getInstance(), 0);
+		}
+	}
+
+	protected void exploreViewComponents(Container instance, int depth) {
+		if (depth > 0) {
+			cdi.searchInjections(instance);
+		}
+		for (Component c : instance.getComponents()) {
+			if (c instanceof Container) {
+				exploreViewComponents((Container)c, depth++);
+			}
+		}
 	}
 
 	@SuppressWarnings("unchecked")

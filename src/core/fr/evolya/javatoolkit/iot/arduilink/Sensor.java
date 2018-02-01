@@ -45,12 +45,16 @@ public class Sensor extends Command {
 		return String.format("Sensor[Name=%s Node=%s Type=%s]", name, nodeId, type);
 	}
 
-	public boolean setValue(String value) {
+	boolean setValue(String value) {
 		// TODO C'est une stratégie qui ne devrait pas marcher pour les HIT 
 		//if (Utils.equals(this.value, value)) return false;
 		this.value = value;
 		// TODO Auto-generated method stub
 		return true;
+	}
+
+	public boolean set(String data, boolean ack) {
+		return link.setSensorValue(this, data, ack);
 	}
 
 }

@@ -122,7 +122,7 @@ public class DependencyInjectionContext {
 		// L'instance donnée est future mais ne possède même pas de classe
 		if (instance.getInstanceClass() == null)
 			throw new NullPointerException("Cannot inject on pure futur objet");
-		
+
 		// Toutes les méthodes de l'instance
 		Arrays.stream(instance.getInstanceClass().getFields())
 			// Uniquement celles avec l'annotation d'injection

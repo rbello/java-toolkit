@@ -1,5 +1,6 @@
 package fr.evolya.javatoolkit.iot.arduino;
 
+import java.awt.event.InputMethodListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -43,7 +44,7 @@ public class Arduino extends Observable
 	implements SerialPortEventListener, AutoCloseable, Runnable {
 	
 	/**
-	 * Milliseconds to block while waiting for port open
+	 * Milliseconds to block while waiting for the port to open
 	 */
 	protected int openTimeOut = 2000;
 	
@@ -88,6 +89,11 @@ public class Arduino extends Observable
 	private boolean connected = false;
 	
 	/**
+	 * Debug mode
+	 */
+	public boolean debug = false;
+	
+	/**
 	 * Error message for empty string readding
 	 */
 	private static final String EmptyBufferErrorMessage = "Underlying input stream returned zero bytes";
@@ -122,6 +128,7 @@ public class Arduino extends Observable
 	}
 
 	public void setDataRate(int dataRate) {
+		// TODO Throw exception if already open 
 		this.dataRate = dataRate;
 	}
 
@@ -218,6 +225,7 @@ public class Arduino extends Observable
 	}
 	
 	public void writeUnsafe(String data) throws IOException {
+		if (debug) System.out.println("[Arduino] Write= " + data);
 		output.write(data.getBytes());
 		output.flush();
 	}
@@ -231,9 +239,11 @@ public class Arduino extends Observable
 			return;
 		}
 		
+		
 		// On tente de lire une trame
 		try {
 			String inputLine = input.readLine();
+			if (debug) System.out.println("[Arduino] Read Type=DATA_AVAILABLE Contents= " + inputLine);
 			notify(OnRawDataReceived.class, inputLine);
 		}
 		catch (Throwable e) {

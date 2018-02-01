@@ -9,18 +9,24 @@ import java.io.InputStreamReader;
 import fr.evolya.javatoolkit.code.KeyValue;
 import fr.evolya.javatoolkit.code.funcint.Callback;
 
-public class ImageScanner {
+public class ImageScanner extends KeyValue<String, String> {
 	
 	public static final String MODE_COLOR = "Color";
 	public static final String MODE_BW = "Lineart";
 	public static final String MODE_GRAYSCALE = "Gray";
 	public static final String FILE_TIFF = "TIFF";
 	
-	public static void findFirstScanner(Callback<KeyValue<String, String>, String> callback) {
-		findFirstScannerRoot(null, callback);
+	public static interface DetectionCallback extends Callback<ImageScanner, String> { }
+	
+	public ImageScanner(String id, String name) {
+		super(id, name);
+	}
+
+	public static void detectFirstScanner(DetectionCallback callback) {
+		detectFirstScannerRoot(null, callback);
 	}
 	
-	public static void findFirstScannerRoot(String rootPwd, Callback<KeyValue<String, String>, String> callback) {
+	public static void detectFirstScannerRoot(String rootPwd, DetectionCallback callback) {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
@@ -49,7 +55,7 @@ public class ImageScanner {
 			        }
 			        //System.out.println(str);
 			        String[] tokens = str.split("' is a ");
-			        callback.onSuccess(new KeyValue<>(tokens[0].substring(8), tokens[1]));
+			        callback.onSuccess(new ImageScanner(tokens[0].substring(8), tokens[1]));
 				}
 				catch (IOException | InterruptedException ex) {
 					callback.onFailure(ex.getClass().getSimpleName() + ": " + ex.getMessage());

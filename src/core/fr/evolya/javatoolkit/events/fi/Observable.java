@@ -212,6 +212,9 @@ public class Observable implements IObservable {
 		}
 	}
 	
+	/**
+	 * Returns the list of registred listeners, not a copy.
+	 */
 	protected List<Listener<?>> getListeners() {
 		return listeners;
 	}

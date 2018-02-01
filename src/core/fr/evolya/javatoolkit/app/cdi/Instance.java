@@ -54,17 +54,18 @@ public class Instance<T> {
 		return instance;
 	}
 	
-//	public static class OptionalInstance extends Instance {
-//		public OptionalInstance(Optional<?> instance) {
-//			super(instance);
-//			if (instance.isPresent()) this.clazz = instance.get().getClass();
-//			else this.clazz = Void.class;
-//		}
-//	}
-
+	public boolean isInstanceOf(Class<?> type) {
+		if (this.type == null) return false;
+		return type.isAssignableFrom(this.type);
+	}
+	
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + " " + (type == null ? "?" : type.getName());
+	}
+	
 	public static class FuturInstance<T> extends Instance<T> {
 		
-//		private Class<T> type;
 		private Throwable ex = null;
 		private Action<T> callback;
 		
@@ -140,9 +141,18 @@ public class Instance<T> {
 		}
 
 		public void onInstanceCreated(Action<T> action) {
-			this.callback = action;
+			if (this.callback != null) {
+				Action<T> copy = this.callback;
+				this.callback = (instance) -> {
+					copy.call(instance);
+					action.call(instance);
+				};
+			}
+			else {
+				this.callback = action;
+			}
 		}
 		
 	}
-	
+
 }

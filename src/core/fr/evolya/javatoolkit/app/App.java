@@ -21,34 +21,56 @@ import fr.evolya.javatoolkit.app.event.BeforeApplicationStarted;
 import fr.evolya.javatoolkit.appstandard.bridge.ILocalApplication;
 import fr.evolya.javatoolkit.appstandard.bridge.services.ILocalService;
 import fr.evolya.javatoolkit.code.Logs;
+import fr.evolya.javatoolkit.code.annotations.ToOverride;
+import fr.evolya.javatoolkit.code.annotations.View;
 import fr.evolya.javatoolkit.events.fi.Listener;
 import fr.evolya.javatoolkit.events.fi.Observable;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public abstract class App extends Observable
+public class App extends Observable
 	implements ILocalApplication {
 	
 	public static final Logger LOGGER = Logs.getLogger("App (v2)");
 	
 	private static App INSTANCE = null;
 	
-	private final DependencyInjectionContext cdi;
+	protected final DependencyInjectionContext cdi;
 
-	private final int debugLevel;
+	protected final int debugLevel;
 
-	private Class<?> _state = ApplicationStopped.class;
+	private Class<?> state = ApplicationStopped.class;
+
+	private AppActivity invoker = null;
 	
 	public App() {
-		this(new String[0]);
+		this(null, new String[0]);
+	}
+	
+	public App(AppActivity invoker) {
+		this(invoker, new String[0]);
 	}
 	
 	public App(String[] args) {
+		this(null, args);
+	}
+	
+	/**
+	 * Construct application giving application command line arguments.
+	 * Eg.
+	 * 		public static void main(String[] args) {
+	 * 			App app = new App(args);
+	 * 		}
+	 */
+	public App(AppActivity invoker, String[] args) {
+		
+		// Save invoker
+		this.invoker = invoker;
 		
 		// Init debug level
 		this.debugLevel = initDebugLevel(args);
 		
 		// Create CDI context
-		cdi = new DependencyInjectionContext((task) -> {
+		this.cdi = new DependencyInjectionContext((task) -> {
 			try {
 				this.invokeAndWaitOnGuiDispatchThread(task);
 			}
@@ -87,6 +109,14 @@ public abstract class App extends Observable
 		
 	}
 	
+	/**
+	 * Returns the last instance of App created. If only one App is created in your
+	 * application contexte, this method is like a static Singleton accessor.
+	 */
+	public static App instance() {
+		return INSTANCE;
+	}
+	
 	public App add(Class<?> instance) {
 		return add(new FuturInstance(instance));
 	}
@@ -122,7 +152,23 @@ public abstract class App extends Observable
 		// Notify the event
 		notify(instance, BeforeApplicationStarted.class, this);
 		
+		// Deep
+		if (instance.getInstanceClass().isAnnotationPresent(View.class)) {
+			if (instance.isFutur()) {
+				((FuturInstance<?>)instance).onInstanceCreated(object -> {
+					exploreViewComponents(instance);
+				});
+			}
+			else {
+				exploreViewComponents(instance);
+			}
+		}
+
 		return this;
+	}
+
+	@ToOverride
+	protected void exploreViewComponents(Instance<?> instance) {
 	}
 
 	public <T> T get(Class<T> type) {
@@ -133,8 +179,34 @@ public abstract class App extends Observable
 		return cdi.getComponents();
 	}
 	
+	/**
+	 * Inject the type `typeToInject` into the component identified by type `targetType`,
+	 * into the attribute `attributeName`.
+	 */
+	public void inject(Class<?> targetType, String attributeName, Class<?> typeToInject) {
+		cdi.inject(targetType, attributeName, typeToInject);
+	}
+
+	/**
+	 * Apply some magic behavior to an object:
+	 * 	- Search for @Inject annotations
+	 *  - Search for @BindOnEvent or @GuiTask annotations
+	 *  
+	 *  This method is useful to initialize an object with dependecy
+	 *  injection and event binding without creating a component.
+	 *  
+	 *  Use this method with caution : invoking it during another
+	 *  invokation can generate an interlock issue.
+	 */
+	@Deprecated
+	public void magic(Object object) {
+		LOGGER.log(Logs.DEBUG_FINE, "Apply magic to: " + object.getClass());
+		cdi.searchInjections(object);
+		addListener(new Instance(object));
+	}
+	
 	public String getState() {
-		return _state.getSimpleName();
+		return state.getSimpleName();
 	}
 	
 	public synchronized void start() {
@@ -142,7 +214,7 @@ public abstract class App extends Observable
 		try {
 		
 			// Check current state
-			if (_state != ApplicationStopped.class)
+			if (state != ApplicationStopped.class)
 				throw new IllegalStateException("App is already started");
 			
 			// Add events that the observable have to repeat to new listeners
@@ -172,7 +244,7 @@ public abstract class App extends Observable
 
 	@Override
 	public void stop() {
-		if (_state == ApplicationStopped.class)
+		if (state == ApplicationStopped.class)
 			throw new IllegalStateException("App is already stopped");
 		setState(ApplicationStopping.class);
 		setState(ApplicationStopped.class);
@@ -186,16 +258,80 @@ public abstract class App extends Observable
 	}
 	
 	protected void setState(Class<?> state) {
-		_state = state;
+		this.state = state;
 		LOGGER.log(Logs.INFO, "");
 		LOGGER.log(Logs.INFO, "APPLICATION STATE CHANGED: " + getState());
 		notify(state, this);
 	}
 	
-	public boolean isActive() {
-		return _state != ApplicationStopped.class && _state != ApplicationStopping.class;
+	@Override
+	public AppActivity getInvoker() {
+		return invoker ;
 	}
 	
+	@Override
+	@ToOverride
+	public String getApplicationID() {
+		return getApplicationName();
+	}
+
+	@Override
+	public String getApplicationName() {
+		return get(AppConfiguration.class).getProperty("App.Name");
+	}
+
+	@Override
+	public ILocalService[] getPublishedServices() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean isStarted() {
+		return state == ApplicationStarted.class;
+	}
+	
+	public boolean isActive() {
+		return state != ApplicationStopped.class && state != ApplicationStopping.class;
+	}
+
+	public App remove(Object object) {
+		return remove(object.getClass());
+	}
+	
+	public App remove(Class<?> clazz) {
+		cdi.unregister(clazz);
+		// removeListener(clazz); TODO
+		return this;
+	}
+
+	/**
+	 * Returns a list filled with listeners bound to given class.  
+	 */
+	public List<Listener<?>> getListeners(Class<?> type) {
+		List<Listener<?>> output = new ArrayList<>();
+		for (Listener<?> listener : getListeners()) {
+			if (listener.getTarget().getClass() == type)
+				output.add(listener);
+		}
+		return output;
+	}
+
+	/**
+	 * Returns a copy of listeners.
+	 */
+	@Override
+	public List<Listener<?>> getListeners() {
+		return new ArrayList<>(super.getListeners());
+	}
+
+	public int getDebugLevel() {
+		return debugLevel;
+	}
+	
+	public void setLogLevel(Level level) {
+		Logs.setGlobalLevel(level);
+	}
+
 	protected int initDebugLevel(String[] args) {
 		
 		// Debug mode
@@ -227,81 +363,6 @@ public abstract class App extends Observable
 		
     	return debugMode;
 	}
-	
-	@Override
-	public String toString() {
-		return get(AppConfiguration.class).toString("%s v%s", "App.Name", "App.Version");
-	}
-
-	public void setLogLevel(Level level) {
-		Logs.setGlobalLevel(level);
-	}
-	
-	@Override
-	public AppActivity getInvoker() {
-		return null;
-	}
-	
-	@Override
-	public String getApplicationID() {
-		return getApplicationName();
-	}
-
-	@Override
-	public String getApplicationName() {
-		return get(AppConfiguration.class).getProperty("App.Name");
-	}
-
-	@Override
-	public ILocalService[] getPublishedServices() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean isStarted() {
-		return "Started".equals(_state);
-	}
-
-	public App remove(Object object) {
-		return remove(object.getClass());
-	}
-	
-	public App remove(Class<?> clazz) {
-		cdi.unregister(clazz);
-		// removeListener(clazz); TODO
-		return this;
-	}
-
-	public List<Listener<?>> getListeners(Class<?> clazz) {
-		List<Listener<?>> output = new ArrayList<Listener<?>>();
-		for (Listener<?> listener : getListeners()) {
-			if (listener.getTarget().getClass() == clazz)
-				output.add(listener);
-		}
-		return output;
-	}
-
-	@Override
-	public List<Listener<?>> getListeners() {
-		return super.getListeners();
-	}
-
-	public void inject(Class<?> targetType, String attributeName, Class<?> typeToInject) {
-		cdi.inject(targetType, attributeName, typeToInject);
-	}
-
-	public static App instance() {
-		return INSTANCE;
-	}
-
-	public void magic(Object object) {
-		cdi.searchInjections(object);
-		addListener(new Instance(object));
-	}
-
-	public int getDebugLevel() {
-		return debugLevel;
-	}
 
 	public static boolean setLogFileOutput(String path, Level loglevel) {
 		try {
@@ -312,6 +373,11 @@ public abstract class App extends Observable
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return get(AppConfiguration.class).toString("%s v%s", "App.Name", "App.Version");
 	}
 	
 }
