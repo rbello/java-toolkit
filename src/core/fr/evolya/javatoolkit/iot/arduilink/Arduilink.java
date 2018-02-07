@@ -7,6 +7,7 @@ import java.util.Map;
 
 import fr.evolya.javatoolkit.app.cdi.Instance;
 import fr.evolya.javatoolkit.code.InstanceContainer;
+import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.events.fi.EventProvider;
 import fr.evolya.javatoolkit.events.fi.IObservable;
 import fr.evolya.javatoolkit.events.fi.Listener;
@@ -29,8 +30,6 @@ public class Arduilink implements
 
 	private Arduino uno;
 	
-	private boolean debug;
-	
 	private Map<Integer, Node> nodes = new HashMap<>();
 	private List<Sensor> sensors = new ArrayList<>();
 
@@ -39,13 +38,11 @@ public class Arduilink implements
 			throw new NullPointerException();
 
 		this.uno = uno;
-		this.debug = uno.debug;
 		
 		final InstanceContainer<Boolean> bound = new InstanceContainer<>(false);
 		
 		// Setup
 		uno.when(OnConnected.class).execute((port) -> {
-			if (debug) System.out.println("[Arduilink] Arduino connected to "+port.getName());
 			new Thread(() -> {
 				try {
 					Thread.sleep(2000);
@@ -54,23 +51,25 @@ public class Arduilink implements
 					return;
 				}
 				if (uno.isConnected() && !bound.get()) {
-					// The arduino haven't respected the ARDUILINK protocol
-					if (debug) System.err.println("[Arduilink] Invalid Arduilink node (don't speak the same langage !)");
-					System.out.println("[Arduilink] Invalid Arduilink node (don't speak the same langage !)");
+					if (Arduino.LOGGER.isLoggable(Logs.WARNING)) {
+						Arduino.LOGGER.log(Logs.WARNING, "Connected arduino is not an Arduilink device (" + uno.getComPort().getName() + ")");
+					}
+					// TODO Quoi faire ?
 				}
 			}).start();
 		});
 		
 		// Present sensors on link established
 		this.when(OnLinkEstablished.class).execute(lnk -> {
-			if (debug) System.out.println("[Arduilink] Link established with ARDUILINK node, sending PRESENT SENSOR request...");
+			if (Arduino.LOGGER.isLoggable(Logs.DEBUG)) {
+				Arduino.LOGGER.log(Logs.DEBUG, "Arduilink device detected, sending PRESENT SENSOR request...");
+			}
 			bound.set(true);
 			presentSensors();
 		});
 		
 		// Cleanup sensors and nodes on disconnected
 		uno.when(OnDisconnected.class).execute((port, ex) -> {
-			if (debug) System.out.println("[Arduilink] Arduino disconnected from " + port.getName());
 			bound.set(false);
 			synchronized (Arduilink.class) {
 				for (Sensor sensor : sensors)
@@ -132,9 +131,9 @@ public class Arduilink implements
 		return uno;
 	}
 	
-	public boolean isOpen() {
-		return uno.isOpen();
-	}
+//	public boolean isOpen() {
+//		return uno.isOpen();
+//	}
 	
 	public String getPortName() {
 		return uno.getComPort().getName();
@@ -176,7 +175,6 @@ public class Arduilink implements
 			// Malformed opcode
 			return;
 		}
-		if (debug) System.out.println("[Arduilink] Received: " + data);
 		String[] tokens = data.split(";");
 		switch (opcode) {
 
@@ -201,7 +199,9 @@ public class Arduilink implements
 		// 300 Sensors presentation
 		case 300:
 			Sensor sensor = new Sensor(this, tokens);
-			if (debug) System.out.println("[Arduilink] New sensor: " + sensor);
+			if (Arduino.LOGGER.isLoggable(Logs.DEBUG)) {
+				Arduino.LOGGER.log(Logs.DEBUG, "New arduilink sensor connected: " + sensor);
+			}
 			sensors.add(sensor);
 			notify(OnSensorConnected.class, sensor);
 			break;
