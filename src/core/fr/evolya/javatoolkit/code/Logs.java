@@ -8,6 +8,7 @@ package fr.evolya.javatoolkit.code;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -20,8 +21,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-
-import fr.evolya.javatoolkit.code.annotations.TODO;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 
 /**
  * 
@@ -81,8 +82,20 @@ public class Logs {
 	 */
 	private static List<Logger> _loggers;
 	
+	/**
+	 * Default output to CLI.
+	 */
 	private static ConsoleHandler _consoleHandler;
+	
+	/**
+	 * Optional output to a file.
+	 */
 	private static FileHandler _fileHandler;
+	
+	/**
+	 * Optional stream output.
+	 */
+	private static StreamHandler _streamHandler;
 	
 	/**
 	 * Constructeur privé, pour forcer l'utilisation des factory statiques.
@@ -137,7 +150,9 @@ public class Logs {
 		}
 
 		// On le sauvegarde
-		_loggers.add(logger);
+		synchronized (_loggers) {
+			_loggers.add(logger);
+		}
 		
 		// On renvoie le logger
 		return logger;
@@ -209,8 +224,10 @@ public class Logs {
 
 		_defaultLevel = level;
 		
-		for (Logger logger : _loggers) {
-			logger.setLevel(level);
+		synchronized (_loggers) {
+			for (Logger logger : _loggers) {
+				logger.setLevel(level);
+			}
 		}
 	}
 	
@@ -237,6 +254,17 @@ public class Logs {
 			_loggers = null;
 		}
 	}
+	
+	public static void setOutputStream(PrintStream stream, Level level) {
+		if (_streamHandler != null) {
+			throw new IllegalStateException("An output stream is already defined");
+		}
+		// Save target for futur loggers
+		_streamHandler = new StreamHandler(stream, new DefaultFormatter(TIME_DATE_FORMATTER));
+		_streamHandler.setLevel(level);
+		if (DEBUG_MODE) System.out.println("[Logs] Add output stream logger '" + stream + "' -> '" + level.getName() + "'");
+		addHandler(_streamHandler, level);
+	}
 
 	public static void addFileOutputHandler(String path, Level level)
 			throws SecurityException, IOException {
@@ -256,10 +284,17 @@ public class Logs {
 		_fileHandler.setLevel(level);
 		_fileHandler.setFormatter(new DefaultFormatter(FULL_DATE_FORMATTER));
 		if (DEBUG_MODE) System.out.println("[Logs] Add file logger '" + path + "' -> '" + level.getName() + "'");
+		addHandler(_fileHandler, level);
+	}
+	
+	private static void addHandler(StreamHandler handler, Level level) {
 		// Add handler to all old loggers
-		for (Logger logger : _loggers) {
-			logger.addHandler(_fileHandler);
+		synchronized (_loggers) {
+			for (Logger logger : _loggers) {
+				logger.addHandler(handler);
+			}
 		}
+		// Elevate global level if required
 		if (level.intValue() < _defaultLevel.intValue()) {
 			Level consoleLevel = _consoleHandler.getLevel();
 			setGlobalLevel(level);
