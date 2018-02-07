@@ -53,7 +53,8 @@ public class SwingApp extends App {
 
 	protected void exploreViewComponents(Container instance, int depth) {
 		if (depth > 0) {
-			cdi.searchInjections(instance);
+			Instance<?> i = new Instance<>(instance);
+			add(new Instance<>(instance), null, true, true);
 		}
 		for (Component c : instance.getComponents()) {
 			if (c instanceof Container) {
