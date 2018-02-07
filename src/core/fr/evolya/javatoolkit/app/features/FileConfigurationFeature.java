@@ -11,13 +11,15 @@ import java.util.Properties;
 import fr.evolya.javatoolkit.app.App;
 import fr.evolya.javatoolkit.app.config.AppConfiguration;
 import fr.evolya.javatoolkit.app.event.ApplicationBuilding;
+import fr.evolya.javatoolkit.app.event.ApplicationConfigLoaded;
+import fr.evolya.javatoolkit.app.event.ApplicationStarting;
 import fr.evolya.javatoolkit.app.event.ApplicationStopping;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.events.fi.BindOnEvent;
 
 public class FileConfigurationFeature {
 
-	@BindOnEvent(ApplicationBuilding.class)
+	@BindOnEvent(ApplicationStarting.class)
 	public void load(App app) {
 		File file = getConfigFile(app);
 		if (file == null) {
@@ -53,6 +55,7 @@ public class FileConfigurationFeature {
 		if (App.LOGGER.isLoggable(Logs.DEBUG)) {
 			App.LOGGER.log(Logs.DEBUG, "Load " + i + " properties from file: " + file);
 		}
+		app.notify(ApplicationConfigLoaded.class, app, config);
 	}
 
 	@BindOnEvent(ApplicationStopping.class)
@@ -69,6 +72,9 @@ public class FileConfigurationFeature {
 			if (App.LOGGER.isLoggable(Logs.WARNING)) {
 				App.LOGGER.log(Logs.WARNING, "Unable to save configuration ("
 						+ e.getClass().getSimpleName() + " : " + e.getMessage() + ")");
+			}
+			if (App.LOGGER.isLoggable(Logs.DEBUG)) {
+				e.printStackTrace();
 			}
 		}
 	}

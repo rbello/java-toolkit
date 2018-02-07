@@ -13,6 +13,10 @@ public interface AppConfiguration {
 
 	public AppConfiguration setProperty(String key, String value);
 	
+	public void setPropertyIfUndefined(String key);
+
+	public void setPropertyIfUndefined(String key, Object value);
+	
 	public AppConfiguration addProperties(Map<String, String> set);
 	
 	public Map<String, String> getProperties();

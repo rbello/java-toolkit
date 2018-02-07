@@ -1,6 +1,8 @@
 package fr.evolya.javatoolkit.app;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -21,8 +23,9 @@ import fr.evolya.javatoolkit.app.event.BeforeApplicationStarted;
 import fr.evolya.javatoolkit.appstandard.bridge.ILocalApplication;
 import fr.evolya.javatoolkit.appstandard.bridge.services.ILocalService;
 import fr.evolya.javatoolkit.code.Logs;
+import fr.evolya.javatoolkit.code.annotations.ConfigDeclare;
+import fr.evolya.javatoolkit.code.annotations.DeepContainer;
 import fr.evolya.javatoolkit.code.annotations.ToOverride;
-import fr.evolya.javatoolkit.code.annotations.View;
 import fr.evolya.javatoolkit.events.fi.Listener;
 import fr.evolya.javatoolkit.events.fi.Observable;
 
@@ -33,6 +36,8 @@ public class App extends Observable
 	public static final Logger LOGGER = Logs.getLogger("App (v2)");
 	
 	private static App INSTANCE = null;
+
+	private static Class<?> MAIN_CLASS = null;
 	
 	protected final DependencyInjectionContext cdi;
 
@@ -63,6 +68,11 @@ public class App extends Observable
 	 */
 	public App(AppActivity invoker, String[] args) {
 		
+		checkMainClass();
+
+		// Create helper accessor
+		INSTANCE = this;
+		
 		// Save invoker
 		this.invoker = invoker;
 		
@@ -81,8 +91,10 @@ public class App extends Observable
 		});
 		
 		// Log
-		if (this.debugLevel > 0) {
-			LOGGER.log(Logs.INFO, "Library path: " + System.getProperty("java.library.path"));
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, "Execution path: " + App.getExecutionDirectory());
+			LOGGER.log(Logs.DEBUG, "Library path  : " + System.getProperty("java.library.path"));
+			LOGGER.log(Logs.DEBUG, "Binaries path : " + App.getBinaryDirectory());
 		}
 		LOGGER.log(Logs.INFO, "");
 		LOGGER.log(Logs.INFO, "APPLICATION CREATION");
@@ -103,12 +115,26 @@ public class App extends Observable
 		    	System.out.println("TODO App.addShutdownHook()");
 		    }
 		 });
-
-		// Create helper accessor
-		INSTANCE = this;
 		
 	}
 	
+	private static void checkMainClass() {
+		if (Thread.currentThread().getId() != 1) {
+			throw new RuntimeException("ERROR: APP MUST BE CREATED INTO THE MAIN THREAD");
+		}
+		StackTraceElement first = Arrays
+				.asList(Thread.currentThread().getStackTrace())
+				.stream()
+				.reduce((a, b) -> b) // Get last
+				.get();
+		try {
+			 MAIN_CLASS  = Class.forName(first.getClassName());
+		}
+		catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
 	/**
 	 * Returns the last instance of App created. If only one App is created in your
 	 * application contexte, this method is like a static Singleton accessor.
@@ -143,17 +169,13 @@ public class App extends Observable
 					));
 		}
 		
-		// Register object in CDI context
-		cdi.register(type, instance);
-
-		// Search for events annotations
-		addListener(instance);
+		add(instance, type, true, true);
 		
 		// Notify the event
 		notify(instance, BeforeApplicationStarted.class, this);
 		
-		// Deep
-		if (instance.getInstanceClass().isAnnotationPresent(View.class)) {
+		// Deep expore
+		if (instance.getInstanceClass().isAnnotationPresent(DeepContainer.class)) {
 			if (instance.isFutur()) {
 				((FuturInstance<?>)instance).onInstanceCreated(object -> {
 					exploreViewComponents(instance);
@@ -165,6 +187,53 @@ public class App extends Observable
 		}
 
 		return this;
+	}
+
+	/**
+	 * 
+	 * @param instance
+	 * @param registerId (Optional)
+	 * @param searchConfigDeclarations
+	 * @param bindEvents
+	 */
+	protected <T> void add(Instance<T> instance, Class<T> registerId, boolean searchConfigDeclarations, boolean bindEvents) {
+
+		// Register object in CDI context
+		if (registerId != null) cdi.register(registerId, instance);
+		// Or just search for dependencies injections 
+		else cdi.searchInjections(instance);
+
+		// Search for config declarations
+		if (searchConfigDeclarations) searchConfigDeclarations(instance);
+
+		// Search for events binding annotations
+		if (bindEvents) addListener(instance);
+		
+	}
+
+	protected void searchConfigDeclarations(Instance<?> instance) {
+		
+		Arrays
+			.asList(instance.getInstanceClass().getDeclaredAnnotationsByType(ConfigDeclare.class))
+			.forEach((a) -> {
+				String key = a.value();
+				if (key.contains("=")) {
+					String[] keyvalue = key.split("=", 2);
+					get(AppConfiguration.class).setPropertyIfUndefined(keyvalue[0], keyvalue[1]);
+					if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+						LOGGER.log(Logs.DEBUG_FINE, "  `-> Found config declaration '" + keyvalue[0] + "' = " + keyvalue[1] + " in " 
+							+ instance.getInstanceClass().getSimpleName());
+					}
+				}
+				else {
+					get(AppConfiguration.class).setPropertyIfUndefined(key);
+					if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+						LOGGER.log(Logs.DEBUG_FINE, "  `-> Found config declaration '" + key + "' in " 
+							+ instance.getInstanceClass().getSimpleName());
+					}
+				}
+			});
+		
 	}
 
 	@ToOverride
@@ -372,6 +441,29 @@ public class App extends Observable
 		catch (Exception e) {
 			e.printStackTrace();
 			return false;
+		}
+	}
+	
+	public static File getExecutionDirectory() {
+		return new File(System.getProperty("user.dir"));
+	}
+	
+	public static File getBinaryDirectory() {
+		try {
+			Class<?> type = MAIN_CLASS == null ? App.class : MAIN_CLASS;
+			return new File(type.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
+		}
+		catch (Throwable ex) {
+			return null;
+		}
+	}
+	
+	public static File getToolkitDirectory() {
+		try {
+			return new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
+		}
+		catch (Throwable ex) {
+			return null;
 		}
 	}
 	

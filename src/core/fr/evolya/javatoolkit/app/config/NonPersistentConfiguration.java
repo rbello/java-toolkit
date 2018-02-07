@@ -74,4 +74,18 @@ public class NonPersistentConfiguration implements AppConfiguration {
 		return _config.containsKey(key) ? Integer.parseInt(_config.get(key)) : defaultValue;
 	}
 
+	@Override
+	public void setPropertyIfUndefined(String key) {
+		if (!_config.containsKey(key)) {
+			_config.put(key, "");
+		}
+	}
+
+	@Override
+	public void setPropertyIfUndefined(String key, Object value) {
+		if (!_config.containsKey(key)) {
+			_config.put(key, value == null ? "" : value.toString());
+		}
+	}
+
 }
