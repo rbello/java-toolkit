@@ -214,7 +214,8 @@ public class Arduino extends Observable
 	@AsynchOperation
 	public Arduino start() {
 		// Log
-		LOGGER.log(Logs.INFO, "Starting arduino " + Integer.toHexString(hashCode()));
+		LOGGER.log(Logs.INFO, "Starting arduino " + Integer.toHexString(hashCode())
+			+ (commPort == null ? " bound to first COM port available" : " bound to " + commPort.getName()));
 		// Start the thread watching for COM port ready to use.
 		this.thread.start();
 		return this;
