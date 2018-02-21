@@ -8,6 +8,11 @@ public class ArduilinkEvents {
 	}
 	
 	@FunctionalInterface
+	public static interface OnLinkInvalidated {
+		void onLinkInvalidated();
+	}
+	
+	@FunctionalInterface
 	public static interface OnLinkBroken {
 		void onLinkBroken(Node node);
 	}
@@ -31,5 +36,5 @@ public class ArduilinkEvents {
 	public static interface OnUnknownPacket {
 		void onUnknownPacket(int opcode, String[] tokens);
 	}
-
+	
 }

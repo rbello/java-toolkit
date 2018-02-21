@@ -21,7 +21,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
 
 /**
@@ -279,6 +278,8 @@ public class Logs {
 		path = path.replace("%m", "" + cal.get(Calendar.MINUTE));
 		path = path.replace("%s", "" + cal.get(Calendar.SECOND));
 		File target = new File(path);
+		// Ensure target directory is created
+		new File(target.getParentFile().getCanonicalPath()).mkdirs();
 		// Save target for futur loggers
 		_fileHandler = new FileHandler(target.getAbsolutePath());
 		_fileHandler.setLevel(level);

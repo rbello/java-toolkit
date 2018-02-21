@@ -14,6 +14,7 @@ import fr.evolya.javatoolkit.events.fi.Listener;
 import fr.evolya.javatoolkit.iot.arduilink.ArduilinkEvents.OnDataReceived;
 import fr.evolya.javatoolkit.iot.arduilink.ArduilinkEvents.OnLinkBroken;
 import fr.evolya.javatoolkit.iot.arduilink.ArduilinkEvents.OnLinkEstablished;
+import fr.evolya.javatoolkit.iot.arduilink.ArduilinkEvents.OnLinkInvalidated;
 import fr.evolya.javatoolkit.iot.arduilink.ArduilinkEvents.OnSensorConnected;
 import fr.evolya.javatoolkit.iot.arduilink.ArduilinkEvents.OnSensorDisconnected;
 import fr.evolya.javatoolkit.iot.arduilink.ArduilinkEvents.OnUnknownPacket;
@@ -33,6 +34,8 @@ public class Arduilink implements
 	private Map<Integer, Node> nodes = new HashMap<>();
 	private List<Sensor> sensors = new ArrayList<>();
 
+	private boolean linkEstablished = false;
+
 	public Arduilink(Arduino uno) {
 		if (uno == null)
 			throw new NullPointerException();
@@ -42,7 +45,7 @@ public class Arduilink implements
 		final InstanceContainer<Boolean> bound = new InstanceContainer<>(false);
 		
 		// Setup
-		uno.when(OnConnected.class).execute((port) -> {
+		uno.when(OnConnected.class).execute((arduino) -> {
 			new Thread(() -> {
 				try {
 					Thread.sleep(2000);
@@ -54,7 +57,7 @@ public class Arduilink implements
 					if (Arduino.LOGGER.isLoggable(Logs.WARNING)) {
 						Arduino.LOGGER.log(Logs.WARNING, "Connected arduino is not an Arduilink device (" + uno.getComPort().getName() + ")");
 					}
-					// TODO Quoi faire ?
+					notify(OnLinkInvalidated.class);
 				}
 			}).start();
 		});
@@ -69,7 +72,7 @@ public class Arduilink implements
 		});
 		
 		// Cleanup sensors and nodes on disconnected
-		uno.when(OnDisconnected.class).execute((port, ex) -> {
+		uno.when(OnDisconnected.class).execute((arduino, ex) -> {
 			bound.set(false);
 			synchronized (Arduilink.class) {
 				for (Sensor sensor : sensors)
@@ -183,6 +186,7 @@ public class Arduilink implements
 			Node node = new Node(this, tokens);
 			nodes.put(node.nodeId, node);
 			notify(OnLinkEstablished.class, node);
+			linkEstablished = true;
 			break;
 
 		// 200 Data exchange
@@ -232,6 +236,20 @@ public class Arduilink implements
 		sb.append(data);
 		// TODO Handle ack response
 		return uno.write(sb.toString());
+	}
+
+	public boolean isLinkEstablished() {
+		return linkEstablished;
+	}
+
+	public boolean reconnect() throws Exception {
+		// Arduino is even not bound to any COM port
+		if (!uno.isBound()) return false;
+		// Arduino is not connected
+		if (!uno.isConnected()) return false;
+		uno.close();
+		uno.open();
+		return true;
 	}
 
 }

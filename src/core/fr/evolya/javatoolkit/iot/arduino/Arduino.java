@@ -106,9 +106,14 @@ public class Arduino extends Observable
 	private static final String EmptyBufferErrorMessage = "Underlying input stream returned zero bytes";
 
 	/**
-	 * Create an Arduino with no COM port.
+	 * Delay to retry a connection attempt.
 	 */
-	private Arduino() {
+	public static long RECONNECT_SLEEP_DELAY = 1000;
+	
+	/**
+	 * Create an Aduino bound to the first COM port available.
+	 */
+	public Arduino() {
 		this(null);
 	}
 	
@@ -207,11 +212,13 @@ public class Arduino extends Observable
 	 * invoking this method.
 	 */
 	@AsynchOperation
-	public void start() {
+	public Arduino start() {
 		// Log
-		LOGGER.log(Logs.INFO, "Starting arduino " + Integer.toHexString(hashCode()));
+		LOGGER.log(Logs.INFO, "Starting arduino " + Integer.toHexString(hashCode())
+			+ (commPort == null ? " bound to first COM port available" : " bound to " + commPort.getName()));
 		// Start the thread watching for COM port ready to use.
 		this.thread.start();
+		return this;
 	}
 	
 	/**
@@ -298,7 +305,7 @@ public class Arduino extends Observable
 			
 			connected  = true;
 			
-			notify(OnConnected.class, commPort);
+			notify(OnConnected.class, this);
 
 			serialPort.notifyOnDataAvailable(true);
 			
@@ -453,7 +460,7 @@ public class Arduino extends Observable
 	public synchronized void close() throws Exception {
 		Exception ex = null;
 		if (serialPort != null) {
-			notify(OnDisconnected.class, commPort, null);
+			notify(OnDisconnected.class, this, null);
 			try {
 				serialPort.removeEventListener();
 				input.close();
