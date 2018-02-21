@@ -12,8 +12,10 @@ import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -21,7 +23,48 @@ public final class ReflectionUtils {
 	
 	private ReflectionUtils() {
 	}
-
+	
+	public static List<Class<?>> getLoadedClasses() {
+		return getLoadedClasses(Thread.currentThread().getContextClassLoader());
+	}
+	
+	public static List<Class<?>> getLoadedClasses(String needle) {
+		return getLoadedClasses(Thread.currentThread().getContextClassLoader(), needle);
+	}
+	
+	public static List<Class<?>> getLoadedClasses(ClassLoader cl, String needle) {
+		return getLoadedClasses()
+			.stream()
+			.filter(c -> c.getName().toLowerCase().contains(needle.toLowerCase()))
+			.collect(Collectors.toList());
+	}
+	
+	public static List<Class<?>> getLoadedClasses(ClassLoader cl) {
+		try {
+			//System.out.print("0");
+			ArrayList<Class<?>> output = new ArrayList<>();
+			while (cl != null) {
+				Class<?> type = cl.getClass();
+		        while (type != ClassLoader.class) {
+		            type = type.getSuperclass();
+		        }
+		        Field field = type.getDeclaredField("classes");
+		        field.setAccessible(true);
+		        Vector<?> classes = (Vector<?>) field.get(cl);
+		        //System.out.print(" + " + classes.size());
+		        for (Iterator<?> iter = classes.iterator(); iter.hasNext();) {
+	                output.add((Class<?>) iter.next());
+	            }
+		        cl = cl.getParent();
+			}
+			//System.out.println(" = " + output.size());
+			return output;
+		}
+		catch (Exception e) {
+			return null;
+		}
+	}
+	
 	public static Method getMethodMatching(Object targetObject, Method method) {
 		// TODO Doc
 		// TODO Comparer aussi les arguments

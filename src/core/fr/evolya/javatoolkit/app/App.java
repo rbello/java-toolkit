@@ -33,7 +33,7 @@ import fr.evolya.javatoolkit.events.fi.Observable;
 public class App extends Observable
 	implements ILocalApplication {
 	
-	public static final Logger LOGGER = Logs.getLogger("App (v2)");
+	public static final Logger LOGGER = Logs.getLogger("App");
 	
 	private static App INSTANCE = null;
 
@@ -68,6 +68,7 @@ public class App extends Observable
 	 */
 	public App(AppActivity invoker, String[] args) {
 		
+		// Ensure that current application was running into main thread
 		checkMainClass();
 
 		// Create helper accessor
@@ -84,9 +85,10 @@ public class App extends Observable
 			try {
 				this.invokeAndWaitOnGuiDispatchThread(task);
 			}
-			catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			catch (InterruptedException ex) {
+				// Catch, restore and terminate
+				Thread.currentThread().interrupt();
+				return;
 			}
 		});
 		
@@ -111,8 +113,10 @@ public class App extends Observable
 		// Intercept SIGINT signal
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 		    public void run() {
-		    	// TODO
-		    	System.out.println("TODO App.addShutdownHook()");
+		    	// The application wasn't closed properly
+		    	if (App.this.state != ApplicationStopped.class) {
+		    		LOGGER.log(Logs.ERROR, "APPLICATION WAS INTERRUPTED IMPROPERLY");
+		    	}
 		    }
 		 });
 		
@@ -143,13 +147,22 @@ public class App extends Observable
 		return INSTANCE;
 	}
 	
+	public App add(String className) {
+		try {
+			return add(Class.forName(className));
+		}
+		catch (ClassNotFoundException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+	
 	public App add(Class<?> instance) {
 		return add(new FuturInstance(instance));
 	}
 	
-	public <T> T add(T instance) {
-		add(new Instance(instance));
-		return instance;
+	public App add(Object object) {
+		add(new Instance(object));
+		return this;
 	}
 	
 	public App add(Instance instance) {
@@ -178,11 +191,11 @@ public class App extends Observable
 		if (instance.getInstanceClass().isAnnotationPresent(DeepContainer.class)) {
 			if (instance.isFutur()) {
 				((FuturInstance<?>)instance).onInstanceCreated(object -> {
-					exploreViewComponents(instance);
+					exploreDeepContainer(instance);
 				});
 			}
 			else {
-				exploreViewComponents(instance);
+				exploreDeepContainer(instance);
 			}
 		}
 
@@ -236,8 +249,15 @@ public class App extends Observable
 		
 	}
 
+	/**
+	 * This method lets child-class have the ability to explore
+	 * a specific kind of containers. For example, in SWING context,
+	 * all classes extending java.awt.Container can contains several
+	 * other objects, like other Container too. So this method have to
+	 * be overriden to implement a specific container exploration.  
+	 */
 	@ToOverride
-	protected void exploreViewComponents(Instance<?> instance) {
+	protected void exploreDeepContainer(Instance<?> instance) {
 	}
 
 	public <T> T get(Class<T> type) {
@@ -363,14 +383,18 @@ public class App extends Observable
 		return state != ApplicationStopped.class && state != ApplicationStopping.class;
 	}
 
-	public App remove(Object object) {
+	public boolean remove(Object object) {
 		return remove(object.getClass());
 	}
 	
-	public App remove(Class<?> clazz) {
-		cdi.unregister(clazz);
-		// removeListener(clazz); TODO
-		return this;
+	public boolean remove(Class<?> type) {
+		Instance<?> c = cdi.getComponent(type);
+		if (c == null) return false;
+		if (!c.isFutur()) {
+			removeListener(c.getInstance());
+		}
+		cdi.unregister(type);
+		return true;
 	}
 
 	/**
@@ -383,14 +407,6 @@ public class App extends Observable
 				output.add(listener);
 		}
 		return output;
-	}
-
-	/**
-	 * Returns a copy of listeners.
-	 */
-	@Override
-	public List<Listener<?>> getListeners() {
-		return new ArrayList<>(super.getListeners());
 	}
 
 	public int getDebugLevel() {
@@ -444,10 +460,16 @@ public class App extends Observable
 		}
 	}
 	
+	/**
+	 * Return path to the current execution context.
+	 */
 	public static File getExecutionDirectory() {
 		return new File(System.getProperty("user.dir"));
 	}
 	
+	/**
+	 * Return path to the directory containing the current executed jar 
+	 */
 	public static File getBinaryDirectory() {
 		try {
 			Class<?> type = MAIN_CLASS == null ? App.class : MAIN_CLASS;
@@ -458,6 +480,9 @@ public class App extends Observable
 		}
 	}
 	
+	/**
+	 * Return path to the directory containing `java-toolkit-X.X.X.jar` 
+	 */
 	public static File getToolkitDirectory() {
 		try {
 			return new File(App.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
