@@ -33,7 +33,7 @@ public class DecorableObservable extends Observable {
 	}
 
 	@Override
-	protected List<Listener<?>> getListeners() {
+	public List<Listener<?>> getListeners() {
 		if (dispatcher != null)
 			return dispatcher.getListeners();
 		else

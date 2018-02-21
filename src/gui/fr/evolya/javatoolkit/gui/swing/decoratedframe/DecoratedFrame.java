@@ -595,7 +595,8 @@ public class DecoratedFrame extends JFrame {
 	 */
 	@BindOnEvent(ApplicationStarting.class)
 	public void buildModels(App app) {
-		modelMenu = app.add(new MenuViewModel(app));
+		modelMenu = new MenuViewModel(app);
+		app.add(modelMenu);
 		modelMenu.on(ModelItemAdded.class)
 			.executeOnGui((model, item, index) -> getJMenuBar().add((JMenu) item));
 		app.notify(ModelCreated.class, modelMenu, app);

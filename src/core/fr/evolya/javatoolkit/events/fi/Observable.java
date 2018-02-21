@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import fr.evolya.javatoolkit.app.cdi.Instance;
 import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 import fr.evolya.javatoolkit.code.Logs;
+import fr.evolya.javatoolkit.code.annotations.ByCopy;
 import fr.evolya.javatoolkit.code.annotations.DesignPattern;
 import fr.evolya.javatoolkit.code.annotations.GuiTask;
 import fr.evolya.javatoolkit.code.annotations.Pattern;
@@ -23,7 +24,7 @@ import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 @DesignPattern(type = Pattern.Observer)
 public class Observable implements IObservable {
 
-	public static final Logger LOGGER = Logs.getLogger("Events (v2)");
+	public static final Logger LOGGER = Logs.getLogger("Events");
 	
 	/**
 	 * Liste des listeners.
@@ -98,12 +99,15 @@ public class Observable implements IObservable {
 		if (listener.getMethod() == null)
 			throw new NullPointerException("Unable to add " + listener + ": no method");
 		
-		// TODO Synchronized
-		listeners.add(listener);
+		// Append listener
+		synchronized (listeners) {
+			listeners.add(listener);
+		}
 		
 		// L'événement doit être répété
 		if (repeatedEvents.containsKey(listener.getEventType())) {
 			
+			// TODO Synchronized
 			Object[] args = repeatedEvents.get(listener.getEventType());
 			if (args != null) {
 				// Log
@@ -123,7 +127,7 @@ public class Observable implements IObservable {
 	
 	@Override
 	public final void notify(Instance<?> target, Class<?> eventType, Object... args) {
-		notify(eventType, args, new ArrayList<>(listeners).stream()
+		notify(eventType, args, getListeners().stream()
 			.filter((item) -> {
 				// On vérifie que ce soit bien ce type d'event qui soit demandé, et
 				// que le listener accepte les données, et également qu'il s'agit bien
@@ -134,7 +138,7 @@ public class Observable implements IObservable {
 	
 	@Override
 	public final void notify(Class<?> eventType, Object... args) {
-		notify(eventType, args, new ArrayList<>(listeners).stream()
+		notify(eventType, args, getListeners().stream()
 			.filter((item) -> {
 				// On vérifie que ce soit bien ce type d'event qui soit demandé, et
 				// que le listener accepte les données.
@@ -203,7 +207,20 @@ public class Observable implements IObservable {
 	
 	@Override
 	public void removeAllListeners() {
-		listeners.clear();
+		synchronized (listeners) {
+			listeners.clear();
+		}
+	}
+	
+	public void removeListener(Object o) {
+		for (Listener<?> i : getListeners()) {
+			if (i.target.isFutur()) continue;
+			if (i.target.getInstance().equals(o)) {
+				synchronized (listeners) {
+					listeners.remove(i);
+				}
+			}
+		}
 	}
 	
 	public final void repeatForNewListeners(Class<?>... events) {
@@ -213,16 +230,20 @@ public class Observable implements IObservable {
 	}
 	
 	/**
-	 * Returns the list of registred listeners, not a copy.
+	 * Returns a copy of listeners.
 	 */
-	protected List<Listener<?>> getListeners() {
-		return listeners;
+	@ByCopy
+	@Override
+	public List<Listener<?>> getListeners() {
+		synchronized (listeners) {
+			return new ArrayList<>(listeners);
+		}
 	}
 	
 	@ToOverride
 	public boolean isGuiDispatchThread() {
-		if (LOGGER.isLoggable(Logs.DEBUG)) {
-			LOGGER.log(Logs.DEBUG, "Default method Observable::isGuiDispatchThread()"
+		if (LOGGER.isLoggable(Logs.WARNING)) {
+			LOGGER.log(Logs.WARNING, "Default method Observable::isGuiDispatchThread()"
 					+ " need to be overriden to work properly.");
 		}
 		return true;

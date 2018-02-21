@@ -41,7 +41,7 @@ public class SwingApp extends App {
 	}
 	
 	@Override
-	protected void exploreViewComponents(Instance<?> instance) {
+	protected void exploreDeepContainer(Instance<?> instance) {
 		if (!instance.isFutur() && instance.isInstanceOf(Container.class)) {
 			if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
 				LOGGER.log(Logs.DEBUG_FINE, " `-> Deep explore view with specific Swing procedure: " 
@@ -53,7 +53,6 @@ public class SwingApp extends App {
 
 	protected void exploreViewComponents(Container instance, int depth) {
 		if (depth > 0) {
-			Instance<?> i = new Instance<>(instance);
 			add(new Instance<>(instance), null, true, true);
 		}
 		for (Component c : instance.getComponents()) {
