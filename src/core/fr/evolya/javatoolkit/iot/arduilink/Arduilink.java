@@ -252,4 +252,9 @@ public class Arduilink implements
 		return true;
 	}
 
+    @Override
+    public List<Listener<?>> getListeners() {
+        return uno.getListeners();
+    }
+
 }
