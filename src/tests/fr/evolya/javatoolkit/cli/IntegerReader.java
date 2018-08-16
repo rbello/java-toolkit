@@ -1,7 +1,6 @@
 package fr.evolya.javatoolkit.cli;
 
 import fr.evolya.javatoolkit.cli.v2.TextShell;
-import fr.evolya.javatoolkit.cli.v2.TextShell.Reader;
 
 public abstract class IntegerReader implements TextShell.Reader<Integer> {
 	
