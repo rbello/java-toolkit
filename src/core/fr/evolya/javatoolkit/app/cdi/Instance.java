@@ -59,6 +59,11 @@ public class Instance<T> {
 		return type.isAssignableFrom(this.type);
 	}
 	
+	public String getInstanceHashCode() {
+		if (instance == null) return null;
+		return Integer.toHexString(instance.hashCode());
+	}
+	
 	@Override
 	public String toString() {
 		return getClass().getSimpleName() + " " + (type == null ? "?" : type.getName());
@@ -154,5 +159,7 @@ public class Instance<T> {
 		}
 		
 	}
+
+	
 
 }
