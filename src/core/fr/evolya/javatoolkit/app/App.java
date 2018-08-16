@@ -23,6 +23,7 @@ import fr.evolya.javatoolkit.app.event.BeforeApplicationStarted;
 import fr.evolya.javatoolkit.appstandard.bridge.ILocalApplication;
 import fr.evolya.javatoolkit.appstandard.bridge.services.ILocalService;
 import fr.evolya.javatoolkit.code.Logs;
+import fr.evolya.javatoolkit.code.annotations.Bug;
 import fr.evolya.javatoolkit.code.annotations.ConfigDeclare;
 import fr.evolya.javatoolkit.code.annotations.DeepContainer;
 import fr.evolya.javatoolkit.code.annotations.ToOverride;
@@ -272,7 +273,11 @@ public class App extends Observable
 	 * Inject the type `typeToInject` into the component identified by type `targetType`,
 	 * into the attribute `attributeName`.
 	 */
+	@Deprecated
+	@Bug
 	public void inject(Class<?> targetType, String attributeName, Class<?> typeToInject) {
+		// TODO BUG Note : this method will throw an IllegalArgumentException because now this method
+		// has to receive a real object as first argument, not a class
 		cdi.inject(targetType, attributeName, typeToInject);
 	}
 
