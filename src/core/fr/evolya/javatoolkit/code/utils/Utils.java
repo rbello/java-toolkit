@@ -170,6 +170,7 @@ public final class Utils {
 	
 	@SuppressWarnings("unchecked")
 	@Bug
+	@Deprecated
 	public static <E> E[] toArray(List<E> args) {
 		Object[] out = new Object[args.size()];
 		int i = 0;
@@ -268,6 +269,41 @@ public final class Utils {
 		if (object != null && type.isInstance(object)) 
 			return (T) object;
 		return null;
+	}
+
+	public static <T> T last(T[] array) {
+		if (array.length == 0) return null;
+		return array[array.length - 1];
+	}
+	
+	public static <T> T first(T[] array) {
+		if (array.length == 0) return null;
+		return array[0];
+	}
+
+	public static String padOrTrim(String str, int length) {
+		return padOrTrim(str, length, ' ', "..");
+	}
+	
+	public static String padOrTrim(String str, int length, char filler, String limiter) {
+		StringBuilder sb = new StringBuilder();
+		// Trim
+		if (str.length() > length) {
+			sb.append(str.substring(0, length - limiter.length()));
+			sb.append(limiter);
+		}
+		// Fill
+		else {
+			sb.append(str);
+			while (sb.length() < length) sb.append(filler);
+		}
+		return sb.toString();
+	}
+
+	public static String shortDuration(long millis) {
+		if (millis < 1000) return String.format("%d ms", millis);
+		double seconds = millis / 1000;
+		return String.format("%.2f s", seconds);
 	}
 
 }

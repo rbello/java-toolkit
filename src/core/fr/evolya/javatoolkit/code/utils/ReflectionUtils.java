@@ -299,8 +299,19 @@ public final class ReflectionUtils {
 		return null;
 	}
 
-	public static Field getFieldMatching(Class<?> type, String fieldName)
-			throws NoSuchFieldException {
+//	public static Field getFieldMatching(Class<?> type, String fieldName)
+//			throws NoSuchFieldException {
+//		while (type != null) {
+//			try {
+//				return type.getDeclaredField(fieldName);
+//			}
+//			catch (NoSuchFieldException ex) { }
+//			type = type.getSuperclass();
+//		}
+//		throw new NoSuchFieldException(fieldName);
+//	}
+	
+	public static Field getFieldMatching(Class<?> type, String fieldName) {
 		while (type != null) {
 			try {
 				return type.getDeclaredField(fieldName);
@@ -308,7 +319,7 @@ public final class ReflectionUtils {
 			catch (NoSuchFieldException ex) { }
 			type = type.getSuperclass();
 		}
-		throw new NoSuchFieldException(fieldName);
+		return null;
 	}
 
 	public static Method getMethodMatchingIgnoreCase(Class<?> type, String methodName) {
