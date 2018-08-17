@@ -176,7 +176,8 @@ public class Assert {
 				}
 				
 				// Print exception stack trace
-				System.err.println("EXCEPTION into " + type.getSimpleName() + "::" + m.getName() + "()");
+				System.err.println("UNEXPECTED EXCEPTION INTO TESTCASE " + type.getSimpleName() + "::" + m.getName() + 
+						"() --> " + top.getClass().getSimpleName() + " " + top.getMessage());
 				if (printExceptionsStackTraces) {
 					top.printStackTrace();
 				}
@@ -266,18 +267,16 @@ public class Assert {
 	}
 
 	public static void notNull(Object obj) {
-		assertions++;
-		if (obj == null) throw new AssertException("NotNull", null, obj, null);
+		notNull(obj, null);
 	}
 	
 	public static void notNull(Object obj, String msg) {
 		assertions++;
-		if (obj == null) throw new AssertException("NotNull", msg, obj, null);
+		if (obj == null) throw new AssertException("NotNull", msg, obj, ">>NOT NULL");
 	}
 	
 	public static void isNull(Object obj) {
-		assertions++;
-		if (obj != null) throw new AssertException("IsNull", null, obj, null);
+		isNull(obj, null);
 	}
 	
 	public static void isNull(Object obj, String msg) {
@@ -286,8 +285,7 @@ public class Assert {
 	}
 
 	public static void equals(int a, int b) {
-		assertions++;
-		if (a != b) throw new AssertException("Equals(int,int)", null, a, b);
+		equals(a, b, null);
 	}
 	
 	public static void equals(int a, int b, String msg) {
@@ -296,8 +294,7 @@ public class Assert {
 	}
 	
 	public static void isFalse(boolean obj) {
-		assertions++;
-		if (obj != false) throw new AssertException("isFalse(bool)", null, obj, false);
+		isFalse(obj, null);
 	}
 
 	public static void isFalse(boolean obj, String msg) {
@@ -306,8 +303,7 @@ public class Assert {
 	}
 	
 	public static void isTrue(boolean obj) {
-		assertions++;
-		if (obj != true) throw new AssertException("isTrue(bool)", null, obj, true);
+		isTrue(obj, null);
 	}
 
 	public static void isTrue(boolean obj, String msg) {
@@ -325,6 +321,18 @@ public class Assert {
 		if (expected == null) throw new AssertException("isInstanceOf", msg, ">>expected is NULL", ">>NOT NULL");
 		if (!ReflectionUtils.isInstanceOf(expected, given.getClass())) 
 			throw new AssertException("isInstanceOf", msg, given.getClass(), expected);
+	}
+	
+	public static <T> void contains(List<T> haystack, T needle) {
+		contains(haystack, needle, null);
+	}
+	
+	public static <T> void contains(List<T> haystack, T needle, String msg) {
+		assertions++;
+		if (haystack == null) throw new AssertException("contains(List)", msg, ">>haystack is NULL", ">>NOT NULL");
+		if (needle == null) throw new AssertException("contains(List)", msg, ">>needle is NULL", ">>NOT NULL");
+		if (!haystack.contains(needle))
+			throw new AssertException("contains(List)", msg, ">>list with " + haystack.size() + " element(s)", needle);
 	}
 	
 	static class AssertException extends RuntimeException {
