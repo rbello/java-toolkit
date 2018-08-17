@@ -82,10 +82,10 @@ public class Assert {
 		System.err.println(" Started:       " + sdf.format(new Date()));
 		System.err.println(" ───────────────────────────────────────────────\n");
 		
-		AsciiTable table = new AsciiTable("Test", 33, "Duration", 12, "Results", 90);
+		AsciiTable table = new AsciiTable("Test", 40, "Duration", 12, "Results", 90);
 		
 		StringBuilder summary = new StringBuilder();
-		summary.append(table.header() + StringUtils.NL_CHAR);
+		summary.append(table.header());
 		
 		FuturInstance<Object> instance = new FuturInstance<Object>();
 		FuturInstance<Throwable> error = new FuturInstance<Throwable>();
