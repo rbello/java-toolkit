@@ -266,7 +266,7 @@ public class App extends Observable
 	}
 
 	public Map<Class<?>, Instance<?>> getComponents() {
-		return cdi.getComponents();
+		return cdi.getComponentsMap();
 	}
 	
 	/**
