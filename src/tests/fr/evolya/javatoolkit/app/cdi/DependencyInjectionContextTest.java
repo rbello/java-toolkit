@@ -1,5 +1,7 @@
 package fr.evolya.javatoolkit.app.cdi;
 
+import java.util.NoSuchElementException;
+
 import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.annotations.Inject;
@@ -15,7 +17,7 @@ public class DependencyInjectionContextTest {
 	private DependencyInjectionContext cdi;
 	
 	public static void main(String[] args) {
-		Assert.runTests();
+		Assert.runTests(true);
 	}
 	
 	@BeforeTests
@@ -25,19 +27,19 @@ public class DependencyInjectionContextTest {
 	}
 	
 	@TestMethod(1)
-	public void AvantTout() {
+	public void BeforeAll() {
 		Assert.equals(cdi.getComponents().size(), 0);
 	}
 	
 	@TestMethod(2)
-	public void VerificationsDeBase() {
+	public void BasicChecks() {
 		Assert.isFalse(cdi.isComponentRegistered(null));
 		Assert.isFalse(cdi.isComponentRegistered(Assert.class));
 	}
 	
 	@TestMethod(3)
-	@ExpectedException(NullPointerException.class)
-	public void MauvaiseConstruction() {
+	@ExpectedException(NoSuchElementException.class)
+	public void BadComponentConstruction() {
 		cdi.register(B.class);
 		// B should be registred
 		Assert.equals(cdi.getComponents().size(), 1);
@@ -49,7 +51,7 @@ public class DependencyInjectionContextTest {
 	}
 	
 	@TestMethod(4)
-	public void RegistredNevertheless() {
+	public void ButRegistredNevertheless() {
 		// Despite B wasn't correctly built, it was registred
 		Assert.equals(cdi.getComponents().size(), 1);
 		Assert.isTrue(cdi.isComponentRegistered(B.class));
@@ -99,14 +101,14 @@ public class DependencyInjectionContextTest {
 	
 	@TestMethod(9)
 	public void RealComponentRegistredForParentClass() {
-		cdi.register(A.class, new D());
-		// D should be registred as A
+		cdi.register(H.class, new D());
+		// D should be registred as H
 		Assert.equals(cdi.getComponents().size(), 3);
 		Assert.isFalse(cdi.isComponentRegistered(D.class));
-		Assert.isTrue(cdi.isComponentRegistered(A.class));
+		Assert.isTrue(cdi.isComponentRegistered(H.class));
 		// And already created
-		Assert.isFalse(cdi.getComponent(A.class).isFutur());
-		D d = (D) cdi.getInstance(A.class);
+		Assert.isFalse(cdi.getComponent(H.class).isFutur());
+		D d = (D) cdi.getInstance(H.class);
 		Assert.notNull(d);
 		// Injections are done on the fly because D is not futur
 		Assert.notNull(d.c);
@@ -147,7 +149,7 @@ public class DependencyInjectionContextTest {
 	}
 	
 	@TestMethod(14)
-	@ExpectedException(IllegalArgumentException.class)
+	@ExpectedException(NoSuchElementException.class)
 	public void InjectOnTheFlyWithFailure() {
 		A a = new A();
 		Assert.isNull(a.d);
@@ -158,12 +160,41 @@ public class DependencyInjectionContextTest {
 	public void InjectOnTheFly() {
 		A a = new A();
 		Assert.isNull(a.d);
-		cdi.inject(a, "d", A.class);
+		cdi.inject(a, "d", H.class);
 		Assert.notNull(a.d);
+	}
+
+	@TestMethod(16)
+	public void CrossDependency() {
+		cdi.register(I.class);
+		cdi.register(J.class);
+		// Not supposed to lock or throw any exception
+		cdi.build();
+	}
+
+	@TestMethod(17)
+	public void LateInjection() {
+		// Let's change the default behavior
+		cdi.setMissingComponentInjectionBehavior(DependencyInjectionContext.BEHAVIOR_WAIT_FOR_IT);
+		// And check if only one injection wasn't executed
+		Assert.equals(cdi.getUnexecutedInjections().size(), 1);
+		Assert.contains(cdi.getUnexecutedInjections(), "(A) B::a");
+		// Now register the A component
+		cdi.register(A.class, new A());
+		// Check injections are well dispatched
+		Assert.notNull(cdi.getInstance(A.class).d);
+		Assert.notNull(cdi.getInstance(B.class).a);
+	}
+
+	@TestMethod(18)
+	@ExpectedException(StackOverflowError.class)
+	public void CircularDependency() {
+		cdi.register(K.class);
+		cdi.build();
 	}
 	
 	public static class A {
-		@Inject public D d;
+		@Inject(H.class) public D d;
 	}
 	
 	public static class B {
@@ -174,21 +205,36 @@ public class DependencyInjectionContextTest {
 		@Inject public B b;
 	}
 	
-	public static class D extends A {
+	public static class D extends H {
 		@Inject public C c;
 	}
 	
 	public static class E {
-		@Inject(A.class) protected D d;
+		@Inject(H.class) protected D d;
 	}
 	
 	public static class F {
-		// B is no a subtype of A
-		@Inject(A.class) protected B b;
+		// B is no a subtype of H
+		@Inject(H.class) protected B b;
 	}
 	
 	public static class G {
-		@Inject private B b;
+		@Inject protected B b;
 	}
 	
+	public static class H {
+		@Inject private B b;
+	}
+
+	public static class I {
+		@Inject private J j;
+	}
+	
+	public static class J {
+		@Inject private I i;
+	}
+	
+	public static class K {
+		@Inject public K k;
+	}
 }
