@@ -27,6 +27,7 @@ import fr.evolya.javatoolkit.code.annotations.Bug;
 import fr.evolya.javatoolkit.code.annotations.ConfigDeclare;
 import fr.evolya.javatoolkit.code.annotations.DeepContainer;
 import fr.evolya.javatoolkit.code.annotations.ToOverride;
+import fr.evolya.javatoolkit.code.utils.Utils;
 import fr.evolya.javatoolkit.events.fi.Listener;
 import fr.evolya.javatoolkit.events.fi.Observable;
 
@@ -127,11 +128,7 @@ public class App extends Observable
 		if (Thread.currentThread().getId() != 1) {
 			throw new RuntimeException("ERROR: APP MUST BE CREATED INTO THE MAIN THREAD");
 		}
-		StackTraceElement first = Arrays
-				.asList(Thread.currentThread().getStackTrace())
-				.stream()
-				.reduce((a, b) -> b) // Get last
-				.get();
+		StackTraceElement first = Utils.first(Thread.currentThread().getStackTrace());
 		try {
 			 MAIN_CLASS  = Class.forName(first.getClassName());
 		}
@@ -286,7 +283,7 @@ public class App extends Observable
 	 * 	- Search for @Inject annotations
 	 *  - Search for @BindOnEvent or @GuiTask annotations
 	 *  
-	 *  This method is useful to initialize an object with dependecy
+	 *  This method is useful to initialize an object with dependency
 	 *  injection and event binding without creating a component.
 	 *  
 	 *  Use this method with caution : invoking it during another
@@ -431,9 +428,9 @@ public class App extends Observable
 		// Arguments handling
 		if (args != null && args.length > 0) {
 			for (String arg : args) {
-				if (!arg.startsWith("debug=")) continue;
+				if (!arg.startsWith("--debug=")) continue;
 				try {
-					debugMode = new Integer(arg.substring(6));
+					debugMode = new Integer(arg.substring(8));
 					break;
 				}
 				catch (Throwable t) {
