@@ -252,7 +252,7 @@ public class DependencyInjectionContext {
 	 * @throws UnsupportedOperationException If the type of injected attribute is invalid
 	 * @since 1.0
 	 */
-	private void searchInjections(final Instance<?> instance) {
+	public void searchInjections(final Instance<?> instance) {
 
 		if (instance == null) {
 			throw new NullPointerException();
@@ -530,6 +530,9 @@ public class DependencyInjectionContext {
 
 			// Arguments mismatch
 			catch (IllegalArgumentException e) {
+				//e.getMessage()
+				// TODO Verifier qu'il s'agit bien de l'erreur du framework reflection
+				e.printStackTrace();
 				state = InjectionState.FAILURE;
 				throw new IllegalArgumentException(String.format(
 					"Unable to inject component '%s' into %s::%s because types mismatche\nExpected: %s\nGiven:    %s",

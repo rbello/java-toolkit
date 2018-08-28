@@ -1,6 +1,7 @@
 package fr.evolya.javatoolkit.app.cdi;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.annotations.GuiTask;
@@ -18,7 +19,11 @@ public class Instance<T> {
 			throw new NullPointerException();
 		}
 		if (instance instanceof Instance) {
-			throw new IllegalArgumentException("Circular instance");
+			throw new IllegalArgumentException("Circular instance of type "
+				+ ((Instance<?>)instance).getInstanceClass().getSimpleName());
+		}
+		if (instance instanceof Class) {
+			throw new IllegalArgumentException("Create a futur instance instead");
 		}
 		this.instance = instance;
 		this.type = (Class<T>) instance.getClass();
@@ -80,6 +85,9 @@ public class Instance<T> {
 		
 		public FuturInstance(Class<T> type) {
 			super();
+			if (Modifier.isAbstract(type.getModifiers())) {
+				throw new IllegalArgumentException("Type '" + type.getName() + "' is abstract and cannot be created");
+			}
 			this.type = type;
 			try {
 				Constructor<?> constructor = type.getConstructor(new Class<?>[] { });
