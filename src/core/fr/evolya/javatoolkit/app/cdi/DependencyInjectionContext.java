@@ -227,18 +227,13 @@ public class DependencyInjectionContext {
 
 	/**
 	 * Execute manually the research of injections on an object without registering
-	 * into the CDI container. This method is not recommended because links between
-	 * object is weak.
+	 * into the CDI container.
 	 *
 	 * @param object The target
 	 * @throws NullPointerException If the given instance is null, or hasn't any class
 	 * @since 1.3
 	 */
-	@Deprecated
 	public <T> void searchInjections(final T object) {
-		if (object == null) {
-			throw new NullPointerException();
-		}
 		searchInjections(new Instance<T>(object));
 	}
 
