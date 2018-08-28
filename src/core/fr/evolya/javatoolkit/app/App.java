@@ -223,6 +223,14 @@ public class App extends Observable
 		// Search for events binding annotations
 		if (bindEvents) addListener(instance);
 		
+		// TODO
+		// Auto-build
+		//if (instance.isFutur() && (state == ApplicationStarted.class || state == ApplicationReady.class)) {
+		//	System.out.println("Create " + instance);
+		//	//instance.getInstance();
+		//	cdi.build();
+		//}
+		
 	}
 
 	protected void searchConfigDeclarations(Instance<?> instance) {
@@ -499,7 +507,12 @@ public class App extends Observable
 	
 	@Override
 	public String toString() {
-		return get(AppConfiguration.class).toString("%s v%s", "App.Name", "App.Version");
+		try {
+			return get(AppConfiguration.class).toString("%s v%s", "App.Name", "App.Version");
+		}
+		catch (Exception ex) {
+			return "App";
+		}
 	}
 	
 }
