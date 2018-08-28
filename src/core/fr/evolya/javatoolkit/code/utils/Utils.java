@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
 
+import fr.evolya.javatoolkit.code.annotations.AsynchOperation;
 import fr.evolya.javatoolkit.code.annotations.Bug;
 
 /**
@@ -304,6 +305,18 @@ public final class Utils {
 		if (millis < 1000) return String.format("%d ms", millis);
 		double seconds = millis / 1000;
 		return String.format("%.2f s", seconds);
+	}
+
+	@AsynchOperation
+	public static void runLater(int ms, Runnable task) {
+		new Thread(() -> {
+			try {
+				Thread.sleep(ms);
+				task.run();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}).start();
 	}
 
 }
