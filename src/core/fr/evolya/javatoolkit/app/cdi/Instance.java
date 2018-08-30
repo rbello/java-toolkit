@@ -85,7 +85,7 @@ public class Instance<T> {
 		
 		public FuturInstance(Class<T> type) {
 			super();
-			if (Modifier.isAbstract(type.getModifiers())) {
+			if (type != null && Modifier.isAbstract(type.getModifiers())) {
 				throw new IllegalArgumentException("Type '" + type.getName() + "' is abstract and cannot be created");
 			}
 			this.type = type;
