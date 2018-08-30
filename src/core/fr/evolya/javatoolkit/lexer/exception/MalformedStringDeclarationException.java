@@ -1,16 +1,11 @@
 package fr.evolya.javatoolkit.lexer.exception;
 
-
-@SuppressWarnings("serial")
 public class MalformedStringDeclarationException extends ParserException {
 
-    public MalformedStringDeclarationException(int line, int column) {
-        super(line, column);
-    }
+	private static final long serialVersionUID = -884527045370660193L;
 
-    @Override
-    public String getName() {
-        return "string declaration malformed";
+	public MalformedStringDeclarationException(int line, int column) {
+        super("String declaration malformed", line, column);
     }
 
 }

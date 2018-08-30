@@ -1,12 +1,11 @@
 package fr.evolya.javatoolkit.lexer.exception;
 
-
-@SuppressWarnings("serial")
 public class ReachedEndOfLineWhileParsingException extends ParserException {
 
-    @Override
-    public String getName() {
-        return "reached end of line while parsing";
-    }
+	private static final long serialVersionUID = -5167262926505957465L;
 
+	public ReachedEndOfLineWhileParsingException() {
+		super("reached end of line while parsing");
+	}
+	
 }

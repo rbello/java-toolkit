@@ -1,16 +1,15 @@
 package fr.evolya.javatoolkit.lexer.exception;
 
-
-@SuppressWarnings("serial")
 public class ExpressionDeclarationMalformedException extends ParserException {
 
-	public ExpressionDeclarationMalformedException(int line, int column) {
-        super(line, column);
-    }
+	private static final long serialVersionUID = 2050637521283722968L;
 
-    @Override
-    public String getName() {
-        return "expression declaration malformed";
+	public ExpressionDeclarationMalformedException(String msg, int line, int column) {
+        super(msg, line, column);
+    }
+	
+	public ExpressionDeclarationMalformedException(int line, int column) {
+        super("Expression declaration malformed", line, column);
     }
 
 }

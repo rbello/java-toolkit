@@ -118,6 +118,10 @@ public interface Structure {
             int size = struct.size();
             return size == 0 ? null : struct.get(size-1);
         }
+
+		public int size() {
+			return struct.size();
+		}
         
     }
     

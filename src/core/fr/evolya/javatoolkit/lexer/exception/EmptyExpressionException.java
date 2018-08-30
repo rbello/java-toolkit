@@ -1,16 +1,11 @@
 package fr.evolya.javatoolkit.lexer.exception;
 
-
-@SuppressWarnings("serial")
 public class EmptyExpressionException extends ExpressionDeclarationMalformedException {
     
+	private static final long serialVersionUID = 6753660182803366799L;
+
 	public EmptyExpressionException() {
-        super(0, 0);
+        super("empty expression", 0, 0);
     }
     
-    @Override
-    public String getName() {
-        return "empty expression";
-    }
-
 }

@@ -1,16 +1,11 @@
 package fr.evolya.javatoolkit.lexer.exception;
 
-
-@SuppressWarnings("serial")
 public class CannotFindSymbolException extends ParserException {
 	
-	public CannotFindSymbolException(String symbol) {
-        super("symbol "+symbol);
-    }
+	private static final long serialVersionUID = -7692710922520092454L;
 
-    @Override
-    public String getName() {
-        return "cannot find symbol";
+	public CannotFindSymbolException(String symbol) {
+        super("cannot find symbol "+symbol);
     }
     
 }

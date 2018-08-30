@@ -1,16 +1,11 @@
 package fr.evolya.javatoolkit.lexer.exception;
 
-
-@SuppressWarnings("serial")
 public class IllegalEscapeCharacterException extends ParserException {
 
-    public IllegalEscapeCharacterException(int line, int column) {
-        super(line, column);
-    }
+	private static final long serialVersionUID = -6582222936656116439L;
 
-    @Override
-    public String getName() {
-        return "illegal escape character";
+	public IllegalEscapeCharacterException(int line, int column) {
+        super("illegal escape character", line, column);
     }
 
 }
