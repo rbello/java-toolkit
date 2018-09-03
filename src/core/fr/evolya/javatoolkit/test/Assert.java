@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
@@ -284,13 +285,22 @@ public class Assert {
 		if (obj != null) throw new AssertException("IsNull", msg, obj, null);
 	}
 
-	public static void equals(int a, int b) {
-		equals(a, b, null);
+	public static void equals(int given, int expected) {
+		equals(given, expected, null);
 	}
 	
-	public static void equals(int a, int b, String msg) {
+	public static void equals(int given, int expected, String msg) {
 		assertions++;
-		if (a != b) throw new AssertException("Equals(int,int)", msg, a, b);
+		if (given != expected) throw new AssertException("Equals(int,int)", msg, given, expected);
+	}
+	
+	public static void equals(String given, String expected) {
+		equals(given, expected, null);
+	}
+	
+	public static void equals(String given, String expected, String msg) {
+		assertions++;
+		if (!Objects.equals(given, expected)) throw new AssertException("Equals(String,String)", msg, given, expected);
 	}
 	
 	public static void isFalse(boolean obj) {
