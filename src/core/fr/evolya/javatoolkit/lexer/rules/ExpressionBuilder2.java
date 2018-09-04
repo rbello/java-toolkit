@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import fr.evolya.javatoolkit.lexer.rules.Element.Litteral;
+import fr.evolya.javatoolkit.lexer.rules.ExpressionBuilderException.UnexpectedEndOfInput;
 import fr.evolya.javatoolkit.lexer.rules.Rule.ExpressionRule;
 import fr.evolya.javatoolkit.lexer.rules.Rule.ParserRule;
 import fr.evolya.javatoolkit.lexer.rules.Rule.TokenRule;
@@ -38,8 +39,8 @@ public class ExpressionBuilder2 {
         for (int i = 0, l = str.length(); i < l; i++) {
             char c = str.charAt(i);
             
+            // End of expression
             if (buildingExpression != null) {
-            	// End of expression
             	if (buildingExpression.matches(c, buffer)) {
             		buildingExpression.finish();
 //            		System.out.println(">>> PUSH " + buffer.toString() + " --> INTO " + buildingExpression.getClass().getSimpleName());
@@ -54,6 +55,7 @@ public class ExpressionBuilder2 {
             	}
             }
             
+            // 
             for (Rule rule : rules) {
             	
         		// Sub-expressions
@@ -85,8 +87,8 @@ public class ExpressionBuilder2 {
         }
 		
 		if (buildingExpression != null) {
-			// TODO Exception unexpected end
-			throw new RuntimeException("Unexpected end of expression");
+			throw new UnexpectedEndOfInput("Expression '" + buildingExpression.getClass().getSimpleName()
+					+ "' is not closed properly.");
 		}
 		
 		// TODO Code dupliqué

@@ -6,6 +6,7 @@ import fr.evolya.javatoolkit.lexer.rules.Element.Litteral;
 import fr.evolya.javatoolkit.lexer.rules.Element.Whitespace;
 import fr.evolya.javatoolkit.lexer.rules.Expression;
 import fr.evolya.javatoolkit.lexer.rules.ExpressionBuilder2;
+import fr.evolya.javatoolkit.lexer.rules.ExpressionBuilderException.UnexpectedEndOfInput;
 import fr.evolya.javatoolkit.lexer.rules.ExpressionRules.QuotationMarks;
 import fr.evolya.javatoolkit.lexer.rules.ExpressionRules.RoundBrackets;
 import fr.evolya.javatoolkit.lexer.rules.ParserRules.NumericParser;
@@ -16,6 +17,7 @@ import fr.evolya.javatoolkit.lexer.rules.TokenRules.MultiplyOperator;
 import fr.evolya.javatoolkit.lexer.rules.TokenRules.PlusOperator;
 import fr.evolya.javatoolkit.lexer.rules.TokenRules.WhitespaceSeparator;
 import fr.evolya.javatoolkit.test.Assert;
+import fr.evolya.javatoolkit.test.Assert.ExpectedException;
 import fr.evolya.javatoolkit.test.Assert.TestClass;
 import fr.evolya.javatoolkit.test.Assert.TestMethod;
 
@@ -26,6 +28,7 @@ public class TestV2 {
 		Assert.runTests(true);
 	}
 	
+
 	@TestMethod
 	public void TestEmptyExpression() throws Throwable {
 		// Create builder
@@ -123,6 +126,25 @@ public class TestV2 {
 		Assert.equals(e.getCount(Element.Litteral.class), 3);
 		Assert.equals(e.getCount(Element.Varchar.class), 1);
 		Assert.equals(e.toString(), "([String][ ][str][ ][=][ ][\"Hello (world + \\\"1\\\")\"][;])");
+	}
+	
+	@TestMethod
+	@ExpectedException(UnexpectedEndOfInput.class)
+	public void TestUnexpectedEndOfInput() throws Throwable {
+		// Create builder
+		ExpressionBuilder2 ex = new CodeExpressionBuilder();
+		// Parse expression
+		ex.parse("(");
+	}
+	
+	@TestMethod
+//	@ExpectedException(UnexpectedEndOfInput.class)
+	public void xxx() throws Throwable {
+		// Create builder
+		ExpressionBuilder2 ex = new CodeExpressionBuilder();
+		// Parse expression
+		Expression e = ex.parse(")");
+		System.out.println(e);
 	}
 	
 }
