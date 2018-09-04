@@ -1,11 +1,11 @@
 package fr.evolya.javatoolkit.lexer.v3;
 
-public class Operator {
+import fr.evolya.javatoolkit.lexer.v3.IExpressionRule.AbstractStringComparatorRule;
 
-	public Operator(char c, String name) {
-	}
-	
-	public Operator(CharSequence c, String name) {
+public class Operator extends AbstractStringComparatorRule {
+
+	public Operator(String token, String name) {
+		super(name, token);
 	}
 
 }

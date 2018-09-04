@@ -1,9 +1,11 @@
 package fr.evolya.javatoolkit.lexer.v3;
 
-public class Keyword {
+import fr.evolya.javatoolkit.lexer.v3.IExpressionRule.AbstractStringComparatorRule;
+
+public class Keyword extends AbstractStringComparatorRule {
 
 	public Keyword(String token, String name) {
-		// TODO Auto-generated constructor stub
+		super(name, token);
 	}
 
 }
