@@ -1,9 +1,13 @@
 package fr.evolya.javatoolkit.lexer.v3;
 
+import fr.evolya.javatoolkit.lexer.v3.IElement.Element;
+
 public interface IExpressionRule {
 
 	public String getTokenName();
-	public boolean accept(StringBuffer buffer);
+	public boolean accept(String buffer);
+	public IElement<?> from(String buffer);
+	public boolean is(String buffer);
 
 	public static abstract class AbstractExpressionRule implements IExpressionRule {
 
@@ -35,16 +39,29 @@ public interface IExpressionRule {
 		}
 
 		@Override
-		public boolean accept(StringBuffer buffer) {
+		public boolean accept(String buffer) {
 //			System.out.println("Compare " + tokenValue + " WITH " + buffer);
 			
 			if (buffer.length() > tokenValue.length()) return false;
 			
-			if (tokenValue.startsWith(buffer.toString())) return true;
+			if (tokenValue.startsWith(buffer)) return true;
 			
 			return false; // TODO
 		}
 		
+		@Override
+		public IElement<String> from(String buffer) {
+			return new Element<String>(getTokenName(), buffer);
+		}
+		
+		@Override
+		public boolean is(String buffer) {
+			return this.tokenValue.equals(buffer);
+		}
+		
 	}
+
+	
+
 	
 }
