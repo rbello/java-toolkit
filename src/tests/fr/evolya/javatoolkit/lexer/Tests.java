@@ -24,99 +24,71 @@ private ExpressionBuilder3 builder;
 	@BeforeTests
 	public void init() {
 		// Create builder
-		builder = ExpressionBuilder3.create();
-		
-		builder.addOperator("+", "plus");
-		builder.addOperator("-", "minus");
-		builder.addOperator("/", "div");
-		builder.addOperator("*", "mul");
-		
-		builder.addOperator(".", "object");
-		builder.addOperator("->", "pointer");
-		builder.addOperator("::", "nekudotayim");
-		
-		builder.addOperator("+=", "assign_plus");
-		builder.addOperator("-=", "assign_minus");
-		builder.addOperator("/=", "assign_div");
-		builder.addOperator("*=", "assign_mul");
-		
-		builder.addOperator("=", "equal");
-		
-		builder.addKeywords("public", "protected", "private");
-		builder.addToken("$", "selector");
-		
-		builder.<Number>addPattern("[+-]?((\\d+\\.?\\d*)|(\\.\\d+))", "number", (value) -> {
-			if (value.contains(".")) return Double.parseDouble(value);
-			return Integer.parseInt(value);
-		});
-		
-		builder.addEncapsedSequence("/*", "*/", "comment");
-		builder.addEncapsedSequence("\"", "\"", "string", "\\");
-		builder.addEncapsedExpression("(", ")");
+		builder = ExpressionBuilder3.createDefault();
 	}
 	
-//
-//	@TestMethod
-//	public void TestEmptyExpression() throws Throwable {
-//		Expression e = builder.parse("");
-//		Assert.equals(e.getCount(), 0);
-//		Assert.equals(e.toString(), "()");
-//	}
-//	
-//	@TestMethod
-//	public void TestSingleLitteral() throws Throwable {
-//		Expression e = builder.parse("a");
-//		Assert.equals(e.toString(), "([a])");
-//		Assert.equals(e.getCount(), 1);
-//	}
-//	
-//	@TestMethod
-//	public void TestSingleNumeric() throws Throwable {
-//		Expression e = builder.parse("5");
-//		Assert.equals(e.toString(), "([5])");
-//		Assert.equals(e.getCount(), 1);
-//		Assert.equals(e.getCount("T_NUMBER"), 1);
-//	}
-//
-//	@TestMethod
-//	public void TestSimpleExpression() throws Throwable {
-//		Expression e = builder.parse("hello world !");
-//		Assert.equals(e.toString(), "([hello][ ][world][ ][!])");
-//		Assert.equals(e.getCount(), 5);
-//		Assert.equals(e.getCount("T_WHITESPACE"), 2);
-//		Assert.equals(e.getCount("T_LITTERAL"), 3);
-//	}
-//	
-//	@TestMethod
-//	public void TestDoubleWhitespaces() throws Throwable {
-//		Expression e = builder.parse(" a   b ");
-//		Assert.equals(e.toString(), "([ ][a][ ][ ][ ][b][ ])");
-//		Assert.equals(e.getCount(), 7);
-//		Assert.equals(e.getCount("T_WHITESPACE"), 5);
-//		Assert.equals(e.getCount("T_LITTERAL"), 2);
-//	}
-//	
-//	@TestMethod
-//	public void TestNumericExpression() throws Throwable {
-//		Expression e = builder.parse("1+2.1 =3");
-//		e.removeWhitespaces();
-//		Assert.equals(e.toString(), "([1][+][2.1][=][3])");
-//		Assert.equals(e.getCount(), 5);
-//		Assert.equals(e.getCount("T_NUMBER"), 3);
-//		Assert.equals(e.getCount("T_OPERATOR_PLUS"), 1);
-//		Assert.equals(e.getCount("T_OPERATOR_EQUAL"), 1);
-//	}
-//	
 	@TestMethod
-	public void TestNestedExpression() throws Throwable {
-		Expression e = builder.parse("ax=3-(1+2)");
-		Assert.equals(e.toString(), "([x][=][3][-]([1][+][2]))");
-		Assert.equals(e.getCount(), 5); // without nested expression
-		Assert.equals(e.getCount(true), 7); // with it
-		Assert.equals(e.getCount("T_LITTERAL"), 1);
-		Assert.equals(e.getCount("T_NUMBER"), 3);
-		Assert.equals(e.getCount("T_OPERATOR"), 3);
+	public void TestEmptyExpression() throws Throwable {
+		Expression e = builder.parse("");
+		Assert.equals(e.getCount(), 0);
+		Assert.equals(e.toString(), "()");
 	}
+	
+	@TestMethod
+	public void TestSingleLitteral() throws Throwable {
+		Expression e = builder.parse("a");
+		Assert.equals(e.toString(), "([a])");
+		Assert.equals(e.getCount(), 1);
+	}
+	
+	@TestMethod
+	public void TestSingleNumeric() throws Throwable {
+		Expression e = builder.parse("5");
+		Assert.equals(e.toString(), "([5])");
+		Assert.equals(e.getCount(), 1);
+		Assert.equals(e.getCount("T_NUMBER"), 1);
+	}
+
+	@TestMethod
+	public void TestSimpleExpression() throws Throwable {
+		Expression e = builder.parse("hello world !");
+		Assert.equals(e.toString(), "([hello][ ][world][ ][!])");
+		Assert.equals(e.getCount(), 5);
+		Assert.equals(e.getCount("T_WHITESPACE"), 2);
+		Assert.equals(e.getCount("T_LITTERAL"), 3);
+	}
+	
+	@TestMethod
+	public void TestDoubleWhitespaces() throws Throwable {
+		Expression e = builder.parse(" a   b ");
+		Assert.equals(e.toString(), "([ ][a][ ][ ][ ][b][ ])");
+		Assert.equals(e.getCount(), 7);
+		Assert.equals(e.getCount("T_WHITESPACE"), 5);
+		Assert.equals(e.getCount("T_LITTERAL"), 2);
+	}
+	
+	@TestMethod
+	public void TestNumericExpression() throws Throwable {
+		Expression e = builder.parse("1+2.1 =3");
+		e.removeWhitespaces();
+		System.out.println(e.toString(true));
+		Assert.equals(e.toString(), "([1][+][2.1][=][3])");
+		Assert.equals(e.getCount(), 5);
+		Assert.equals(e.getCount("T_NUMBER"), 3);
+		Assert.equals(e.getCount("T_OPERATOR_PLUS"), 1);
+		Assert.equals(e.getCount("T_OPERATOR_EQUAL"), 1);
+	}
+	
+//	@TestMethod
+//	public void TestNestedExpression() throws Throwable {
+//		Expression e = builder.parse("ax=3-(1+2)");
+//		Assert.equals(e.toString(), "([ax][=][3][-]([1][+][2]))");
+//		Assert.equals(e.getCount(), 5); // without nested expression
+//		Assert.equals(e.getCount(true), 7); // with it
+//		Assert.equals(e.getCount("T_LITTERAL"), 1);
+//		Assert.equals(e.getCount("T_NUMBER"), 3);
+//		Assert.equals(e.getCount("T_OPERATOR"), 3);
+//	}
 
 //	@TestMethod
 //	public void TestCloseNestedExpression() throws Throwable {
