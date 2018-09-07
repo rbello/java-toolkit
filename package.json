@@ -1,0 +1,19 @@
+{
+  "name": "java-tookit",
+  "description": "",
+  "version": "4.1.1",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rbello/java-toolkit.git"
+  },
+  "keywords": [],
+  "author": "R. BELLO",
+  "license": "FREEWARE",
+  "bugs": {
+    "url": "https://github.com/rbello/java-toolkit/issues"
+  },
+  "homepage": "https://github.com/rbello/java-toolkit"
+}
