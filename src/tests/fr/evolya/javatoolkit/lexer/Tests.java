@@ -1,7 +1,6 @@
 package fr.evolya.javatoolkit.lexer;
 
 import fr.evolya.javatoolkit.code.Logs;
-import fr.evolya.javatoolkit.lexer.rules.ExpressionBuilderException.UnexpectedEndOfInput;
 import fr.evolya.javatoolkit.test.Assert;
 import fr.evolya.javatoolkit.test.Assert.BeforeTests;
 import fr.evolya.javatoolkit.test.Assert.ExpectedException;
@@ -111,15 +110,15 @@ public class Tests {
 		Assert.equals(e.toString(), "([String][ ][str][ ][=][ ][Hello (world + \\\"1\\\")][;])");
 		Assert.equals(e.getCount(true), 8);
 		Assert.equals(e.getCount("T_LITTERAL"), 3);
-		Assert.equals(e.getCount("T_STRING"), 1);
+		Assert.equals(e.getCount("S_STRING"), 1);
 	}
 	
-	@TestMethod
-	@ExpectedException(UnexpectedEndOfInput.class)
-	public void xxx() throws Throwable {
-		// Parse expression
-		Expression e = builder.parse(")");
-		System.out.println(e);
-	}
+//	@TestMethod
+//	@ExpectedException(UnexpectedEndOfInput.class)
+//	public void xxx() throws Throwable {
+//		// Parse expression
+//		Expression e = builder.parse(")");
+//		System.out.println(e);
+//	}
 	
 }

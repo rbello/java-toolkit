@@ -1,6 +1,7 @@
 package fr.evolya.javatoolkit.lexer;
 
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import fr.evolya.javatoolkit.lexer.IElement.Element;
 
@@ -69,7 +70,7 @@ public interface IExpressionRule {
 	 */
 	public static abstract class PatternComparatorRule<T> extends AbstractExpressionRule {
 
-		protected java.util.regex.Pattern regex;
+		protected Pattern regex;
 		
 		public PatternComparatorRule(String regex, String name) {
 			super(name);

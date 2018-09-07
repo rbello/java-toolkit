@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
+import fr.evolya.javatoolkit.cli.v2.SystemInputOutputStream;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.lexer.IElement.Element;
 import fr.evolya.javatoolkit.lexer.IExpressionRule.CustomComparatorRule;
@@ -15,70 +16,27 @@ import fr.evolya.javatoolkit.lexer.IExpressionRule.StringComparatorRule;
 
 public class ExpressionBuilder {
 
+	/**
+	 * Logger de cette classe.
+	 */
 	public static final Logger LOGGER = Logs.getLogger("ExpressionBuilder");
 	
+	/**
+	 * Liste des règles applicables pour ce builder.
+	 */
 	private List<IExpressionRule> rules = new LinkedList<>();
 	
+	/**
+	 * Constructeur par défaut.
+	 */
 	public ExpressionBuilder() {
 	}
 
+	/**
+	 * Renvoie la liste des règles applicables pour ce builder.
+	 */
 	public List<IExpressionRule> getRules() {
 		return new LinkedList<>(this.rules);
-	}
-
-	public ExpressionBuilder add(IExpressionRule rule) {
-		this.rules.add(rule);
-		return this;
-	}
-
-	public ExpressionBuilder addOperator(String token, String tokenName) {
-		// TODO Check arguments, name too
-		return add(new StringComparatorRule("T_OPERATOR_" + tokenName.toUpperCase(), token));
-	}
-
-	public ExpressionBuilder addKeywords(String... tokens) {
-		for (String token : tokens) {
-			// TODO Check arguments, name too
-			add(new StringComparatorRule("T_KEY_" + token.toUpperCase(), token));
-		}
-		return this;
-	}
-
-	public <T> ExpressionBuilder addPattern(String regex, String tokenName, Function<String, T> mapper) {
-		// TODO Check arguments, name too
-		return add(new PatternComparatorRule<T>(regex, "T_" + tokenName.toUpperCase()) {
-			public T getValue(String value) {
-				return mapper.apply(value);
-			}
-		});
-	}
-
-	public ExpressionBuilder addEncapsedSequence(String startToken, String endToken, String tokenName) {
-		return addEncapsedSequence(startToken, endToken, tokenName, null);
-	}
-
-	public ExpressionBuilder addEncapsedSequence(String startToken, String endToken, String tokenName, String escapeToken) {
-		// TODO Check arguments, name too
-		return add(new EncapsedComparatorRule("T_" + tokenName.toUpperCase(), startToken, endToken, escapeToken));
-	}
-
-	public ExpressionBuilder addEncapsedExpression(String startToken, String endToken) {
-		// TODO Check arguments, name too
-		return add(new EncapsedComparatorRule("S_EXPRESSION", startToken, endToken) {
-			public IElement<?> from(String buffer) {
-				return parse(buffer);
-			}
-		});
-	}
-
-	public ExpressionBuilder addToken(String token, String tokenName) {
-		// TODO Check arguments, name too
-		return add(new StringComparatorRule("T" + tokenName.toUpperCase(), token));
-	}
-	
-	public ExpressionBuilder addToken(String tokenName, Predicate<String> predicate) {
-		// TODO Check arguments, name too
-		return add(new CustomComparatorRule("T_" + tokenName.toUpperCase(), predicate));
 	}
 
 	public Expression parse(final String input) {
@@ -160,7 +118,7 @@ public class ExpressionBuilder {
                 }
 
                 if (i == l) {
-                	handleLastToken(ex, rules, buffer, c);
+                	handleLastToken(ex, rules, buffer, c, i, input);
                 	break;
                 }
 
@@ -227,11 +185,11 @@ public class ExpressionBuilder {
             		// ici d'une erreur de configuration du builder, car deux règles ne sont pas sensées valider exactemnt
             		// le même contenu et pour autant être des règles différentes. On va donc lever une exception.
             		else {
-            			throw new RuntimeException("Unexpected " + c); // TODO 
+            			throw new BuilderException("ExpressionBuilder configuration error: two rules are in concurrency", i, oldCandidates, input);
             		}
             		
             		 if (i == l) {
-                     	System.out.println("Can't continue");
+                     	System.out.println("Can't continue"); // TODO
                      }
             		
             		// Dans tous les cas on continue au caractère suivant.
@@ -261,7 +219,7 @@ public class ExpressionBuilder {
             // au contenu du buffer. Si on en trouve une seule, alors c'est la bonne. Zero cela signifie que ce
             // dernier token est de type T_LITTERAL. Sinon (plusieurs règles) on se retrouve dans une erreur.
             if (i == l && buffer.length() > 0) {
-            	handleLastToken(ex, rules, buffer, c);
+            	handleLastToken(ex, rules, buffer, c, i, input);
             	break;
             }
             
@@ -270,7 +228,7 @@ public class ExpressionBuilder {
 		return ex;
 	}
 
-	private void handleLastToken(Expression ex, List<IExpressionRule> rules, final StringBuffer buffer, char c) {
+	protected void handleLastToken(Expression ex, List<IExpressionRule> rules, final StringBuffer buffer, char c, int i, String input) {
 		rules.removeIf(rule -> !rule.is(buffer.toString()));
 		if (rules.size() == 1) {
 			IElement<?> el = rules.get(0).from(buffer.toString());
@@ -285,8 +243,184 @@ public class ExpressionBuilder {
 		// ici d'une erreur de configuration du builder, car deux règles ne sont pas sensées valider exactemnt
 		// le même contenu et pour autant être des règles différentes. On va donc lever une exception.
 		else {
-			throw new RuntimeException("Unexpected " + c); // TODO 
+			throw new BuilderException("ExpressionBuilder configuration error: two rules are in concurrency", i, rules, input);
 		}
+	}
+	
+	/**
+	 * Ajouter une règle applicable pour la construction d'expressions par ce builder.
+	 * 
+	 * @return Le builder actuel (method chaining)
+	 */
+	public ExpressionBuilder add(IExpressionRule rule) {
+		if (rule == null) throw new NullPointerException("Given IExpressionRule is null");
+		this.rules.add(rule);
+		return this;
+	}
+
+	/**
+	 * Ajouter une règle d'identification des opérateurs dans la chaîne d'entrée fournie.
+	 * Les tokens identifiés par cette règle auront le type 'T_OPERATOR_<TOKEN_NAME>'.
+	 * 
+	 * @param token Le token à identifier dans la chaîne d'entrée.
+	 * @param tokenName Le nom du token
+	 * @return Le builder actuel (method chaining)
+	 */
+	public ExpressionBuilder addOperator(String token, String tokenName) {
+		checkTokenName(tokenName);
+		return add(new StringComparatorRule("T_OPERATOR_" + tokenName.toUpperCase(), token));
+	}
+
+	/**
+	 * Ajouter une règle d'identification de mots clés spécifiques. Par exemple, cela permet
+	 * d'identifier des mots clés spécifiques comme 'public', 'class', 'abstract', etc.
+	 * Les tokens identifiés par cette règle auront le type 'T_KEY_<TOKEN_NAME>'.
+	 * 
+	 * @param tokens La liste des mots clés à identifier
+	 * @return Le builder actuel (method chaining)
+	 */
+	public ExpressionBuilder addKeywords(String... tokens) {
+		for (String token : tokens) {
+			add(new StringComparatorRule("T_KEY_" + tokenNameFromValue(token).toUpperCase(), token));
+		}
+		return this;
+	}
+
+	/**
+	 * Ajouter une règle d'identification basée sur la correspondance avec une expression regulière.
+	 * Les tokens identifiés par cette règle auront le type 'T_<TOKEN_NAME>'.
+	 * 
+	 * @param regex L'expression regulière à vérifier
+	 * @param tokenName Le nom du token
+	 * @param mapper La fonction permettant de faire correspondre la chaîne de caractère correspondant
+	 *     à l'expression regulière avec un type réel. Par exemple, convertir "1.23" en float.
+	 * @return Le builder actuel (method chaining)
+	 * @see java.util.regex.Pattern
+	 */
+	public <T> ExpressionBuilder addPattern(String regex, String tokenName, Function<String, T> mapper) {
+		checkTokenName(tokenName);
+		return add(new PatternComparatorRule<T>(regex, "T_" + tokenName.toUpperCase()) {
+			public T getValue(String value) {
+				return mapper.apply(value);
+			}
+		});
+	}
+
+	/**
+	 * Ajouter une règle d'identification permettant d'identifier des séquences de caractères entourées par
+	 * un token de début et un token de fin. Par exemple, une chaîne de caractère entre guillemets.
+	 * Les tokens identifiés par cette règle auront le type 'S_<TOKEN_NAME>'.
+	 * 
+	 * @param startToken Le token identifiant le début de la séquence
+	 * @param endToken Le token identifant la fin de la séquence
+	 * @param tokenName Le nom du token
+	 * @return Le builder actuel (method chaining)
+	 */
+	public ExpressionBuilder addEncapsedSequence(String startToken, String endToken, String tokenName) {
+		return addEncapsedSequence(startToken, endToken, null, tokenName);
+	}
+
+	/**
+	 * Ajouter une règle d'identification permettant d'identifier des séquences de caractères entourées par
+	 * un token de début et un token de fin. Par exemple, une chaîne de caractère entre guillemets.
+	 * Cette méthode apporte également la possibilié de préciser une séquence d'échappement pour invalider
+	 * la séquence de fin. Par exemple l'anti-slash pour échapper les guillemets.
+	 * Les tokens identifiés par cette règle auront le type 'S_<TOKEN_NAME>'.
+	 * 
+	 * @param startToken Le token identifiant le début de la séquence
+	 * @param endToken Le token identifant la fin de la séquence
+	 * @param escapeToken Le token d'échappement
+	 * @param tokenName Le nom du token
+	 * @return Le builder actuel (method chaining)
+	 */
+	public ExpressionBuilder addEncapsedSequence(String startToken, String endToken, String escapeToken, String tokenName) {
+		checkTokenName(tokenName);
+		return add(new EncapsedComparatorRule("S_" + tokenName.toUpperCase(), startToken, endToken, escapeToken));
+	}
+
+	/**
+	 *  Ajouter une règle d'identification permettant de détecter des sous-expressions. Par exemple, typiquement les
+	 *  parenthèses permettent de définir des sous-composants de l'expression, qui sont eux même des expressions.
+	 *  Il est très fréquent également que les sous-expressions soient interprétées en premier avant l'interprétation
+	 *  de l'expression globale. 
+	 *  Les tokens identifiés par cette règle auront le type 'S_EXPRESSION'.
+	 *  
+	 * @param startToken Le token identifiant le début de l'expression
+	 * @param endToken Le token identifant la fin de l'expression
+	 * @return Le builder actuel (method chaining)
+	 * @see https://en.wikipedia.org/wiki/Order_of_operations
+	 */
+	public ExpressionBuilder addEncapsedExpression(String startToken, String endToken) {
+		return add(new EncapsedComparatorRule("S_EXPRESSION", startToken, endToken) {
+			public IElement<?> from(String buffer) {
+				return parse(buffer);
+			}
+		});
+	}
+
+	/**
+	 * Ajouter une règle d'identification permettant de détecter des tokens simples (string).
+	 * Cette méthode ressemble à addKeywords() à l'exception que le nom du token peut être directemnt fourni.
+	 * Les tokens identifiés par cette règle auront le type 'T_<TOKEN_NAME>'.
+	 * 
+	 * @param token Le token à identifier dans la chaîne d'entrée.
+	 * @param tokenName Le nom du token
+	 * @return Le builder actuel (method chaining)
+	 */
+	public ExpressionBuilder addToken(String token, String tokenName) {
+		checkTokenName(tokenName);
+		return add(new StringComparatorRule("T_" + tokenName.toUpperCase(), token));
+	}
+	
+	/**
+	 * Ajouter une règle d'identification permettant de détecter des tokens librement, à l'aide
+	 * d'une fonction passée en paramètre. Par exemple, pour la détection des espaces au sein
+	 * de la chaîne d'entrée, on peut se base sur la méthode Character.isWhitespace() qui identifie
+	 * tous les caractères considérés comme des espaces (espace, retour chariot, tabulation, etc.)
+	 * Ainsi, cette méthode donne la liberté de détecter des tokens à partir de n'importe quel algo.
+	 * La fonction predicate reçoit en entrée le contenu du buffer de lecture, et doit renvoyer en
+	 * sortie un boolean pour indiquer si un token a été détecté.
+	 * 
+	 * <code>
+	 * builder.addToken("whitespace", (value) -> {
+	 *      if (value.length() > 1) return false;
+	 *      return Character.isWhitespace(value.charAt(0));
+	 * });
+	 * </code>
+	 * 
+	 * @param tokenName Le nom du token
+	 * @param predicate La function qui identifie le token
+	 * @return Le builder actuel (method chaining)
+	 */
+	public ExpressionBuilder addToken(String tokenName, Predicate<String> predicate) {
+		checkTokenName(tokenName);
+		return add(new CustomComparatorRule("T_" + tokenName.toUpperCase(), predicate));
+	}
+	
+	/**
+	 * Vérifie que le nom du token est valide, c.à.d. qu'il respecte l'expression régulière
+	 * suivante : ^[a-zA-Z]\\w*[a-zA-Z]$
+	 * 
+	 * @param tokenName Le nom de token à vérifier
+	 * @throws IllegalArgumentException Si le nom de token n'est pas valide
+	 */
+	protected void checkTokenName(String tokenName) {
+		if (!tokenName.matches("^[a-zA-Z]\\w*[a-zA-Z]$")) {
+			throw new IllegalArgumentException("Invalid token name: " + tokenName);
+		}
+	}
+	
+	/**
+	 * Fabrique un nom de token à partir de sa valeur.
+	 * 
+	 * @param token La valeur du token
+	 * @return Le nom du token
+	 * @throws IllegalArgumentException Si le nom de token n'est pas valide
+	 */
+	protected String tokenNameFromValue(String token) {
+		String name = token.trim().replace(" ", "_");
+		checkTokenName(name);
+		return name;
 	}
 	
 	/**
@@ -339,7 +473,7 @@ public class ExpressionBuilder {
 		});
 		
 		builder.addEncapsedSequence("/*", "*/", "comment");
-		builder.addEncapsedSequence("\"", "\"", "string", "\\");
+		builder.addEncapsedSequence("\"", "\"", "\\", "string");
 		builder.addEncapsedExpression("(", ")");
 		
 		return builder;
