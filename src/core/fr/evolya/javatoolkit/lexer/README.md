@@ -8,54 +8,21 @@ A tool for implementing an interpreter to create custom languages.
 
 This API is currently in development.
 
-```
-                ╔═══════════╗
-                ║ Structure ║
-                ╚═══════════╝
-                      ^ Implements
-       ┌──────────────┼────────────────┬──────────────┐
-       │              │                │              │
-╔════════════╗  ╔════════════╗  ╔════════════╗  ╔════════════╗
-║ Expression ║  ║  Operator  ║  ║    Token   ║  ║   String   ║
-╚════════════╝  ╚════════════╝  ╚════════════╝  ╚════════════╝
-                      ^ Extends        ^ Extends
-                      │                │
-                ╔════════════╗  ╔════════════╗
-                ║  Multiply  ║  ║   Symbol   ║ Eg. literals
-                ╚════════════╝  ╚════════════╝
-                ╔════════════╗  ╔════════════╗
-                ║  Division  ║  ║   Double   ║
-                ╚════════════╝  ╚════════════╝
-                ╔════════════╗  ╔════════════╗
-                ║    Plus    ║  ║    Float   ║
-                ╚════════════╝  ╚════════════╝
-                ╔════════════╗  ╔════════════╗
-                ║    Minus   ║  ║     True   ║
-                ╚════════════╝  ╚════════════╝
-                ╔════════════╗  ╔════════════╗
-                ║   Modulo   ║  ║    False   ║
-                ╚════════════╝  ╚════════════╝
-
-
-╔════════════╗ 0..1      ╔════════════╗
-║ Expression ║-----------║ Structure  ║
-╚════════════╝      0..n ╚════════════╝
-```
-
 ## Usage
 
 ```java
 // Create builder
-ExpressionBuilder builder = new ExpressionBuilder();
+ExpressionBuilder builder = ExpressionBuilder.createDefault();
 
 // Parse an expression
-Expression ex = builder.build("your own(syntax) + you['decides']");
+Expression ex = builder.parse("your own(syntax) + you['decides']");
 
 // Get the list of structures
-List<Structure> structs = ex.getStructures();
+List<IElement<?>> structs = ex.getElements();
 
-// Or display as XML (debug)
-String xml = ex.toXml();
+// Or display as string (debug)
+System.out.println(ex); // tokens values
+System.out.println(ex.toString(true)); // tokens types
 ```
 
 ## Credits
