@@ -10,12 +10,12 @@ import fr.evolya.javatoolkit.lexer.Structure.Expression;
 public class Executor {
 
     public Structure execute(String txt, Language lang, SecurityManager manager) throws Throwable {
-        return execute(ExpressionBuilder.build(txt), lang, null, manager);
+        return execute(ExpressionBuilder1.build(txt), lang, null, manager);
     }
     
     public Structure execute(String txt, Language lang, Context context,
             SecurityManager manager) throws Throwable {
-        return execute(ExpressionBuilder.build(txt), lang, context, manager);
+        return execute(ExpressionBuilder1.build(txt), lang, context, manager);
     }
 
     private Structure execute(Expression exp, Language lang, Context context, SecurityManager manager) {
