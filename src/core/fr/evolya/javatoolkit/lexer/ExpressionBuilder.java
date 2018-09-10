@@ -6,8 +6,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
-import fr.evolya.javatoolkit.cli.v2.SystemInputOutputStream;
 import fr.evolya.javatoolkit.code.Logs;
+import fr.evolya.javatoolkit.code.annotations.ByCopy;
 import fr.evolya.javatoolkit.lexer.IElement.Element;
 import fr.evolya.javatoolkit.lexer.IExpressionRule.CustomComparatorRule;
 import fr.evolya.javatoolkit.lexer.IExpressionRule.EncapsedComparatorRule;
@@ -35,41 +35,71 @@ public class ExpressionBuilder {
 	/**
 	 * Renvoie la liste des règles applicables pour ce builder.
 	 */
+	@ByCopy
 	public List<IExpressionRule> getRules() {
 		return new LinkedList<>(this.rules);
 	}
 
+	/**
+	 * Parse une séquence de charactère et tente d'en extraire une expression, à partir des règles
+	 * données en configuration. 
+	 * 
+	 * @param input La chaîne de charactère 
+	 * @throws BuilderException En cas d'erreur dans l'expression
+	 * @return Une Expression, contenant des IElement
+	 */
 	public Expression parse(final String input) {
 
+		// Log
 		if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
 			LOGGER.log(Logs.DEBUG_FINE, "BEGIN WITH => " + input);
 		}
-		
+
+		// L'expression construite en sortie
 		final Expression ex = new Expression(input);
-		
+
+		// Cette liste contiendra les règles applicables 
 		List<IExpressionRule> rules = getRules(); // copy
+
+		// Nombre max de règles : sert à déterminer si pour un token donné les règles ont été affinées
+		// ou bien si toutes les règles sont applicables (dans ce cas il n'y a pas eu d'affinement)
 		final int max = rules.size();
+
+		// Le buffer qui sert à stocker les charactères pendant l'évalution
 		final StringBuffer buffer = new StringBuffer();
+
+		// Cette variable est affectée quand on a rencontré une séquence imbriquée, c-à-d. typiquement
+		// les string ou les parenthèses. 
 		EncapsedComparatorRule sub = null;
-		
+
+		// On parcours chaque charactère de l'input
 		nextChar:
         for (int i = 0, l = input.length() - 1; i <= l; i++) {
             char c = input.charAt(i);
-            
-            // Gestion des expressions nested
+
+            // Gestion des séquence imbriquées
             if (sub != null) {
+
+            	// On ajoute le charactère au buffer
             	buffer.append(c);
+
+            	// On détecte la fin de la séquence
             	if (sub.finished(buffer.toString())) {
             		String contents = buffer.substring(0, buffer.length() - sub.getEndToken().length());
             		IElement<?> el = sub.from(contents);
-            		LOGGER.log(Logs.DEBUG_FINE, "	-> ADD " + el.getTokenName() + " = " + contents);
             		ex.add(el);
             		sub = null;
             		buffer.setLength(0);
+            		if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+            			LOGGER.log(Logs.DEBUG_FINE, "	-> ADD NESTED " + el.getTokenName() + " = " + contents);
+            		}
             	}
+
+            	// On détecte une fin de séquence prématurée
             	else if (i == l) {
             		throw new BuilderException("Unexpected end of expression", i+1, sub, input);
             	}
+
             	continue nextChar;
             }
 
@@ -101,7 +131,10 @@ public class ExpressionBuilder {
             	// Si on a des règles qui correspondent, cela signifie que la portion précédente (contenue dans buffer)
             	// ne correspondait à aucune règle, c'est donc une expression littérale.
                 if (newCandidates.size() > 0) {
-                	LOGGER.log(Logs.DEBUG_FINE, "	-> ADD T_LITTERAL " + buffer.toString());
+                	// Log
+                	if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+                		LOGGER.log(Logs.DEBUG_FINE, "	-> ADD T_LITTERAL " + buffer.toString());
+                	}
                 	// On ajoute donc un élément de type T_LITTERAL
                 	ex.add(new Element<String>("T_LITTERAL", buffer.toString()));
                 	buffer.setLength(0);
@@ -113,10 +146,13 @@ public class ExpressionBuilder {
                 // Sinon, tant qu'on ne trouve pas une règle applicable, on continue à stoquer les caractères qui arrivent
                 // dans le buffer et on continue.
                 else {
-                	LOGGER.log(Logs.DEBUG_FINE, "	-> CONTINUE");
+                	if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+                		LOGGER.log(Logs.DEBUG_FINE, "	-> CONTINUE");
+                	}
                 	buffer.append(c);
                 }
 
+                // Arrivée en bout de chaîne input
                 if (i == l) {
                 	handleLastToken(ex, rules, buffer, c, i, input);
                 	break;
@@ -133,7 +169,10 @@ public class ExpressionBuilder {
             // On retire toutes les règles qui ne correspondent pas au contenu du buffer plus le nouveau caractère.
             rules.removeIf(rule -> !rule.accept(buffer.toString() + c));
 
-            LOGGER.log(Logs.DEBUG_FINE, "   Rules matching '" + buffer + c + "' = " + rules);
+            // Log
+            if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+            	LOGGER.log(Logs.DEBUG_FINE, "   Rules matching '" + buffer + c + "' = " + rules);
+            }
             
             // On se retrouve donc soit avec une liste de règles vide, ou bien on arrive à la fin de l'input : on va donc
             // chercher à voir si des règles existaient avant et peuvent être appliquées au contenu du buffer.
@@ -149,7 +188,9 @@ public class ExpressionBuilder {
             		// contenu du buffer. Par exemple le caractère '-' correspond exactemnt à la règle de l'opérateur moins.
             		// Normalement il ne devrait y en avoir qu'une.
             		if (oldCandidates.size() > 1) {
-            			LOGGER.log(Logs.DEBUG_FINE, "	-> REDUCE Exactly " + buffer.toString());
+            			if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+            				LOGGER.log(Logs.DEBUG_FINE, "	-> REDUCE Exactly " + buffer.toString());
+            			}
             			oldCandidates.removeIf(rule -> !rule.is(buffer.toString()));
             		}
         			
@@ -159,13 +200,17 @@ public class ExpressionBuilder {
             			// Cas spécifique : création d'une sous-expression
             			if (oldCandidates.get(0) instanceof EncapsedComparatorRule) {
             				sub = (EncapsedComparatorRule) oldCandidates.get(0);
-            				LOGGER.log(Logs.DEBUG_FINE, "	-> BEGIN SUB EXPRESSION ");
+            				if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+            					LOGGER.log(Logs.DEBUG_FINE, "	-> BEGIN SUB EXPRESSION ");
+            				}
             			}
             			// Cas normal : création d'un élément à partir de la règle
             			else {
 	            			IElement<?> el = oldCandidates.get(0).from(buffer.toString());
 	            			ex.add(el);
-	            			LOGGER.log(Logs.DEBUG_FINE, "	-> ADD " + el.getTokenName());
+	            			if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+	            				LOGGER.log(Logs.DEBUG_FINE, "	-> ADD " + el.getTokenName());
+	            			}
             			}
             			// On va repasser sur le caractère en cours, en réinitialisant les règles et le buffer.
             			buffer.setLength(0);
@@ -176,9 +221,10 @@ public class ExpressionBuilder {
             		// Il n'y a plus aucune règle : cela signife que plusieurs règles étaient valides mais aucune ne
             		// correspond exactement au contenu du buffer. Par exemple, si le buffer contient 'p' les règles
             		// des tokens 'public' et 'private' vont correspondre. Mais si on rencontre ensuite le caractère
-            		// 'a' plus aucune règle ne correspond exactement. On a donc une expression littérale à créer.
+            		// 'a' plus aucune règle ne correspond exactement. On poursuit donc.
             		else if (oldCandidates.size() == 0) {
-            			throw new RuntimeException("Create litteral => " + buffer); // TODO 
+            			buffer.append(c);
+            			continue nextChar;
             		}
             		
             		// Plusieurs règles sont encore en concurrence, mais valident EXACTEMENT le contenu du buffer. Il s'agit
@@ -197,21 +243,6 @@ public class ExpressionBuilder {
             	}
             }
 
-            // On tombe sur un espace blanc, qui va jouer le rôle de séparateur. On va donc stocker dans la structure
-            // un nouvel élément T_LITTERAL si le buffer contenait du contenu; et ajouter égalemement un élément
-            // de type T_WHITESPACE.
-//            if (Character.isWhitespace(c)) {
-//            	if (buffer.length() > 0) {
-//            		ex.add(new Element<String>("T_LITTERAL", buffer.toString()));
-//            		LOGGER.log(Logs.DEBUG_FINE, "	-> ADD T_LITTERAL " + buffer.toString());
-//            	}
-//            	ex.add(new Element<Character>("T_WHITESPACE", c));
-//            	LOGGER.log(Logs.DEBUG_FINE, "	-> ADD T_WHITESPACE [" + buffer.toString() + "]");
-//            	buffer.setLength(0);
-//            	rules = getRules();
-//            	continue nextChar;
-//            }
-            
             buffer.append(c);
             
             // On traite ici le cas du contenu à la fin de l'input. Si le buffer n'est pas vide on va traiter son
@@ -233,11 +264,15 @@ public class ExpressionBuilder {
 		if (rules.size() == 1) {
 			IElement<?> el = rules.get(0).from(buffer.toString());
 			ex.add(el);
-			LOGGER.log(Logs.DEBUG_FINE, "	-> ADD " + el.getTokenName());
+			if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+				LOGGER.log(Logs.DEBUG_FINE, "	-> ADD " + el.getTokenName());
+			}
 		}
 		else if (rules.size() == 0) {
 			ex.add(new Element<String>("T_LITTERAL", buffer.toString()));
-			LOGGER.log(Logs.DEBUG_FINE, "	-> ADD T_LITTERAL " + buffer.toString());
+			if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+				LOGGER.log(Logs.DEBUG_FINE, "	-> ADD T_LITTERAL " + buffer.toString());
+			}
 		}
 		// Plusieurs règles sont encore en concurrence, mais valident EXACTEMENT le contenu du buffer. Il s'agit
 		// ici d'une erreur de configuration du builder, car deux règles ne sont pas sensées valider exactemnt

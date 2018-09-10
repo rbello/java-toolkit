@@ -113,12 +113,31 @@ public class Tests {
 		Assert.equals(e.getCount("S_STRING"), 1);
 	}
 	
+	@TestMethod
+	public void TestRuleConflict() throws Throwable {
+		ExpressionBuilder eb = ExpressionBuilder.createNew();
+		eb.addKeywords("bateau", "boulet", "barre");
+		Expression e = eb.parse("balle");
+		Assert.equals(e.toString(), "([balle])");
+	}
+	
 //	@TestMethod
-//	@ExpectedException(UnexpectedEndOfInput.class)
-//	public void xxx() throws Throwable {
-//		// Parse expression
-//		Expression e = builder.parse(")");
-//		System.out.println(e);
+//	public void TestSubNestedExpression() throws Throwable {
+//		Expression e = builder.parse("a(b = (c - t))");
+//		Assert.equals(e.toString(), "(([b][ ][=][ ]([c][ ][-][ ][t])))");
+//		Assert.equals(e.getCount(true), 9);
+//	}
+//
+//	@TestMethod
+//	public void Test1() throws Throwable {
+//		Expression e = builder.parse("(/*)*/)");
+//		Assert.equals(e.toString(), "(([/*)*/]))");
+//	}
+//	
+//	@TestMethod
+//	@ExpectedException(BuilderException.class)
+//	public void Test2() throws Throwable {
+//		builder.parse(")");
 //	}
 	
 }
