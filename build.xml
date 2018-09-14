@@ -1,6 +1,6 @@
 <project name="java-toolkit" default="compile" basedir=".">
 	
-	<property name="version.number" value="4.1.1" />
+	<property name="version.number" value="4.1.2" />
 	
 	<property name="lib.dir" value="./lib/" />
 	<property name="bin.dir" value="./bin/" />
