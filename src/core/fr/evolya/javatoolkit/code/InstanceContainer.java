@@ -20,4 +20,8 @@ public class InstanceContainer<T> {
 		return this.instance;
 	}
 	
+	public static class Placeholder<T> extends InstanceContainer<T> {
+		// Alias
+	}
+	
 }
