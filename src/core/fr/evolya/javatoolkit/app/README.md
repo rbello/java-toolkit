@@ -13,9 +13,6 @@ This API is currently in development.
 ```java
 public static void main(String[] args) {
 
-	// Init Look&Feel and loggers
-	App.init();
-	
 	// Create a new app (here based on Swing)
 	App app = new SwingApp();
 	

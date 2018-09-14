@@ -1,8 +1,11 @@
 package fr.evolya.javatoolkit.app;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -25,8 +28,9 @@ import fr.evolya.javatoolkit.appstandard.bridge.services.ILocalService;
 import fr.evolya.javatoolkit.code.Logs;
 import fr.evolya.javatoolkit.code.annotations.Bug;
 import fr.evolya.javatoolkit.code.annotations.ConfigDeclare;
-import fr.evolya.javatoolkit.code.annotations.DeepContainer;
 import fr.evolya.javatoolkit.code.annotations.ToOverride;
+import fr.evolya.javatoolkit.code.funcint.Action;
+import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 import fr.evolya.javatoolkit.code.utils.Utils;
 import fr.evolya.javatoolkit.events.fi.Listener;
 import fr.evolya.javatoolkit.events.fi.Observable;
@@ -47,6 +51,8 @@ public class App extends Observable
 
 	private Class<?> state = ApplicationStopped.class;
 
+	private Map<Class<? extends Annotation>, Action> annotations = new HashMap<>();
+	
 	private AppActivity invoker = null;
 	
 	public App() {
@@ -103,14 +109,14 @@ public class App extends Observable
 		LOGGER.log(Logs.INFO, "");
 		LOGGER.log(Logs.INFO, "APPLICATION CREATION");
 		
-		// Register this class into CDI
-		cdi.register(App.class, new Instance<>(this));
-		
 		// Add configuration component
 		AppConfiguration conf = new NonPersistentConfiguration();
 		conf.setProperty("App.Name", "NoName");
 		conf.setProperty("App.Version", "0.0");
 		add(AppConfiguration.class, new Instance(conf));
+		
+		// Register this class into CDI & events
+		add(App.class, new Instance<>(this));
 		
 		// Intercept SIGINT signal
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -184,18 +190,6 @@ public class App extends Observable
 		
 		// Notify the event
 		notify(instance, BeforeApplicationStarted.class, this);
-		
-		// Deep expore
-		if (instance.getInstanceClass().isAnnotationPresent(DeepContainer.class)) {
-			if (instance.isFutur()) {
-				((FuturInstance<?>)instance).onInstanceCreated(object -> {
-					exploreDeepContainer(instance);
-				});
-			}
-			else {
-				exploreDeepContainer(instance);
-			}
-		}
 
 		return this;
 	}
@@ -219,6 +213,9 @@ public class App extends Observable
 
 		// Search for events binding annotations
 		if (bindEvents) addListener(instance);
+		
+		// Search for specific annotations
+		searchAnnotations(instance);
 		
 		// TODO
 		// Auto-build
@@ -253,17 +250,6 @@ public class App extends Observable
 				}
 			});
 		
-	}
-
-	/**
-	 * This method lets child-class have the ability to explore
-	 * a specific kind of containers. For example, in SWING context,
-	 * all classes extending java.awt.Container can contains several
-	 * other objects, like other Container too. So this method have to
-	 * be overriden to implement a specific container exploration.  
-	 */
-	@ToOverride
-	protected void exploreDeepContainer(Instance<?> instance) {
 	}
 
 	public <T> T get(Class<T> type) {
@@ -457,6 +443,49 @@ public class App extends Observable
 		setLogLevel(logLevel);
 		
     	return debugMode;
+	}
+	
+	protected Action<?> method(String methodName) {
+		Method m = ReflectionUtils.getMethodMatching(getClass(), methodName);
+		if (m == null) throw new NullPointerException("Method not found: " + 
+				getClass().getSimpleName() + "::" + methodName + "()");
+		return (instance) -> {
+			try {
+				m.invoke(this, instance);
+			}
+			catch (Exception ex) {
+				throw new RuntimeException(ex);
+			}
+		};
+	}
+	
+	protected void addAnnotation(Class<? extends Annotation> annotation, Action<?> method) {
+		if (!annotation.isAnnotation()) throw new IllegalArgumentException();
+		if (method == null) throw new NullPointerException();
+		this.annotations.put(annotation, method);
+	}
+	
+	private void searchAnnotations(Instance<?> instance) {
+		// Fetch annotations
+		this.annotations.forEach((annotation, handler) -> {
+			
+			if (!instance.getInstanceClass().isAnnotationPresent(annotation))
+				return;
+			
+			if (LOGGER.isLoggable(Logs.DEBUG)) {
+				LOGGER.log(Logs.DEBUG, String.format(" `--> Register annotation '@%s' on object '%s'",
+						annotation.getSimpleName(), instance.getInstanceClass().getSimpleName()));
+			}
+			
+			if (instance.isFutur()) {
+				((FuturInstance<?>)instance).onInstanceCreated(object -> {
+					handler.call(instance);
+				});
+			}
+			else {
+				handler.call(instance);
+			}
+		});
 	}
 
 	public static boolean setLogFileOutput(String path, Level loglevel) {
