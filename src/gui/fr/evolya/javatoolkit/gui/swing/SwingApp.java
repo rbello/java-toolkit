@@ -10,15 +10,17 @@ import fr.evolya.javatoolkit.app.App;
 import fr.evolya.javatoolkit.app.cdi.Instance;
 import fr.evolya.javatoolkit.app.cdi.Instance.FuturInstance;
 import fr.evolya.javatoolkit.code.Logs;
+import fr.evolya.javatoolkit.code.annotations.DeepContainer;
 
 public class SwingApp extends App {
 	
 	public SwingApp() {
-		super();
+		this(null);
 	}
 
 	public SwingApp(String[] args) {
 		super(args);
+		addAnnotation(DeepContainer.class, method("exploreDeepContainer"));
 	}
 
 	@Override
@@ -40,7 +42,6 @@ public class SwingApp extends App {
 		EventQueue.invokeLater(task);
 	}
 	
-	@Override
 	protected void exploreDeepContainer(Instance<?> instance) {
 		if (!instance.isFutur() && instance.isInstanceOf(Container.class)) {
 			if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
