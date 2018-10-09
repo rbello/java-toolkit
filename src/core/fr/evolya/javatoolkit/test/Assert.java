@@ -285,13 +285,13 @@ public class Assert {
 		if (obj != null) throw new AssertException("IsNull", msg, obj, null);
 	}
 
-	public static void equals(int given, int expected) {
+	public static void equals(Integer given, Integer expected) {
 		equals(given, expected, null);
 	}
 	
-	public static void equals(int given, int expected, String msg) {
+	public static void equals(Integer given, Integer expected, String msg) {
 		assertions++;
-		if (given != expected) throw new AssertException("Equals(int,int)", msg, given, expected);
+		if (!expected.equals(given)) throw new AssertException("Equals(int,int)", msg, given, expected);
 	}
 	
 	public static void equals(String given, String expected) {
