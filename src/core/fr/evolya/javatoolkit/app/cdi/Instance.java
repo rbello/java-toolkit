@@ -108,13 +108,13 @@ public class Instance<T> {
 			if (this.type == null) return null;
 			if (isFutur()) {
 				if (gui && guiDelegate != null) {
-					DependencyInjectionContext.LOGGER.log(Logs.DEBUG_FINE, "Create instance of " + getInstanceClass().getSimpleName() + " in GUI");
+					DependencyInjectionContext.LOGGER.log(Logs.DEBUG_FINE, "  `-> Create instance of '" + getInstanceClass().getSimpleName() + "' in GUI");
 					guiDelegate.call(() -> {
 						createInstance();
 					});
 				}
 				else {
-					DependencyInjectionContext.LOGGER.log(Logs.DEBUG_FINE, "Create instance of " + getInstanceClass().getSimpleName() + " in current thread (" + Thread.currentThread().getName() + ")");
+					DependencyInjectionContext.LOGGER.log(Logs.DEBUG_FINE, "  `-> Create instance of '" + getInstanceClass().getSimpleName() + "' in current thread (" + Thread.currentThread().getName() + ")");
 					createInstance();
 				}
 				if (this.callback != null)
@@ -168,6 +168,8 @@ public class Instance<T> {
 		
 	}
 
-	
+	public static <T> Instance<T> futur(Class<T> type) {
+		return new FuturInstance<>(type);
+	}
 
 }

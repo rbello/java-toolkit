@@ -17,7 +17,8 @@ public class DependencyInjectionContextTest {
 	private DependencyInjectionContext cdi;
 	
 	public static void main(String[] args) {
-		Assert.runTests(true);
+		boolean debug = false;
+		Assert.runTests(debug);
 	}
 	
 	@BeforeTests
@@ -131,7 +132,7 @@ public class DependencyInjectionContextTest {
 	}
 	
 	@TestMethod(12)
-	//@ExpectedException(IllegalArgumentException.class)
+	@ExpectedException(IllegalArgumentException.class)
 	public void TypeMismatch() {
 		// See type F to understand the expected error
 		cdi.register(F.class);

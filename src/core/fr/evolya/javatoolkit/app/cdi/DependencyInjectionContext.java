@@ -1,6 +1,7 @@
 package fr.evolya.javatoolkit.app.cdi;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,7 +22,7 @@ import fr.evolya.javatoolkit.code.utils.ReflectionUtils;
 /**
  * CDI Container
  * 
- * @version 1.5
+ * @version 1.6
  */
 public class DependencyInjectionContext {
 
@@ -198,6 +199,10 @@ public class DependencyInjectionContext {
 			throw new IllegalArgumentException(instance.getInstanceClass().getSimpleName() 
 					+ " is not a subclass of " + type.getSimpleName());
 		}
+		
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, "Register component '" + type.getSimpleName() + "' into CDI context");
+		}
 
 		// Lock on the given instance
 		synchronized (instance) {
@@ -279,7 +284,7 @@ public class DependencyInjectionContext {
 				// Check 
 				if (type == Instance.class || type == FuturInstance.class) {
 					throw new UnsupportedOperationException(String.format(
-						"Cannot inject into %s::%s because given type if a placeholder (%s) not a real type",
+						"Cannot inject into '%s::%s' because given type if a placeholder (%s) not a real type",
 						instance.getInstanceClass().getSimpleName(),
 						field.getName(),
 						type.getSimpleName()
@@ -318,8 +323,10 @@ public class DependencyInjectionContext {
 	private void whenInstanceCreated(Instance<?> instance, boolean lazyCreation) {
 
 		// Log
-		LOGGER.log(Logs.DEBUG_FINE, "Instance created: " + instance.getInstanceClass()
-				+ " (" + (lazyCreation ? "lazy creation" : "already created") + ")");
+		if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+			LOGGER.log(Logs.DEBUG_FINE, "Instance created: " + instance.getInstanceClass()
+					+ " (" + (lazyCreation ? "lazy creation" : "already created") + ")");
+		}
 
 		// Execute injections contained in this instance
 		injections.stream()
@@ -526,8 +533,8 @@ public class DependencyInjectionContext {
 			// Arguments mismatch
 			catch (IllegalArgumentException e) {
 				//e.getMessage()
-				// TODO Verifier qu'il s'agit bien de l'erreur du framework reflection
-				e.printStackTrace();
+				// TODO Verifier qu'il s'agit bien de l'erreur du framework reflection --> si non rethrow l'exception
+				//e.printStackTrace();
 				state = InjectionState.FAILURE;
 				throw new IllegalArgumentException(String.format(
 					"Unable to inject component '%s' into %s::%s because types mismatche\nExpected: %s\nGiven:    %s",
@@ -554,6 +561,101 @@ public class DependencyInjectionContext {
 			return instance.getInstanceClass().getSimpleName() + "::" + field.getName();
 		}
 		
+	}
+	
+	/**
+	 * @see DependencyInjectionContext#call(Object, String, Object...)
+	 * @since 1.6
+	 */
+	public <T> T call(Instance<?> instance, String methodName, Object... args) {
+		if (instance.isFutur() && LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+			LOGGER.log(Logs.DEBUG_FINE, String.format("  `-> Calling method '%s()' on type '%s' involves to instantiate it",
+					methodName,
+					instance.getInstanceClass().getSimpleName()));
+		}
+		return call(instance.getInstance(), methodName, args);
+	}
+
+	/**
+	 * Call the method methodName on object instance, using given arguments and dependency injection.
+	 * This method will replace all arguments corresponding to an existing component into this CDI context.
+	 * All non-matching arguments will be picked-up from the given argument list.
+	 * 
+	 * @param instance Instance to call on
+	 * @param methodName Method name to call
+	 * @param args Method arguments
+	 * @return Returned object from given method
+	 * @since 1.6
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T call(Object instance, String methodName, Object... args) {
+		
+		if (instance == null || methodName == null) {
+			throw new NullPointerException("Given instance or method name is/are null");
+		}
+		
+		final Class<?> type = instance.getClass();
+		
+		Method m = ReflectionUtils.getMethodMatching(type, methodName);
+		
+		if (m == null) {
+			throw new NullPointerException(String.format("Method not found: %s::%s()", type.getSimpleName(), methodName));
+		}
+		
+		// Log
+		if (LOGGER.isLoggable(Logs.DEBUG)) {
+			LOGGER.log(Logs.DEBUG, String.format("Method call with DI : %s::%s()",
+					type.getSimpleName(),
+					methodName));
+		}
+		
+		Object[] methodArgs = new Object[m.getParameterTypes().length];
+		
+		List<Object> userArgs = new LinkedList<Object>(Arrays.asList(args));
+		
+		for (int i = 0; i < methodArgs.length; i++) {
+			Class<?> argType = m.getParameterTypes()[i];
+			if (isComponentRegistered(argType)) {
+				methodArgs[i] = getComponent(argType).getInstance();
+				if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+					LOGGER.log(Logs.DEBUG_FINE, String.format("  `-> Argument %s (%s) -> inject component '%s'",
+							i + 1,
+							methodArgs[i].getClass().getSimpleName(),
+							argType.getSimpleName()));
+				}
+			}
+			else {
+				if (userArgs.isEmpty()) {
+					throw new IllegalArgumentException(String.format("Missing argument %s to call %s::%s",
+							i + 1,
+							instance.getClass().getSimpleName(),
+							m.getName()));
+				}
+				methodArgs[i] = userArgs.remove(0);
+				if (LOGGER.isLoggable(Logs.DEBUG_FINE)) {
+					LOGGER.log(Logs.DEBUG_FINE, String.format("  `-> Argument %s (%s) : user argument used '%s'",
+							i + 1,
+							methodArgs[i].getClass().getSimpleName(),
+							argType.getSimpleName()));
+				}
+			}
+		}
+		
+		// Too many arguments
+		if (userArgs.size() > 0) {
+			throw new IllegalArgumentException(String.format("Too many arguments to call %s::%s", 
+					instance.getClass().getSimpleName(),
+					m.getName()));
+		}
+		
+
+		// Invoke method
+		try {
+			return (T) m.invoke(instance, methodArgs);
+		}
+		catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
 	}
 	
 }
